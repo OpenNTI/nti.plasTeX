@@ -664,7 +664,10 @@ class Node(object):
 			modifier = re.search(r'(\W*)$', name).group(1)
 			if modifier:
 				name = re.sub(r'(\W*)$', r'', name)
-				modifier = ' modifier="%s"' % xmlstr(modifier)
+				#JAM: xmlstr fails to account for quotes, which are
+				#illegal here
+				modifier = ' modifier="%s"' % xmlstr(modifier).replace( '"', '&quot;' )
+
 
 		if not name:
 			name = 'unknown'
