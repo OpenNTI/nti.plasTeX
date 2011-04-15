@@ -15,165 +15,166 @@ from plasTeX.Logging import getLogger
 #
 
 class MathEnvironment(Environment):
-    mathMode = True
+	mathMode = True
 
-    class ThinSpace(Command):
-        macroName = '.'
-        unicode = u'\u2009'
+	class ThinSpace(Command):
+		macroName = '.'
+		unicode = u'\u2009'
 
-    class NegativeThinSpace(Command):
-        macroName = '!'
+	class NegativeThinSpace(Command):
+		macroName = '!'
 
-    class MediumSpace(Command):
-        macroName = ':'
-        unicode = u'\u8196'
+	class MediumSpace(Command):
+		macroName = ':'
+		unicode = u'\u8196'
 
-    class ThickSpace(Command):
-        macroName = ';'
-        unicode = u'\u8194'
+	class ThickSpace(Command):
+		macroName = ';'
+		unicode = u'\u8194'
 
-    class ThinSpace_(Command):
-        macroName = '/'
-        unicode = u'\u2009'
+	class ThinSpace_(Command):
+		macroName = '/'
+		unicode = u'\u2009'
 
 # Need \newcommand\({\begin{math}} and \newcommand\){\end{math}}
 
 class math(MathEnvironment):
-    @property
-    def source(self):
-        if self.hasChildNodes():
-            return '$%s$' % sourceChildren(self)
-        return '$'
+	@property
+	def source(self):
+		if self.hasChildNodes():
+			return '$%s$' % sourceChildren(self)
+		return '$'
 
 class displaymath(MathEnvironment):
-    blockType = True
-    @property
-    def source(self):
-        if self.hasChildNodes():
-            return r'\[ %s \]' % sourceChildren(self)
-        if self.macroMode == Command.MODE_END:
-            return r'\]'
-        return r'\['
+	blockType = True
+	@property
+	def source(self):
+		if self.hasChildNodes():
+			return r'\[ %s \]' % sourceChildren(self)
+		if self.macroMode == Command.MODE_END:
+			return r'\]'
+		return r'\['
 
 class BeginDisplayMath(Command):
-    macroName = '['
-    def invoke(self, tex):
-        o = self.ownerDocument.createElement('displaymath')
-        o.macroMode = Command.MODE_BEGIN
-        self.ownerDocument.context.push(o)
-        return [o]
+	macroName = '['
+	def invoke(self, tex):
+		o = self.ownerDocument.createElement('displaymath')
+		o.macroMode = Command.MODE_BEGIN
+		self.ownerDocument.context.push(o)
+		return [o]
 
 class EndDisplayMath(Command):
-    macroName = ']'
-    def invoke(self, tex):
-        o = self.ownerDocument.createElement('displaymath')
-        o.macroMode = Command.MODE_END
-        self.ownerDocument.context.pop(o)
-        return [o]
+	macroName = ']'
+	def invoke(self, tex):
+		o = self.ownerDocument.createElement('displaymath')
+		o.macroMode = Command.MODE_END
+		self.ownerDocument.context.pop(o)
+		return [o]
 
 class BeginMath(Command):
-    macroName = '('
-    def invoke(self, tex):
-        o = self.ownerDocument.createElement('math')
-        o.macroMode = Command.MODE_BEGIN
-        self.ownerDocument.context.push(o)
-        return [o]
+	macroName = '('
+	def invoke(self, tex):
+		print 'Creating math'
+		o = self.ownerDocument.createElement('math')
+		o.macroMode = Command.MODE_BEGIN
+		self.ownerDocument.context.push(o)
+		return [o]
 
 class EndMath(Command):
-    macroName = ')'
-    def invoke(self, tex):
-        o = self.ownerDocument.createElement('math')
-        o.macroMode = Command.MODE_END
-        self.ownerDocument.context.pop(o)
-        return [o]
+	macroName = ')'
+	def invoke(self, tex):
+		o = self.ownerDocument.createElement('math')
+		o.macroMode = Command.MODE_END
+		self.ownerDocument.context.pop(o)
+		return [o]
 
 class ensuremath(Command):
-    args = 'self'
+	args = 'self'
 
 class equation(MathEnvironment):
-    blockType = True
-    counter = 'equation'
+	blockType = True
+	counter = 'equation'
 
 class EqnarrayStar(Array):
-    macroName = 'eqnarray*'
-    blockType = True
-    mathMode = True
+	macroName = 'eqnarray*'
+	blockType = True
+	mathMode = True
 
-    class lefteqn(Command):
-        args = 'self'
-        def digest(self, tokens):
-            res = Command.digest(self, tokens)
-            obj = self.parentNode
-            while obj is not None and not isinstance(obj, Array.ArrayCell):
-                obj = obj.parentNode
-            if obj is not None:
-                obj.attributes['colspan'] = 3
-                obj.style['text-align'] = 'left'
-            return res
+	class lefteqn(Command):
+		args = 'self'
+		def digest(self, tokens):
+			res = Command.digest(self, tokens)
+			obj = self.parentNode
+			while obj is not None and not isinstance(obj, Array.ArrayCell):
+				obj = obj.parentNode
+			if obj is not None:
+				obj.attributes['colspan'] = 3
+				obj.style['text-align'] = 'left'
+			return res
 
-    class ArrayCell(Array.ArrayCell):
-        @property
-        def source(self):
-            return '$\\displaystyle %s $' % sourceChildren(self, par=False)
+	class ArrayCell(Array.ArrayCell):
+		@property
+		def source(self):
+			return '$\\displaystyle %s $' % sourceChildren(self, par=False)
 
 class eqnarray(EqnarrayStar):
-    macroName = None
-    counter = 'equation'
+	macroName = None
+	counter = 'equation'
 
-    class EndRow(Array.EndRow):
-        """ End of a row """
-        counter = 'equation'
-        def invoke(self, tex):
-            res = Array.EndRow.invoke(self, tex)
-            res[1].ref = self.ref
-            self.ownerDocument.context.currentlabel = res[1]
-            return res
+	class EndRow(Array.EndRow):
+		""" End of a row """
+		counter = 'equation'
+		def invoke(self, tex):
+			res = Array.EndRow.invoke(self, tex)
+			res[1].ref = self.ref
+			self.ownerDocument.context.currentlabel = res[1]
+			return res
 
-    def invoke(self, tex):
-        res = EqnarrayStar.invoke(self, tex)
-        if self.macroMode == self.MODE_END:
-            return res
-        res[1].ref = self.ref
-        return res
+	def invoke(self, tex):
+		res = EqnarrayStar.invoke(self, tex)
+		if self.macroMode == self.MODE_END:
+			return res
+		res[1].ref = self.ref
+		return res
 
 class nonumber(Command):
 
-    def invoke(self, tex):
-        self.ownerDocument.context.counters['equation'].addtocounter(-1)
+	def invoke(self, tex):
+		self.ownerDocument.context.counters['equation'].addtocounter(-1)
 
-    def digest(self, tokens):
-        row = self.parentNode
-        while not isinstance(row, Array.ArrayRow):
-            row = row.parentNode
-        row.ref = None
+	def digest(self, tokens):
+		row = self.parentNode
+		while not isinstance(row, Array.ArrayRow):
+			row = row.parentNode
+		row.ref = None
 
 class notag(nonumber):
-    pass
+	pass
 
 class lefteqn(Command):
-    args = 'self'
+	args = 'self'
 
 #
 # Style Parameters
 #
 
 class jot(DimenCommand):
-    value = DimenCommand.new(0)
+	value = DimenCommand.new(0)
 
 class mathindent(DimenCommand):
-    value = DimenCommand.new(0)
+	value = DimenCommand.new(0)
 
 class abovedisplayskip(GlueCommand):
-    value = GlueCommand.new(0)
+	value = GlueCommand.new(0)
 
 class belowdisplayskip(GlueCommand):
-    value = GlueCommand.new(0)
+	value = GlueCommand.new(0)
 
 class abovedisplayshortskip(GlueCommand):
-    value = GlueCommand.new(0)
+	value = GlueCommand.new(0)
 
 class belowdisplayshortskip(GlueCommand):
-    value = GlueCommand.new(0)
+	value = GlueCommand.new(0)
 
 
 #
@@ -185,22 +186,22 @@ class belowdisplayshortskip(GlueCommand):
 # '
 
 class frac(Command):
-    args = 'numer denom'
+	args = 'numer denom'
 
 class sqrt(Command):
-    args = '[ n ] self'
+	args = '[ n ] self'
 
 class ldots(Command):
-    unicode = u'\u2026'
+	unicode = u'\u2026'
 
 class cdots(Command):
-    pass
+	pass
 
 class vdots(Command):
-    pass
+	pass
 
 class ddots(Command):
-    pass
+	pass
 
 #
 # C.7.3 Mathematical Symbols
@@ -211,7 +212,7 @@ class ddots(Command):
 #
 
 class MathSymbol(Command):
-    pass
+	pass
 
 # Lowercase
 class alpha(MathSymbol): unicode = unichr(945)
@@ -227,8 +228,8 @@ class vartheta(MathSymbol): unicode = unichr(977)
 class iota(MathSymbol): unicode = unichr(953)
 class kappa(MathSymbol): unicode = unichr(954)
 class GreekLamda(MathSymbol):
-    macroName = 'lambda'
-    unicode = unichr(955)
+	macroName = 'lambda'
+	unicode = unichr(955)
 class mu(MathSymbol): unicode = unichr(956)
 class nu(MathSymbol): unicode = unichr(957)
 class xi(MathSymbol): unicode = unichr(958)
@@ -306,8 +307,8 @@ class amalg(MathSymbol): unicode = unichr(8720)
 #
 
 class Not(MathSymbol):
-    macroName = 'not'
-    args = 'symbol'
+	macroName = 'not'
+	args = 'symbol'
 class leq(MathSymbol): unicode = unichr(8804)
 class le(MathSymbol): unicode = unichr(8804)
 class prec(MathSymbol): unicode = unichr(8826)
@@ -317,7 +318,7 @@ class subset(MathSymbol): unicode = unichr(8834)
 class subseteq(MathSymbol): unicode = unichr(8838)
 class sqsubseteq(MathSymbol): unicode = unichr(8849)
 class In(MathSymbol):
-    macroName = 'in'
+	macroName = 'in'
 class vdash(MathSymbol): unicode = unichr(8866)
 class geq(MathSymbol): unicode = unichr(8805)
 class ge(MathSymbol): unicode = unichr(8805)
@@ -407,7 +408,7 @@ class surd(MathSymbol): unicode = unichr(8730)
 class top(MathSymbol): unicode = unichr(8868)
 class bot(MathSymbol): unicode = unichr(8869)
 class VerticalBar(MathSymbol):
-    macroName = '|'
+	macroName = '|'
 class forall(MathSymbol): unicode = unichr(8704)
 class exists(MathSymbol): unicode = unichr(8707)
 class neg(MathSymbol): pass
@@ -449,10 +450,10 @@ class biguplus(MathSymbol): pass
 #
 
 class Logarithm(MathSymbol):
-    macroName = 'log'
+	macroName = 'log'
 class bmod(MathSymbol): pass
 class pmod(MathSymbol):
-    args = 'self'
+	args = 'self'
 class arccos(MathSymbol): pass
 class arcsin(MathSymbol): pass
 class arctan(MathSymbol): pass
@@ -496,15 +497,15 @@ class tanh(MathSymbol): pass
 #
 
 class left(Command):
-    args = 'delim'
+	args = 'delim'
 
 class right(Command):
-    args = 'delim'
+	args = 'delim'
 
 # Table 3.10: Delimiters and TeXbook (p359)
 
 class Delimiter(Command):
-    pass
+	pass
 
 class langle(Delimiter): pass
 class rangle(Delimiter): pass
@@ -544,44 +545,44 @@ class Biggr(Delimiter): pass
 class biggm(Delimiter): pass
 class Biggm(Delimiter): pass
 class Big(Delimiter):
-    args = 'char'
+	args = 'char'
 class bigg(Delimiter):
-    args = 'char'
+	args = 'char'
 class Bigg(Delimiter):
-    args = 'char'
+	args = 'char'
 
 class choose(Command):
-    pass
+	pass
 
 class brack(Command):
-    pass
+	pass
 
 class brace(Command):
-    pass
+	pass
 
 class sqrt(Command):
-    pass
+	pass
 
 #
 # C.7.6 Putting One Thing Above Another
 #
 
 class overline(Command):
-    args = 'self'
+	args = 'self'
 
 class underline(Command):
-    args = 'self'
+	args = 'self'
 
 class overbrace(Command):
-    args = 'self'
+	args = 'self'
 
 class underbrace(Command):
-    args = 'self'
+	args = 'self'
 
 # Accents
 
 class MathAccent(Command):
-    args = 'self'
+	args = 'self'
 
 class hat(MathAccent): pass
 class check(MathAccent): pass
@@ -599,7 +600,7 @@ class widetilde(MathAccent): pass
 class imath(MathAccent): pass
 class jmath(MathAccent): pass
 class stackrel(MathAccent):
-    args = 'top bottom'
+	args = 'top bottom'
 
 #
 # C.7.7 Spacing
@@ -615,39 +616,39 @@ class stackrel(MathAccent):
 # Type Style
 
 class mathrm(Command):
-    args = 'self'
+	args = 'self'
 
 class mathit(Command):
-    args = 'self'
+	args = 'self'
 
 class mathbf(Command):
-    args = 'self'
+	args = 'self'
 
 class mathsf(Command):
-    args = 'self'
+	args = 'self'
 
 class mathtt(Command):
-    args = 'self'
+	args = 'self'
 
 class mathcal(Command):
-    args = 'self'
+	args = 'self'
 
 class boldmath(Command):
-    pass
+	pass
 
 class unboldmath(Command):
-    pass
+	pass
 
 # Math Style
 
 class displaystyle(Command):
-    pass
+	pass
 
 class textstyle(Command):
-    pass
+	pass
 
 class scriptstyle(Command):
-    pass
+	pass
 
 class scriptscriptstyle(Command):
-    pass
+	pass
