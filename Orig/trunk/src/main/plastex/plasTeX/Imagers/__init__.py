@@ -475,6 +475,11 @@ class Imager(object):
 		self.writePreamble(document)
 		self.source.write('\\begin{document}\n')
 
+		#We inject \graphicspath here because this processing occurs in some temp space but the image urls
+		#are relative to the original working directory.
+		#Documentation suggests that we could just set the TEXINPUTS environment variable but it does not work
+		self.source.write('\\graphicspath{{%s/}}\n' % (self.ownerDocument.userdata['working-dir']))
+
 		# Set up additional options
 		self._configOptions = self.formatConfigOptions(self.config['images'])
 
