@@ -1279,7 +1279,7 @@ def _getElementById(self, elementId):
 
 	"""
 	# Look in attributes dictionary for document fragments as well
-	if hasattr(self, 'attributes'):
+	if getattr(self, 'attributes', None):
 		for item in self.attributes.values():
 			if id(item) == elementId:
 				 return item
