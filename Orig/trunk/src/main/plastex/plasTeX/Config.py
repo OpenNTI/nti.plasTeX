@@ -48,8 +48,8 @@ def readconfig(file):
     config.read(file)
 
 general['config'] = StringOption(
-    """ 
-    Load additional configuration file 
+    """
+    Load additional configuration file
 
     This configuration file will be loaded during the processing of
     command-line options.  However, configuration files cannot override
@@ -101,7 +101,7 @@ def getstring(data):
             continue
         break
     return ''.join(s), ''.join(data)
-    
+
 
 def setlinks(data):
     """ Set links in the configuration """
@@ -218,6 +218,19 @@ files['directory'] = StringOption(
 )
 
 #
+# Resource Database
+#
+resourceDB = c.add_section('resourcedb')
+c.add_category('resourcedb', 'Resource Database Options')
+
+resourceDB['location'] = StringOption(
+    """  Enable caching of the image database between runs """,
+    options = '--resourcedb-location',
+    default = 'resources',
+    category = 'resourcedb',
+)
+
+#
 # Images
 #
 
@@ -240,21 +253,21 @@ images['enabled'] = BooleanOption(
 images['imager'] = StringOption(
     """ LaTeX to image program """,
     options = '--imager',
-    default = 'dvipng dvi2bitmap pdftoppm gspdfpng gsdvipng OSXCoreGraphics',
+    default = 'gspdfpng2 dvipng dvi2bitmap pdftoppm gspdfpng gsdvipng OSXCoreGraphics',
     category = 'images',
 )
 
 images['vector-imager'] = StringOption(
     """ LaTeX to vector image program """,
     options = '--vector-imager',
-    default = 'none dvisvgm',
+    default = 'pdf2svg dvisvgm',
     category = 'images',
 )
 
 images['filenames'] = StringOption(
     """ Template for image filenames """,
     options = '--image-filenames',
-    default = 'images/img-$num(4)',
+    default = 'images/$ext/img-$num(4)',
     category = 'images',
 )
 
@@ -320,8 +333,8 @@ doc['base-url'] = StringOption(
 )
 
 doc['title'] = StringOption(
-    """ 
-    Title for the document 
+    """
+    Title for the document
 
     This option specifies a title to use instead of the title
     specified in the LaTeX document.
