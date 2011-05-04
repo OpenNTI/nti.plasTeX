@@ -694,8 +694,12 @@ class Node(object):
 		except AttributeError: pass
 
 		# JAM: Hack to get a namespace in so the XML is valid
+		# JAM: Hack2 for RDF support
 		if self.nodeName == '#document':
 			label += ' xmlns:plastex="http://plastex.sf.net" '
+			label += ' xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" '
+			label += ' xmlns:nti="http://nextthought.com/xml/v1/" '
+			label += ' xmlns:aops="http://artofproblemsolving.com/xml/v1/" '
 
 		extra = ''
 		if debug:
