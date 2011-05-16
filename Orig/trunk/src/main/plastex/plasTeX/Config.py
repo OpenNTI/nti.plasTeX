@@ -218,19 +218,6 @@ files['directory'] = StringOption(
 )
 
 #
-# Resource Database
-#
-resourceDB = c.add_section('resourcedb')
-c.add_category('resourcedb', 'Resource Database Options')
-
-resourceDB['location'] = StringOption(
-    """  Enable caching of the image database between runs """,
-    options = '--resourcedb-location',
-    default = 'resources',
-    category = 'resourcedb',
-)
-
-#
 # Images
 #
 
@@ -253,21 +240,21 @@ images['enabled'] = BooleanOption(
 images['imager'] = StringOption(
     """ LaTeX to image program """,
     options = '--imager',
-    default = 'gspdfpng2 dvipng dvi2bitmap pdftoppm gspdfpng gsdvipng OSXCoreGraphics',
+    default = 'dvipng dvi2bitmap pdftoppm gspdfpng gsdvipng OSXCoreGraphics',
     category = 'images',
 )
 
 images['vector-imager'] = StringOption(
     """ LaTeX to vector image program """,
     options = '--vector-imager',
-    default = 'pdf2svg dvisvgm',
+    default = 'none dvisvgm',
     category = 'images',
 )
 
 images['filenames'] = StringOption(
     """ Template for image filenames """,
     options = '--image-filenames',
-    default = 'images/$ext/img-$num(4)',
+    default = 'images/img-$num(4)',
     category = 'images',
 )
 
