@@ -496,6 +496,13 @@ class PageTemplate(BaseRenderer):
 		if not options or 'name' not in options:
 			f = open(filename, 'r')
 			for i, line in enumerate(f):
+
+				#Enable comments in zpt files.
+				#FIXME If other template engines rely on '#'
+				#this breaks badly
+				if line.startswith('#'):
+					continue
+
 				# Found a meta-data command
 				if re.match(r'(default-)?\w+:', line):
 
