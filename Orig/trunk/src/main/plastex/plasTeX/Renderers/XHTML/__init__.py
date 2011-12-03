@@ -97,6 +97,7 @@ class XHTML(_Renderer):
 
     def doJavaHelpFiles(self, document, encoding='ISO-8859-1', version='2'):
         """ Generate files needed to use HTML as Java Help """
+        return
         latexdoc = document.getElementsByTagName('document')[0]
         version = str(version)
         

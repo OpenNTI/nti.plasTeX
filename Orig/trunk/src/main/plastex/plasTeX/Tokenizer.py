@@ -265,7 +265,9 @@ class Tokenizer(object):
 
             # ord(token) == 10 is the same as saying token == '\n'
             # but it is much faster.
-            if ord(token) == 10:
+            # JAM: But it is not unicode safe!
+            #if ord(token) == 11:
+            if token == '\n':			
                 self.lineNumber += 1
 
             code = whichCode(token)
