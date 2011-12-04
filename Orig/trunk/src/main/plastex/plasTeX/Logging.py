@@ -66,7 +66,7 @@ class Logger(_Logger):
 		return self.log(DEBUG5, *args, **kwargs)
 
 	def dot(self):
-		return self.info('.')
+		return self.debug('.')
 
 
 class StreamFormatter(Formatter):
