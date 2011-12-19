@@ -6,11 +6,11 @@ from plasTeX import Command, Environment, CountCommand
 from plasTeX import IgnoreCommand, sourceChildren
 from plasTeX.Logging import getLogger
 
-log = getLogger()
-status = getLogger('status')
-deflog = getLogger('parse.definitions')
-envlog = getLogger('parse.environments')
-mathshiftlog = getLogger('parse.mathshift')
+log = getLogger(__name__)
+status = getLogger(__name__ + '.status')
+deflog = getLogger(__name__ + '.parse.definitions')
+envlog = getLogger(__name__ + '.parse.environments')
+mathshiftlog = getLogger(__name__ + '.parse.mathshift')
 
 class relax(Command):
     pass
@@ -29,7 +29,7 @@ class par(Command):
         status.dot()
 
     @property
-    def source(self): 
+    def source(self):
         if self.hasChildNodes():
             return '%s\n\n' % sourceChildren(self)
         return '\n\n'
@@ -49,7 +49,7 @@ class BoxCommand(Command):
     mathMode = False
     def parse(self, tex):
         MathShift.inEnv.append(None)
-        Command.parse(self, tex) 
+        Command.parse(self, tex)
         MathShift.inEnv.pop()
         return self.attributes
 
@@ -57,11 +57,11 @@ class hbox(BoxCommand): pass
 class vbox(BoxCommand): pass
 
 class MathShift(Command):
-    """ 
+    """
     The '$' character in TeX
 
-    This macro detects whether this is a '$' or '$$' grouping.  If 
-    it is the former, a 'math' environment is invoked.  If it is 
+    This macro detects whether this is a '$' or '$$' grouping.  If
+    it is the former, a 'math' environment is invoked.  If it is
     the latter, a 'displaymath' environment is invoked.
 
     """
@@ -70,8 +70,8 @@ class MathShift(Command):
 
     def invoke(self, tex):
         """
-        This gets a bit tricky because we need to keep track of both 
-        our beginning and ending.  We also have to take into 
+        This gets a bit tricky because we need to keep track of both
+        our beginning and ending.  We also have to take into
         account \mbox{}es.
 
         """
@@ -167,7 +167,7 @@ class DefCommand(Command):
                 a[key] = newarg
         self.ownerDocument.context.newdef(a['name'], a['args'], a['definition'], local=self.local)
 
-class def_(DefCommand): 
+class def_(DefCommand):
     macroName = 'def'
 
 class edef(DefCommand):
@@ -182,7 +182,7 @@ class gdef(DefCommand):
 class IfCommand(Command):
     pass
 
-class if_(IfCommand): 
+class if_(IfCommand):
     """ \\if """
     args = 'a:Tok b:Tok'
     macroName = 'if'
@@ -196,9 +196,9 @@ class if_(IfCommand):
 class else_(Command):
     macroName = 'else'
 
-class fi(Command): 
+class fi(Command):
     pass
-        
+
 class ifnum(IfCommand):
     """ Compare two integers """
     args = 'a:Number rel:Tok'
@@ -239,7 +239,7 @@ class ifdim(IfCommand):
         raise ValueError, '"%s" is not a valid relation' % relation
 
 class ifodd(IfCommand):
-    """ Test for odd integer """   
+    """ Test for odd integer """
     def invoke(self, tex):
         tex.processIfContent(not(not(tex.readNumber(optspace=False) % 2)))
         return []
@@ -370,7 +370,7 @@ class chardef(Command):
     def invoke(self, tex):
         a = self.parse(tex)
         self.ownerDocument.context.chardef(a['command'], a['num'])
-      
+
 class NameDef(Command):
     macroName = '@namedef'
     args = 'name:str value:nox'
@@ -389,7 +389,7 @@ class catcode(Command):
         a = self.parse(tex)
         self.ownerDocument.context.catcode(chr(a['char']), a['code'])
     def source(self):
-        return '\\catcode`\%s=%s' % (chr(self.attributes['char']), 
+        return '\\catcode`\%s=%s' % (chr(self.attributes['char']),
                                      self.attributes['code'])
     source = property(source)
 
@@ -403,7 +403,7 @@ class csname(Command):
             name.append(t)
         return [EscapeSequence(''.join(name))]
 
-class endcsname(Command): 
+class endcsname(Command):
     """ \\endcsname """
     pass
 
@@ -412,7 +412,7 @@ class input(Command):
     args = 'name:str'
     def invoke(self, tex):
         a = self.parse(tex)
-        try: 
+        try:
             path = tex.kpsewhich(a['name'])
 
             status.info(' ( %s ' % path)
@@ -493,7 +493,7 @@ class openout(Command):
     def invoke(self, tex):
         result = Command.invoke(self, tex)
 #       a = self.attributes
-#       self.ownerDocument.context.newwrite(a['arg'].nodeName, 
+#       self.ownerDocument.context.newwrite(a['arg'].nodeName,
 #                                           a['value'].textContent)
         return result
 

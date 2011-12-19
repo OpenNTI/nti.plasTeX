@@ -7,14 +7,16 @@ from plasTeX.DOM import Node
 from plasTeX.Logging import getLogger
 from Tokenizer import Tokenizer, Token, DEFAULT_CATEGORIES, VERBATIM_CATEGORIES
 
+import zope.dottedname.resolve
+
 # Only export the Context singleton
 __all__ = ['Context']
 
 # Set up loggers
-log = getLogger()
-status = getLogger('status')
-stacklog = getLogger('context.stack')
-macrolog = getLogger('context.macros')
+log = getLogger(__name__)
+status = getLogger(__name__ + '.status')
+stacklog = getLogger(__name__ + '.context.stack')
+macrolog = getLogger(__name__ + '.context.macros')
 
 
 class ContextItem(dict):
@@ -395,23 +397,25 @@ class Context(object):
 
 		try:
 			# Try to import a Python package by that name
-			m = __import__(module, globals(), locals())
-			status.info(' ( %s ' % m.__file__)
+			#m = __import__(module, globals(), locals())
+			# JAM: We want to allow for dottednames
+			m = zope.dottedname.resolve.resolve( module )
+			status.info('Loaded package %s (%s)', file, m.__file__)
 			if hasattr(m, 'ProcessOptions'):
 				m.ProcessOptions(options or {}, tex.ownerDocument)
 			self.importMacros(vars(m))
 			moduleini = os.path.splitext(m.__file__)[0]+'.ini'
 			self.loadINIPackage([packagesini, moduleini])
 			self.packages[module] = options
-			status.info(' ) ')
+			#status.info(' ) ')
 			return True
 
 		except ImportError, msg:
 			# No Python module
 			if 'No module' in str(msg):
-				pass
+				#pass
 				# Failed to load Python package
-#				log.warning('No Python version of %s was found' % file)
+				log.debug('No Python version of %s was found', file, exc_info=True)
 			# Error while importing
 			else:
 				raise

@@ -14,8 +14,8 @@ from plasTeX.Renderers import Renderer as BaseRenderer
 from plasTeX.Renderers.PageTemplate.simpletal import simpleTAL, simpleTALES
 from plasTeX.Renderers.PageTemplate.simpletal.simpleTALES import Context as TALContext
 from plasTeX.Renderers.PageTemplate.simpletal.simpleTALUtils import FastStringOutput as StringIO
-
-log = plasTeX.Logging.getLogger()
+import logging
+log = logging.getLogger(__name__)
 
 # Support for Python string templates
 def stringtemplate(s, encoding='utf8'):

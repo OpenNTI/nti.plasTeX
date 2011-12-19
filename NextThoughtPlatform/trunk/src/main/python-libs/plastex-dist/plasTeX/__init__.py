@@ -7,9 +7,9 @@ from DOM import Element, Text, Node, DocumentFragment, Document
 from Tokenizer import Token, BeginGroup, EndGroup, Other
 from plasTeX import Logging
 
-log = Logging.getLogger()
-status = Logging.getLogger('status')
-deflog = Logging.getLogger('parse.definitions')
+log = Logging.getLogger(__name__)
+status = Logging.getLogger(__name__ + '.status')
+deflog = Logging.getLogger(__name__ + '.parse.definitions')
 
 #
 # Utility functions

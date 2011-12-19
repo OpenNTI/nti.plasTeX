@@ -6,12 +6,12 @@ from plasTeX.DOM import Node
 from plasTeX.Logging import getLogger
 from plasTeX.Imagers import Image, PILImage
 
-log = getLogger()
-status = getLogger('status')
+log = getLogger(__name__)
+status = getLogger(__name__ + '.status')
 
-import logging
-logging.getLogger('simpleTAL').setLevel(logging.WARNING)
-logging.getLogger('simpleTALES').setLevel(logging.WARNING)
+#import logging
+#logging.getLogger('simpleTAL').setLevel(logging.WARNING)
+#logging.getLogger('simpleTALES').setLevel(logging.WARNING)
 
 __all__ = ['Renderer','Renderable']
 
@@ -137,7 +137,7 @@ class Renderable(object):
 				if hasattr(child, 'footnotes'):
 					child.footnotes
 
-				status.info(' [ %s ', child.filename)
+				status.info('Rendering %s', child.filename)
 
 				# Filename and modifier
 				if modifier:
@@ -190,7 +190,7 @@ class Renderable(object):
 							child.config['files']['output-encoding'],
 							errors=r.encodingErrors).write(val)
 
-				status.info(' ] ')
+				#status.info(' ] ')
 
 				continue
 
