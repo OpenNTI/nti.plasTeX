@@ -6,7 +6,7 @@ templates = ['*.html','*.htm','*.xml','*.zpt','*.zpts']
 images = ['*.gif','*.png','*.jpg','*.jpeg','*.js','*.htc']
 styles = ['*.css']
 
-setup(name="plasTeX",
+setup(name="plastex-dist",
       description="LaTeX document processing framework",
       version="0.9.3",
       author="Kevin D. Smith",
