@@ -74,7 +74,6 @@ class EndDisplayMath(Command):
 class BeginMath(Command):
 	macroName = '('
 	def invoke(self, tex):
-		print 'Creating math'
 		o = self.ownerDocument.createElement('math')
 		o.macroMode = Command.MODE_BEGIN
 		self.ownerDocument.context.push(o)
