@@ -18,7 +18,7 @@ import logging
 log = logging.getLogger(__name__)
 
 # Support for Python string templates
-def stringtemplate(s, encoding='utf8'):
+def stringtemplate(s, encoding='utf8',filename=None):
 	template = string.Template(unicode(s, encoding))
 	def renderstring(obj):
 		tvars = {'here':obj, 'self':obj, 'container':obj.parentNode,
@@ -28,7 +28,7 @@ def stringtemplate(s, encoding='utf8'):
 	return renderstring
 
 # Support for Python string interpolations
-def pythontemplate(s, encoding='utf8'):
+def pythontemplate(s, encoding='utf8',filename=None):
 	template = s
 	def renderpython(obj):
 		tvars = {'here':obj, 'self':obj, 'container':obj.parentNode,
@@ -38,37 +38,105 @@ def pythontemplate(s, encoding='utf8'):
 	return renderpython
 
 # Support for ZPT HTML and XML templates
-def htmltemplate(s, encoding='utf8'):
-	template = simpleTAL.compileHTMLTemplate(s)
-	def renderhtml(obj):
-		context = TALContext(allowPythonPath=1)
-		context.addGlobal('here', obj)
-		context.addGlobal('self', obj)
-		context.addGlobal('container', obj.parentNode)
-		context.addGlobal('config', obj.ownerDocument.config)
-		context.addGlobal('context', obj.ownerDocument.context)
-		context.addGlobal('template', template)
-		context.addGlobal('templates', obj.renderer)
-		output = StringIO()
-		template.expand(context, output, encoding)
-		return unicode(output.getvalue(), encoding)
-	return renderhtml
+# Disabled in favor of chameleon
+# def htmltemplate(s, encoding='utf8'):
+# 	template = simpleTAL.compileHTMLTemplate(s)
+# 	def renderhtml(obj):
+# 		context = TALContext(allowPythonPath=1)
+# 		context.addGlobal('here', obj)
+# 		context.addGlobal('self', obj)
+# 		context.addGlobal('container', obj.parentNode)
+# 		context.addGlobal('config', obj.ownerDocument.config)
+# 		context.addGlobal('context', obj.ownerDocument.context)
+# 		context.addGlobal('template', template)
+# 		context.addGlobal('templates', obj.renderer)
+# 		output = StringIO()
+# 		template.expand(context, output, encoding)
+# 		return unicode(output.getvalue(), encoding)
+# 	return renderhtml
 
-def xmltemplate(s, encoding='utf8'):
-	template = simpleTAL.compileXMLTemplate(s)
-	def renderxml(obj):
-		context = TALContext(allowPythonPath=1)
-		context.addGlobal('here', obj)
-		context.addGlobal('self', obj)
-		context.addGlobal('container', obj.parentNode)
-		context.addGlobal('config', obj.ownerDocument.config)
-		context.addGlobal('context', obj.ownerDocument.context)
-		context.addGlobal('template', template)
-		context.addGlobal('templates', obj.renderer)
-		output = StringIO()
-		template.expand(context, output, encoding, docType=None, suppressXMLDeclaration=1)
-		return unicode(output.getvalue(), encoding)
-	return renderxml
+# def xmltemplate(s, encoding='utf8'):
+# 	template = simpleTAL.compileXMLTemplate(s)
+# 	def renderxml(obj):
+# 		context = TALContext(allowPythonPath=1)
+# 		context.addGlobal('here', obj)
+# 		context.addGlobal('self', obj)
+# 		context.addGlobal('container', obj.parentNode)
+# 		context.addGlobal('config', obj.ownerDocument.config)
+# 		context.addGlobal('context', obj.ownerDocument.context)
+# 		context.addGlobal('template', template)
+# 		context.addGlobal('templates', obj.renderer)
+# 		output = StringIO()
+# 		template.expand(context, output, encoding, docType=None, suppressXMLDeclaration=1)
+# 		return unicode(output.getvalue(), encoding)
+# 	return renderxml
+
+# Chameleon/z3c.pt is: faster, better documented, i18n, consistent with
+# pyramid, more customizable and powerful (uses zope.traversing), offers much
+# better error messages.
+# NOTE: ZCA must be configured (zope.traversing loaded, and usually
+# nti.contentrendering)
+# See http://chameleon.repoze.org/docs/latest/reference.html
+# and http://docs.zope.org/zope2/zope2book/AppendixC.html#tales-path-expressions
+
+from z3c.pt import pagetemplate
+from chameleon.zpt.program import MacroProgram as BaseMacroProgram
+import ast
+
+class MacroProgram(BaseMacroProgram):
+	def _make_content_node( self, expression, default, key, translate ):
+		# For compatibility with simpletal, we default everything to be non-escaped (substitition)
+		return BaseMacroProgram._make_content_node( self, expression, default, 'substitution', translate )
+
+class _PageTemplate(pagetemplate.PageTemplate):
+	def parse(self, body):
+		if self.literal_false:
+			default_marker = ast.Str(s="__default__")
+		else:
+			default_marker = Builtin("False")
+		# For compatibility with simpletal, we default everything to be non-escaped (substitition)
+		program = MacroProgram(
+			body, self.mode, self.filename,
+			escape=False,
+			default_marker=default_marker,
+			boolean_attributes=self.boolean_attributes,
+			implicit_i18n_translate=self.implicit_i18n_translate,
+			implicit_i18n_attributes=self.implicit_i18n_attributes,
+			trim_attribute_space=self.trim_attribute_space,
+			)
+		return program
+_PageTemplate.expression_types['stripped'] = _PageTemplate.expression_types['path']
+
+import chameleon.utils
+import chameleon.template
+class _Scope(chameleon.utils.Scope):
+	# The existing simpletal templates assume 'self', which is not valid
+	# in TAL because the arguments are passed as kword args, and 'self' is already
+	# used. Thus, we use 'here' and then override
+	def __getitem__( self, key ):
+		if key == 'self':
+			key = 'here'
+		return chameleon.utils.Scope.__getitem__( self, key )
+chameleon.template.Scope = _Scope
+
+def zpttemplate(s,encoding='utf8',filename=None):
+
+	if filename:
+		template = _PageTemplate( s, filename=filename )
+	else:
+		template = _PageTemplate( s )
+
+	def render(obj):
+		context = dict(here=obj, container=obj.parentNode,
+					   config=obj.ownerDocument.config,
+					   context=obj.ownerDocument.context,
+					   template=template,
+					   templates=obj.renderer)
+		rdr = template.render( **context )
+		return rdr if isinstance(rdr,unicode) else unicode(rdr,encoding)
+	return render
+htmltemplate = zpttemplate
+xmltemplate = zpttemplate
 
 # Support for Cheetah templates
 try:
@@ -78,7 +146,7 @@ try:
 	class CheetahUnicode(CheetahFilter):
 		def filter(self, val, encoding='utf-8', **kw):
 			return unicode(val).encode(encoding)
-	def cheetahtemplate(s, encoding='utf8'):
+	def cheetahtemplate(s, encoding='utf8',filename=None):
 		def rendercheetah(obj, s=s):
 			tvars = {'here':obj, 'container':obj.parentNode,
 					 'config':obj.ownerDocument.config,
@@ -90,7 +158,7 @@ try:
 
 except ImportError:
 
-	def cheetahtemplate(s, encoding='utf8'):
+	def cheetahtemplate(s, encoding='utf8',filename=None):
 		def rendercheetah(obj):
 			return unicode(s, encoding)
 		return rendercheetah
@@ -100,7 +168,7 @@ try:
 
 	from kid import Template as KidTemplate
 
-	def kidtemplate(s, encoding='utf8'):
+	def kidtemplate(s, encoding='utf8',filename=None):
 		# Add namespace py: in
 		s = '<div xmlns:py="http://purl.org/kid/ns#" py:strip="True">%s</div>' % s
 		def renderkid(obj, s=s):
@@ -114,7 +182,7 @@ try:
 
 except ImportError:
 
-	def kidtemplate(s, encoding='utf8'):
+	def kidtemplate(s, encoding='utf8',filename=None):
 		def renderkid(obj):
 			return unicode(s, encoding)
 		return renderkid
@@ -129,7 +197,7 @@ try:
 	def markup(obj):
 		return Markup(unicode(obj))
 
-	def genshixmltemplate(s, encoding='utf8'):
+	def genshixmltemplate(s, encoding='utf8',filename=None):
 		# Add namespace py: in
 		s = '<div xmlns:py="http://genshi.edgewall.org/" py:strip="True">%s</div>' % s
 		template = GenshiTemplate(s)
@@ -142,7 +210,7 @@ try:
 						   encoding=encoding), encoding)
 		return rendergenshixml
 
-	def genshihtmltemplate(s, encoding='utf8'):
+	def genshihtmltemplate(s, encoding='utf8',filename=None):
 		# Add namespace py: in
 		s = '<div xmlns:py="http://genshi.edgewall.org/" py:strip="True">%s</div>' % s
 		template = GenshiTemplate(s)
@@ -155,7 +223,7 @@ try:
 						   encoding=encoding), encoding)
 		return rendergenshihtml
 
-	def genshitexttemplate(s, encoding='utf8'):
+	def genshitexttemplate(s, encoding='utf8',filename=None):
 		template = GenshiTextTemplate(s)
 		def rendergenshitext(obj):
 			tvars = {'here':obj, 'container':obj.parentNode, 'markup':markup,
@@ -168,17 +236,17 @@ try:
 
 except ImportError:
 
-	def genshixmltemplate(s, encoding='utf8'):
+	def genshixmltemplate(s, encoding='utf8',filename=None):
 		def rendergenshixml(obj):
 			return unicode(s, encoding)
 		return rendergenshixml
 
-	def genshihtmltemplate(s, encoding='utf8'):
+	def genshihtmltemplate(s, encoding='utf8',filename=None):
 		def rendergenshihtml(obj):
 			return unicode(s, encoding)
 		return rendergenshihtml
 
-	def genshitexttemplate(s, encoding='utf8'):
+	def genshitexttemplate(s, encoding='utf8',filename=None):
 		def rendergenshitext(obj):
 			return unicode(s, encoding)
 		return rendergenshitext
@@ -421,7 +489,7 @@ class PageTemplate(BaseRenderer):
 		   log.warning('The following aliases were unresolved: %s'
 					   % ', '.join(self.aliases.keys()))
 
-	def setTemplate(self, template, options):
+	def setTemplate(self, template, options,filename=None):
 		"""
 		Compile template and set it in the renderer
 
@@ -469,10 +537,10 @@ class PageTemplate(BaseRenderer):
 							self.engines.get((engine, None)))
 
 		try:
-			template = templateeng.compile(template)
-		except Exception, msg:
+			template = templateeng.compile(template,filename=filename)
+		except Exception as e:
 #			print msg
-			raise ValueError, 'Could not compile template "%s"' % names[0]
+			raise ValueError( 'Could not compile template "%s" %s' % (names[0], e) )
 
 		for name in names:
 			self[name] = template
@@ -509,7 +577,7 @@ class PageTemplate(BaseRenderer):
 					# Purge any awaiting templates
 					if template:
 						try:
-							self.setTemplate(''.join(template), options)
+							self.setTemplate(''.join(template), options, filename=filename)
 						except ValueError, msg:
 							print 'ERROR: %s at line %s in file %s' % (msg, i, filename)
 						options = defaults.copy()
@@ -546,7 +614,7 @@ class PageTemplate(BaseRenderer):
 		# Purge any awaiting templates
 		if template:
 			try:
-				self.setTemplate(''.join(template), options)
+				self.setTemplate(''.join(template), options,filename=filename)
 			except ValueError, msg:
 				print 'ERROR: %s in template %s in file %s' % (msg, ''.join(template), filename)
 
@@ -601,4 +669,3 @@ class PageTemplate(BaseRenderer):
 
 # Set Renderer variable so that plastex will know how to load it
 Renderer = PageTemplate
-
