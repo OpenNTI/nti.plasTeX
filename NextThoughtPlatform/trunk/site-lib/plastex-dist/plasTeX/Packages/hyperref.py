@@ -26,7 +26,6 @@ def addBaseURL(self, urlarg):
 		   the_url = the_url.source.replace( ' ', '' ).replace( '\\&', '&' ).replace( '\\_', '_' )
 		return urlparse.urljoin(baseurl, the_url)
 	except (KeyError,AttributeError):
-		import traceback; traceback.print_exc()
 		pass
 	return self.attributes[urlarg]
 
