@@ -1,4 +1,10 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+$Id$
+"""
+from __future__ import print_function, unicode_literals
+
 
 import os
 import sys
@@ -92,15 +98,28 @@ def main():
 
 	# Likewise for the renderers, with the addition of the legacy 'zpts' directory.
 	# Parts of the code (notably tex2html._find_theme_mathjaxconfig) depend on
-	# the local Template being first
+	# the local Template being first. Note that earlier values will take precedence
+	# over later values.
 	xhtmltemplates = (os.path.join( os.getcwd(), 'Templates' ),
 					  packages_path,
 					  resource_filename( __name__, 'zpts' ),
 					  os.environ.get('XHTMLTEMPLATES', ''))
 	os.environ['XHTMLTEMPLATES'] = os.path.pathsep.join( xhtmltemplates )
+	# Set up a cache for these things to make subsequent renders faster
+	if not 'CHAMELEON_CACHE' in os.environ:
+		parent = os.getcwd()
+		for p in ('DATASERVER_ENV','DATASERVER_DIR','VIRTUAL_ENV'):
+			if p in os.environ:
+				parent = os.environ[p]
+				break
+		os.environ['CHAMELEON_CACHE'] = os.path.join( parent, '.chameleon_cache' )
+		logger.info( "Caching templates to %s", os.environ['CHAMELEON_CACHE'] )
+		try:
+			os.mkdir( os.environ['CHAMELEON_CACHE'] )
+		except OSError: pass
 
 	# Parse the document
-	print "Parsing %s" % sourceFile
+	logger.info( "Parsing %s", sourceFile )
 	tex.parse()
 
 	# Change to specified directory to output to
@@ -116,7 +135,7 @@ def main():
 	transforms.performTransforms( document )
 
 	if outFormat == 'images' or outFormat == 'xhtml':
-		print "Generating images"
+		logger.info( "Generating images" )
 		db = generateImages(document)
 
 	if outFormat == 'xhtml':
@@ -153,7 +172,7 @@ import contentchecks
 import subprocess
 
 def postRender(document, contentLocation='.', jobname='prealgebra'):
-	print 'Performing post render steps'
+	logger.info( 'Performing post render steps' )
 
 	# We very likely will get a book that has no pages
 	# because NTIIDs are not added yet.
@@ -161,30 +180,30 @@ def postRender(document, contentLocation='.', jobname='prealgebra'):
 
 	# This step adds NTIIDs to the TOC in addition to modifying
 	# on-disk content.
-	print 'Adding icons to toc and pages'
+	logger.info( 'Adding icons to toc and pages' )
 	toc_file = os.path.join(contentLocation, 'eclipse-toc.xml')
 	tociconsetter.transform(book)
 
-	print 'Fetching page info'
+	logger.info( 'Fetching page info' )
 	book = RenderedBook(document, contentLocation)
 
-	print 'Storing content height in pages'
+	logger.info( 'Storing content height in pages' )
 	contentsizesetter.transform(book)
 
-	print 'Adding related links to toc'
+	logger.info( 'Adding related links to toc' )
 	relatedlinksetter.performTransforms(book)
 
-	print 'Generating thumbnails for pages'
+	logger.info( 'Generating thumbnails for pages' )
 	contentthumbnails.transform(book)
 
 	# PhantomJS doesn't cope well with the iframes
 	# for embedded videos: you get a black box, and we put them at the top
 	# of the pages, so many thumbnails end up looking the same, and looking
 	# bad. So do this after taking thumbnails.
-	print 'Adding videos'
+	logger.info( 'Adding videos' )
 	sectionvideoadder.performTransforms(book)
 
-	print 'Running checks on content'
+	logger.info( 'Running checks on content' )
 	contentchecks.performChecks(book)
 
 	contentPath = os.path.realpath(contentLocation)
@@ -224,13 +243,13 @@ def postRender(document, contentLocation='.', jobname='prealgebra'):
 	# we want to list in the manifest? If so, we should be able to combine
 	# these steps (if nothing else, just list the contents of the archive to get the
 	# manifest)
-	print "Creating html cache-manifest"
+	logger.info( "Creating html cache-manifest" )
 	html5cachefile.main(contentPath, contentPath)
 
-	print 'Changing intra-content links'
+	logger.info( 'Changing intra-content links' )
 	ntiidlinksetter.transform( book )
 
-	print "Creating a mirror file"
+	logger.info( "Creating a mirror file" )
 	mirror.main( contentPath, contentPath, zip_root_dir=jobname )
 
 
