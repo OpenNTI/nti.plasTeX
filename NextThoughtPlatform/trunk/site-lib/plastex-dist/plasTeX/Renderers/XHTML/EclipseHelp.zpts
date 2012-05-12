@@ -1,6 +1,6 @@
 name: eclipse-toc
 type: xml
-<toc tal:attributes="label self/title">
+<toc tal:attributes="label self/title/textContent | self/title | nothing">
     <topic tal:repeat="part self/fulltableofcontents" tal:attributes="label part/tocEntry/textContent; href part/url">
        <topic tal:repeat="chapter part/fulltableofcontents" tal:attributes="label chapter/tocEntry/textContent; href chapter/url">
           <topic tal:repeat="section chapter/fulltableofcontents" tal:attributes="label section/tocEntry/textContent; href section/url">
