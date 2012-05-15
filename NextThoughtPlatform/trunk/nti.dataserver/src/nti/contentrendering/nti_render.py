@@ -57,8 +57,12 @@ def main():
 	# Create document instance that output will be put into
 	document = plasTeX.TeXDocument()
 
-	#setup config options we want
+	#setup default config options we want
 	document.config['files']['split-level'] = 1
+	# By outputting in ASCII, we are still valid UTF-8, but we use
+	# XML entities for high characters. This is more likely to survive
+	# through various processing steps that may not be UTF-8 aware
+	document.config['files']['output-encoding'] = 'ascii'
 	document.config['general']['theme'] = 'AoPS'
 	# Read a config if present
 	document.config.add_section( 'NTI' )
@@ -146,7 +150,7 @@ def main():
 		toXml( document, jobname )
 
 def nextID(self):
-	ntiid = getattr(self, 'NTIID',-1)
+	ntiid = getattr(self, 'NTIID', -1)
 
 	ntiid = ntiid + 1
 
@@ -155,6 +159,75 @@ def nextID(self):
 	return 'tag:nextthought.com,2011-10:%s-HTML-%s.%s' % (provider,self.userdata['jobname'], ntiid)
 
 plasTeX.TeXDocument.nextNTIID = nextID
+
+# SectionUtils is the (a) parent of chapter, section, ..., paragraph, as well as document
+from plasTeX.Base.LaTeX.Sectioning import SectionUtils
+def _section_ntiid(self):
+
+	if hasattr(self,"@NTIID"):
+		return getattr(self, "@NTIID")
+
+	document = self.ownerDocument
+	config = document.config
+	# Use an ID if it exists and WAS NOT generated
+	# (see plasTeX/__init__.py; also relied on in Renderers/__init__.py)
+	if not hasattr( self, "@hasgenid" ) and getattr( self, "@id", None ):
+		local = getattr( self, "@id" )
+	elif self.title and getattr(self.title, 'textContent', self.title):
+		# Sometimes title is a string, sometimes its a TexFragment
+		title = self.title
+		if hasattr(self.title, 'textContent'):
+			title = self.title.textContent
+		_section_ntiids_map = document.userdata.setdefault( '_section_ntiids_map', {} )
+		counter = _section_ntiids_map.setdefault( title, 0 )
+		if counter == 0:
+			local = title
+		else:
+			local = title + '.' + str(counter)
+		_section_ntiids_map[title] = counter + 1
+	else:
+		# Hmm. An untitled element that is also not
+		# labeled. This is most likely a paragraph. What can we do for a persistent
+		# name? Does it even matter?
+		setattr(self, "@NTIID", nextID(document))
+		return getattr(self, "@NTIID")
+
+	# TODO: This is a half-assed approach to escaping
+	local = local.replace( ' ', '_' ).replace( '-', '_' ).replace('?','_').lower()
+	provider = config.get( "NTI", "provider" )
+	ntiid = 'tag:nextthought.com,2011-10:%s-HTML-%s.%s' % (provider,document.userdata['jobname'], local)
+	setattr( self, "@NTIID", ntiid )
+	return ntiid
+
+def _section_ntiid_filename(self):
+	if not hasattr(self, 'config'):
+		return
+
+	level = getattr(self, 'splitlevel',	self.config['files']['split-level'])
+
+	# If our level doesn't invoke a split, don't return a filename
+	# (This is duplicated from Renderers)
+	if self.level > level:
+		return
+	# It's confusing to have the filenames be valid
+	# URLs (tag:) themselves. Escaping is required, but doesn't happen.
+	return self.ntiid.replace( ':', '_' ) if self.ntiid else None
+
+def catching(f):
+	def y(self):
+		try:
+			return f(self)
+		except Exception:
+			logger.exception("Failed to compute NTIID for %s", self )
+			raise
+	return y
+
+SectionUtils.ntiid = property(catching(_section_ntiid))
+SectionUtils.filenameoverride = property(catching(_section_ntiid_filename))
+# Certain things like to assume that the root document is called index.html. Make it so.
+# This is actuall plasTeX.Base.LaTeX.Document.document, but games are played
+# with imports. damn it.
+plasTeX.Base.document.filenameoverride = property(lambda s: 'index') #.html added automatically
 
 import mirror
 import indexer

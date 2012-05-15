@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
 import codecs, os, shutil, string
+
+from zope.dottedname.resolve import resolve as resolve_import
+
 from plasTeX.Filenames import Filenames
 from plasTeX.DOM import Node
 from plasTeX.Logging import getLogger
-from plasTeX.Imagers import Image, PILImage
+#from plasTeX.Imagers import Image, PILImage
+from plasTeX.Imagers import Imager as DefaultImager, VectorImager as DefaultVectorImager
 
 log = getLogger(__name__)
 status = getLogger(__name__ + '.status')
@@ -70,6 +74,103 @@ def unmix(base, mix=None):
 		if not base._mixed_:
 			del base._mixed_
 
+def _as_unicode(child, val):
+	# If a plain string is returned, we have no idea what
+	# the encoding is, but we'll make a guess.
+	if type(val) is not unicode:
+		log.warning('The renderer for %s returned a non-unicode string.	 Using the default input encoding.' % type(child).__name__)
+		val = unicode(val, child.config['files']['input-encoding'])
+	return val
+
+def _render_children(r, childNodes):
+	"""
+	:return: An iterable of Unicode objects representing the rendered
+		versions of `childNodes`. Note that the lengths may not be equal
+		if children were written to files.
+	"""
+	# Render all child nodes
+	s = []
+	for child in childNodes:
+
+		# Short circuit text nodes
+		if child.nodeType == Node.TEXT_NODE:
+			s.append(r.textDefault(child))
+			continue
+
+		# Short circuit macros that have unicode equivalents
+		uni = child.unicode
+		if uni is not None:
+			s.append(r.textDefault(uni))
+			continue
+
+		layouts, names = [], []
+		nodeName = child.nodeName
+		modifier = None
+
+		# Does the macro have a modifier (i.e. '*')
+		if child.attributes:
+			modifier = child.attributes.get('*modifier*')
+
+		if child.filename:
+
+			# Force footnotes to be cached
+			getattr( child, 'footnotes', None )
+
+			status.info('Rendering %s', child.filename)
+
+			# Filename and modifier
+			if modifier:
+				layouts.append('%s-layout%s' % (nodeName, modifier))
+
+			# Filename only
+			layouts.append('%s-layout' % nodeName)
+
+		# Modifier only
+		if modifier:
+			names.append('%s%s' % (nodeName, modifier))
+
+		names.append(nodeName)
+		layouts.append('default-layout')
+
+		# Locate the rendering callable, and call it with the
+		# current object (i.e. `child`) as its argument.
+		func = r.find(names, r.default)
+		val = func(child)
+		val = _as_unicode( child, val )
+
+		# If the content should go to a file, write it and go
+		# to the next child.
+		if child.filename:
+			filename = child.filename
+
+			# Create any directories as needed
+			directory = os.path.dirname(filename)
+			if directory and not os.path.isdir(directory):
+				os.makedirs(directory)
+
+			# Add the layout wrapper if there is one
+			func = r.find(layouts)
+			if func is not None:
+				val = func(StaticNode(child, val))
+				val = _as_unicode( child, val )
+
+
+			# Write the file content
+			with codecs.open(filename, 'w',
+							 child.config['files']['output-encoding'],
+							 errors=r.encodingErrors) as f:
+				f.write(val)
+
+			#status.info(' ] ')
+
+			continue
+
+
+		# Append the resultant unicode object to the output
+		s.append(val)
+
+	return s
+
 
 class Renderable(object):
 	"""
@@ -94,12 +195,7 @@ class Renderable(object):
 
 		# If we don't have childNodes, then we're done
 		if not self.hasChildNodes():
-#			if self.filename:
-#				status.info(' [ %s ] ', self.filename)
 			return u''
-
-#		if self.filename:
-#			status.info(' [ %s ', self.filename)
 
 		# At the very top level, only render the DOCUMENT_LEVEL node
 		if self.nodeType == Node.DOCUMENT_NODE:
@@ -109,96 +205,7 @@ class Renderable(object):
 			childNodes = self.childNodes
 
 		# Render all child nodes
-		s = []
-		for child in childNodes:
-
-			# Short circuit text nodes
-			if child.nodeType == Node.TEXT_NODE:
-				s.append(r.textDefault(child))
-				continue
-
-			# Short circuit macros that have unicode equivalents
-			uni = child.unicode
-			if uni is not None:
-				s.append(r.textDefault(uni))
-				continue
-
-			layouts, names = [], []
-			nodeName = child.nodeName
-			modifier = None
-
-			# Does the macro have a modifier (i.e. '*')
-			if child.attributes:
-				modifier = child.attributes.get('*modifier*')
-
-			if child.filename:
-
-				# Force footnotes to be cached
-				if hasattr(child, 'footnotes'):
-					child.footnotes
-
-				status.info('Rendering %s', child.filename)
-
-				# Filename and modifier
-				if modifier:
-					layouts.append('%s-layout%s' % (nodeName, modifier))
-
-				# Filename only
-				layouts.append('%s-layout' % nodeName)
-
-			# Modifier only
-			if modifier:
-				names.append('%s%s' % (nodeName, modifier))
-
-			names.append(nodeName)
-			layouts.append('default-layout')
-
-			# Locate the rendering callable, and call it with the
-			# current object (i.e. `child`) as its argument.
-			func = r.find(names, r.default)
-			val = func(child)
-
-			# If a plain string is returned, we have no idea what
-			# the encoding is, but we'll make a guess.
-			if type(val) is not unicode:
-				log.warning('The renderer for %s returned a non-unicode string.	 Using the default input encoding.' % type(child).__name__)
-				val = unicode(val, child.config['files']['input-encoding'])
-
-			# If the content should go to a file, write it and go
-			# to the next child.
-			if child.filename:
-				filename = child.filename
-
-				# Create any directories as needed
-				directory = os.path.dirname(filename)
-				if directory and not os.path.isdir(directory):
-					os.makedirs(directory)
-
-				# Add the layout wrapper if there is one
-				func = r.find(layouts)
-				if func is not None:
-					val = func(StaticNode(child, val))
-
-					# If a plain string is returned, we have no idea what
-					# the encoding is, but we'll make a guess.
-					if type(val) is not unicode:
-						log.warning('The renderer for %s returned a non-unicode string.	 Using the default input encoding.' % type(child).__name__)
-						val = unicode(val, child.config['files']['input-encoding'])
-
-				# Write the file content
-				codecs.open(filename, 'w',
-							child.config['files']['output-encoding'],
-							errors=r.encodingErrors).write(val)
-
-				#status.info(' ] ')
-
-				continue
-
-			# Append the resultant unicode object to the output
-			s.append(val)
-
-#		if self.filename:
-#			status.info(' ] ')
+		s = _render_children( r, childNodes )
 
 		return r.outputType(u''.join(s))
 
@@ -228,8 +235,9 @@ class Renderable(object):
 		(e.g. foo.html#bar).
 
 		"""
-		if getattr(self, 'urloverride', None) is not None:
-			return self.urloverride
+		override = getattr(self, 'urloverride', None)
+		if override is not None:
+			return override
 
 		base = self.config['document']['base-url']
 		if base and base.endswith('/'):
@@ -262,29 +270,36 @@ class Renderable(object):
 		"""
 		r = Node.renderer
 
-		try: return r.files[self]
+		try:
+			return r.files[self]
 		except KeyError: pass
 
 		filename = None
-
+		override = None
 		try:
-			override = str(self.filenameoverride)
+			# Nothing in the plasTeX code base actually ever
+			# sets a filenameoverride on a Node
+			override = str(self.filenameoverride) if self.filenameoverride is not None else None
 			if override:
+				assert override is not None
 				userdata = self.ownerDocument.userdata
 				config = self.ownerDocument.config
 				newFilename = Filenames(override,
 										(config['files']['bad-chars'],
 										 config['files']['bad-chars-sub']),
-										{'jobname':userdata.get('jobname','')},
+										 {'jobname': userdata.get('jobname','')},
 										r.fileExtension)
+				newFilename.forceExtension = True
 				filename = r.files[self] = newFilename()
 
-		except AttributeError, msg:
+		except (AttributeError, ValueError) as e:
+			if isinstance( e, ValueError ):
+				log.exception( "Failed to generate filename given override %s", override )
+
 			if not hasattr(self, 'config'):
 				return
 
-			level = getattr(self, 'splitlevel',
-							self.config['files']['split-level'])
+			level = getattr(self, 'splitlevel',	self.config['files']['split-level'])
 
 			# If our level doesn't invoke a split, don't return a filename
 			if self.level > level:
@@ -292,6 +307,7 @@ class Renderable(object):
 
 			# Populate vars of filename generator
 			# and call the generator to get the filename.
+			# FIXME: Eww, not thread safe. Not really even re-entrant.
 			ns = r.newFilename.vars
 			if hasattr(self, 'id') and getattr(self, '@hasgenid', None) is None:
 				ns['id'] = self.id
@@ -300,12 +316,58 @@ class Renderable(object):
 					ns['title'] = self.title.textContent
 				elif isinstance(self.title, basestring):
 					ns['title'] = self.title
+			#import pdb; pdb.set_trace()
 			r.files[self] = filename = r.newFilename()
 
 #		print type(self), filename
 
 		return filename
 
+def _create_imager(config, document, defaultImager, imageTypes, imageUnits, imageAttrs, kind='imager'):
+	imager = None
+	# Instantiate appropriate imager
+	names = [x for x in config['images'][kind].split() if x]
+	for name in names:
+		if name == 'none':
+			break
+
+		Imager = None
+		try:
+			# Custom takes priority
+			Imager = resolve_import( "%s.Imager" % name )
+		except ImportError:
+			log.exception( "Could not load custom imager %s", name )
+			try:
+				Imager = resolve_import( "plasTeX.Imagers.%s.Imager" % name )
+			except ImportError:
+				log.exception( "Could not load default imager %s", name )
+		if Imager is None:
+			continue
+
+		imager = Imager(document, imageTypes)
+
+		# Make sure that this imager works on this machine
+		if imager.verify():
+			log.info('Using the imager "%s".' % name)
+			break
+
+		imager = None
+
+	# Still no imager? Just use the default.
+	if imager is None:
+		if 'none' not in names:
+			log.warning('Could not find a valid %s in the list: %s. The default %s will be used.', kind, names, kind)
+
+		imager = defaultImager(document, imageTypes)
+
+	if imageTypes and imager.fileExtension not in imageTypes:
+		imager.fileExtension = imageTypes[0]
+	if imageAttrs and not imager.imageAttrs:
+		imager.imageAttrs = imageAttrs
+	if imageUnits and not imager.imageUnits:
+		imager.imageUnits = imageUnits
+
+	return imager
 
 class Renderer(dict):
 	"""
@@ -335,8 +397,8 @@ class Renderer(dict):
 	imageUnits = '&${units};'
 	encodingErrors = 'replace'
 
-	def __init__(self, data={}):
-		dict.__init__(self, data)
+	def __init__(self, data=None):
+		dict.__init__(self, data) if data else dict.__init__(self)
 
 		# Names of generated files
 		self.files = {}
@@ -361,7 +423,7 @@ class Renderer(dict):
 
 		"""
 		# Using the side-effect of the filename property
-		node.filename
+		getattr(node, 'filename')
 		for child in node.childNodes:
 			self.cacheFilenames(child)
 
@@ -381,104 +443,34 @@ class Renderer(dict):
 
 		# If there are no keys, print a warning.
 		# This is most likely a problem.
-		if not self.keys():
+		if not bool(self):
 			log.warning('There are no keys in the renderer.	 ' +
 						'All objects will use the default rendering method.')
 
 		# Mix in required methods and members
-		mixin(Node, type(self).renderableClass)
+		mixin(Node, self.renderableClass)
+		# FIXME: Not thread safe. XXX
 		Node.renderer = self
 
 		# Create a filename generator
 		self.newFilename = Filenames(config['files'].get('filename', raw=True),
 									 (config['files']['bad-chars'],
 									  config['files']['bad-chars-sub']),
-									 {'jobname':document.userdata.get('jobname', '')}, self.fileExtension)
+									 {'jobname':document.userdata.get('jobname', '')},
+									 self.fileExtension)
 
 		self.cacheFilenames(document)
 
 		# Instantiate appropriate imager
-		names = [x for x in config['images']['imager'].split() if x]
-		for name in names:
-			if name == 'none':
-				break
-			try:
-				exec('from plasTeX.Imagers.%s import Imager' % name)
-			except ImportError, msg:
-				log.warning("Could not load default imager '%s' because '%s'" % (name, msg))
-
-			try:
-				exec('from %s import Imager' % name)
-			except ImportError, msg:
-				log.warning("Could not load custom imager '%s' because '%s'" % (name, msg))
-				continue
-
-			self.imager = Imager(document, self.imageTypes)
-
-			# Make sure that this imager works on this machine
-			if self.imager.verify():
-				log.info('Using the imager "%s".' % name)
-				break
-
-			self.imager = None
-
-		# Still no imager? Just use the default.
-		if self.imager is None:
-			if 'none' not in names:
-				log.warning('Could not find a valid imager in the list: %s.	 The default imager will be used.' % ', '.join(names))
-			from plasTeX.Imagers import Imager
-			self.imager = Imager(document, self.imageTypes)
-
-		if self.imageTypes and self.imager.fileExtension not in self.imageTypes:
-			self.imager.fileExtension = self.imageTypes[0]
-		if self.imageAttrs and not self.imager.imageAttrs:
-			self.imager.imageAttrs = self.imageAttrs
-		if self.imageUnits and not self.imager.imageUnits:
-			self.imager.imageUnits = self.imageUnits
+		self.imager = _create_imager(config, document, DefaultImager, self.imageTypes, self.imageUnits, self.imageAttrs)
 
 		# Instantiate appropriate vector imager
-		names = [x for x in config['images']['vector-imager'].split() if x]
-		for name in names:
-			if name == 'none':
-				break
-			try:
-				exec('from plasTeX.Imagers.%s import Imager' % name)
-			except ImportError, msg:
-				log.warning("Could not load default imager '%s' because '%s'" % (name, msg))
+		self.vectorImager = _create_imager(config, document, DefaultVectorImager, self.vectorImageTypes, self.imageUnits, self.imageAttrs, kind='vector-imager')
 
-			try:
-				exec('from %s import Imager' % name)
-			except ImportError, msg:
-				log.warning("Could not load custom imager '%s' because '%s'" % (name, msg))
-				continue
-
-			self.vectorImager = Imager(document, self.vectorImageTypes)
-
-			# Make sure that this imager works on this machine
-			if self.vectorImager.verify():
-				log.info('Using the vector imager "%s".' % name)
-				break
-
-			self.vectorImager = None
-
-		# Still no vector imager? Just use the default.
-		if self.vectorImager is None:
-			if 'none' not in names:
-				log.warning('Could not find a valid vector imager in the list: %s.	The default vector imager will be used.' % ', '.join(names))
-			from plasTeX.Imagers import VectorImager
-			self.vectorImager = VectorImager(document, self.vectorImageTypes)
-
-		if self.vectorImageTypes and \
-		   self.vectorImager.fileExtension not in self.vectorImageTypes:
-			self.vectorImager.fileExtension = self.vectorImageTypes[0]
-		if self.imageAttrs and not self.vectorImager.imageAttrs:
-			self.vectorImager.imageAttrs = self.imageAttrs
-		if self.imageUnits and not self.vectorImager.imageUnits:
-			self.vectorImager.imageUnits = self.imageUnits
 
 		# Invoke the rendering process
-		if type(self).renderMethod:
-			getattr(document, type(self).renderMethod)()
+		if self.renderMethod:
+			getattr(document, self.renderMethod)()
 		else:
 			unicode(document)
 
@@ -497,7 +489,7 @@ class Renderer(dict):
 
 		# Remove mixins
 		del Node.renderer
-		unmix(Node, type(self).renderableClass)
+		unmix(Node, self.renderableClass)
 
 	def processFileContent(self, document, s):
 		return s
@@ -530,18 +522,23 @@ class Renderer(dict):
 
 		for f in files:
 			try:
-				s = codecs.open(str(f), 'r', encoding,
-								errors=self.encodingErrors).read()
-			except IOError, msg:
-				log.error(msg)
+				with codecs.open(str(f), 'r', encoding,
+								errors=self.encodingErrors) as sf:
+					s = sf.read()
+			except IOError:
+				log.exception("Failed to re-read file %s", f)
 				continue
 
+			orig = s
 			s = self.processFileContent(document, s)
 
 			if callable(postProcess):
 				s = postProcess(document, s)
 
-			codecs.open(f, 'w', encoding).write(u''.join(s))
+			if s != orig:
+				assert isinstance(s, unicode)
+				with codecs.open(f, 'w', encoding) as sf:
+					sf.write(s)
 
 	def find(self, keys, default=None):
 		"""
