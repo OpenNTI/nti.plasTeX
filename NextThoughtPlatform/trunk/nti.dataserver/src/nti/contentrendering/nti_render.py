@@ -11,6 +11,7 @@ import sys
 import string
 import datetime
 import logging
+import hashlib
 
 import plasTeX
 from plasTeX.TeX import TeX
@@ -18,6 +19,7 @@ from plasTeX.Logging import getLogger
 
 import transforms
 from zope.configuration import xmlconfig
+from zope.deprecation import deprecate
 
 import nti.contentrendering
 
@@ -149,6 +151,7 @@ def main():
 	if outFormat == 'xml':
 		toXml( document, jobname )
 
+@deprecate("Prefer the section element ntiid attribute")
 def nextID(self):
 	ntiid = getattr(self, 'NTIID', -1)
 
@@ -228,6 +231,54 @@ SectionUtils.filenameoverride = property(catching(_section_ntiid_filename))
 # This is actuall plasTeX.Base.LaTeX.Document.document, but games are played
 # with imports. damn it.
 plasTeX.Base.document.filenameoverride = property(lambda s: 'index') #.html added automatically
+
+# Attempt to generate stable IDs for paragraphs. Our current approach
+# is to use a hash of the source. This is very, very fragile to changes
+# in the text, but works well for reorganizing content. We should probably try to do
+# something like a Soundex encoding
+def _par_id_get(self):
+	_id = getattr( self, "@id", self )
+	if _id is not self: return _id
+
+	if self.isElementContentWhitespace or not self.source.strip():
+		return None
+
+	document = self.ownerDocument
+	source = self.source
+	# A fairly common case is to have a label as a first child (maybe following some whitespace); in that case,
+	# for all intents and purposes (in rendering) we want our external id to be the same
+	# as the label value. However, we don't want to duplicate IDs in the DOM
+	first_non_blank_child = None
+	for child in self.childNodes:
+		first_non_blank_child = child
+		if child.nodeType != child.TEXT_NODE or child.textContent.strip():
+			break
+
+	if first_non_blank_child.nodeName == 'label' and 'label' in first_non_blank_child.attributes:
+		setattr( self, "@id", None )
+		return None
+
+	if source and source.strip():
+		_id = hashlib.md5(source.strip().encode('utf-8')).hexdigest()
+	else:
+		counter = document.userdata.setdefault( '_par_counter', 1 )
+		_id = 'p%10d' % counter
+		document.userdata['_par_counter'] = counter + 1
+
+	used_pars = document.userdata.setdefault( '_par_used_ids', set() )
+	while _id in used_pars:
+		counter = document.userdata.setdefault( '_par_counter', 1 )
+		_id = _id + '.' + str(counter)
+		document.userdata['_par_counter'] = counter + 1
+	used_pars.add( _id )
+
+	setattr( self, "@id", _id )
+	setattr( self, "@hasgenid", True )
+	return _id
+
+plasTeX.Base.par.id = property(_par_id_get,plasTeX.Base.par.id.fset)
+
+
 
 import mirror
 import indexer
