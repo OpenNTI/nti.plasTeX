@@ -69,6 +69,8 @@ def main():
 	# Read a config if present
 	document.config.add_section( 'NTI' )
 	document.config.set( 'NTI', 'provider', os.environ.get( 'NTI_PROVIDER', 'AOPS' ) )
+	document.config.set( 'NTI', 'extra-scripts', '' )
+	document.config.set( 'NTI', 'extra-styles', '' )
 	conf_name = os.path.join( source_dir, "nti_render_conf.ini" )
 	document.config.read( (conf_name,) )
 
@@ -85,6 +87,10 @@ def main():
 	document.userdata['working-dir'] = os.getcwd()
 	document.userdata['generated_time'] = str(datetime.datetime.now())
 	document.userdata['transform_process'] = True
+
+	document.userdata['extra_scripts'] = document.config['NTI']['extra-scripts'].split()
+	document.userdata['extra_styles'] = document.config['NTI']['extra-styles'].split()
+
 	setupResources()
 
 	# Load aux files for cross-document references
