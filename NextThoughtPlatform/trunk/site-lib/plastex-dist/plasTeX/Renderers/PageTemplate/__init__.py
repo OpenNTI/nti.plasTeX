@@ -440,7 +440,6 @@ class PageTemplate(BaseRenderer):
 					_copy_theme(cwd, extensions)
 					os.chdir(cwd)
 
-		import pdb; pdb.set_trace()
 		_import_and_copy_theme_with_bases( themename )
 
 
