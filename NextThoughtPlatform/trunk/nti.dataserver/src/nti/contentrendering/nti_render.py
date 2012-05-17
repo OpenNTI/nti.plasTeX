@@ -61,6 +61,8 @@ def main():
 
 	#setup default config options we want
 	document.config['files']['split-level'] = 1
+	document.config['document']['toc-depth'] = sys.maxint # Arbitrary number greater than the actual depth possible
+	document.config['document']['toc-non-files'] = True
 	# By outputting in ASCII, we are still valid UTF-8, but we use
 	# XML entities for high characters. This is more likely to survive
 	# through various processing steps that may not be UTF-8 aware
