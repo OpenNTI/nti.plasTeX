@@ -14,8 +14,11 @@ from plasTeX.Renderers import Renderer as BaseRenderer
 from plasTeX.Renderers.PageTemplate.simpletal import simpleTAL, simpleTALES
 from plasTeX.Renderers.PageTemplate.simpletal.simpleTALES import Context as TALContext
 from plasTeX.Renderers.PageTemplate.simpletal.simpleTALUtils import FastStringOutput as StringIO
+
 import logging
 log = logging.getLogger(__name__)
+
+import ConfigParser
 
 # Support for Python string templates
 def stringtemplate(s, encoding='utf8',filename=None):
@@ -367,55 +370,84 @@ class PageTemplate(BaseRenderer):
 
 		# Load templates from renderer directory and parent
 		# renderer directories
-		sup = list(type(self).__mro__)
+		sup = list( type(self).__mro__ )
 		sup.reverse()
-		themes = []
+
+		theme_search_paths = []
 		for cls in sup:
 			if cls is BaseRenderer or cls is object or cls is dict:
 				continue
+			# FIXME: Note that this doesn't work with zipped modules
 			cwd = os.path.dirname(sys.modules[cls.__module__].__file__)
-			log.info('Importing templates from %s' % cwd)
+			log.info('Importing class templates from %s', cwd)
 			self.importDirectory(cwd)
 
 			# Store theme location
-			themes.append(os.path.join(cwd, 'Themes', themename))
+			theme_search_paths.append( os.path.join( cwd, 'Themes' ) )
+
 
 			# Load templates configured by the environment variable
 			templates = os.environ.get('%sTEMPLATES' % cls.__name__,'')
 			for path in [x.strip() for x in templates.split(os.pathsep) if x.strip()]:
-				log.info('Importing templates from %s' % path)
+				log.info('Importing envrn templates from %s', path)
 				self.importDirectory(path)
-				themes.append(os.path.join(path, 'Themes', themename))
+				theme_search_paths.append( os.path.join( path, 'Themes' ) )
 
-		# Load only one theme
-		for theme in reversed(themes):
-			if os.path.isdir(theme):
-				log.info('Importing templates from %s' % theme)
-				self.importDirectory(theme)
 
-				extensions = []
-				for e in self.engines.values():
-					extensions += e.ext + [x+'s' for x in e.ext]
+		def _find_theme( name ):
+			if not name: return None
+			for theme_search_path in reversed( theme_search_paths ):
+				theme_dir = os.path.join( theme_search_path, name )
+				if os.path.isdir( theme_dir ):
+					return theme_dir
+			return None
+
+		def _copy_theme(dest, extensions_to_ignore):
+			# Assumes we are in the theme directory
+			for item in os.listdir('.'):
+				if os.path.isdir(item):
+					if not os.path.isdir(os.path.join(dest,item)):
+						os.makedirs(os.path.join(dest,item))
+					copytree(item, dest, True)
+				elif os.path.splitext(item)[-1].lower() not in extensions_to_ignore:
+					shutil.copy(item, os.path.join(dest,item))
+
+		def _get_base_theme( theme_dir ):
+			p = ConfigParser.SafeConfigParser()
+			p.read( os.path.join( theme_dir, 'theme_conf.ini' ) )
+			for conf in (p,document.config):
+				if conf.has_option( 'general', 'theme-base' ):
+					return conf.get( 'general', 'theme-base' )
+
+		def _import_and_copy_theme_with_bases( themename ):
+			theme_dir = _find_theme( themename )
+			if theme_dir and os.path.isdir( theme_dir ):
+				base_theme_name = _get_base_theme( theme_dir )
+				_import_and_copy_theme_with_bases( base_theme_name )
+
+				log.info('Importing theme templates from %s', theme_dir)
+				self.importDirectory(theme_dir)
+
 
 				if document.config['general']['copy-theme-extras']:
+					extensions = ['.ini'] # Don't copy the theme_conf.ini file
+					for e in self.engines.values():
+						extensions += e.ext + [x + 's' for x in e.ext]
+
 					# Copy all theme extras
 					cwd = os.getcwd()
-					os.chdir(theme)
-					for item in os.listdir('.'):
-						if os.path.isdir(item):
-							if not os.path.isdir(os.path.join(cwd,item)):
-								os.makedirs(os.path.join(cwd,item))
-							copytree(item, cwd, True)
-						elif os.path.splitext(item)[-1].lower() not in extensions:
-							shutil.copy(item, os.path.join(cwd,item))
+					os.chdir(theme_dir)
+					_copy_theme(cwd, extensions)
 					os.chdir(cwd)
 
-				break
+		import pdb; pdb.set_trace()
+		_import_and_copy_theme_with_bases( themename )
 
-	def render(self, document):
+
+	def render(self, document, postProcess=None):
 		""" Load templates and render the document """
 		self.loadTemplates(document)
-		BaseRenderer.render(self, document)
+		BaseRenderer.render(self, document, postProcess=postProcess)
 
 	def importDirectory(self, templatedir):
 		"""
@@ -434,6 +466,11 @@ class PageTemplate(BaseRenderer):
 		individual page templates as well as specify which macros they
 		correspond to and what type of template they are (i.e. XML or
 		HTML).
+
+		MZPT files are loaded first, followed by standalone templates. Files are
+		loaded in alphabetic order in order to give a dependable override order, since
+		later templates of the same name will override earlier templates of the
+		same name. (JAM)
 
 		Required Arguments:
 		templatedir -- the directory to search for template files
@@ -454,6 +491,10 @@ class PageTemplate(BaseRenderer):
 
 		if templatedir and os.path.isdir(templatedir):
 			files = os.listdir(templatedir)
+			# (JAM) Ensure sorted so overrides are dependable
+			# (On OS X, directory listings are always sorted, thats
+			# why this hasn't been a problem before)
+			files.sort()
 
 			# Compile multi-pt files first
 			for f in files:
@@ -465,7 +506,7 @@ class PageTemplate(BaseRenderer):
 
 				# Multi-pt files
 				if ext.lower() in enames:
-					self.parseTemplates(f, {'engine':enames[ext.lower()]})
+					self.parseTemplates(f, {'engine': enames[ext.lower()]})
 
 			# Now compile macros in individual files.  These have
 			# a higher precedence than macros found in multi-pt files.
@@ -489,7 +530,7 @@ class PageTemplate(BaseRenderer):
 		   log.warning('The following aliases were unresolved: %s'
 					   % ', '.join(self.aliases.keys()))
 
-	def setTemplate(self, template, options,filename=None):
+	def setTemplate(self, template, options, filename=None):
 		"""
 		Compile template and set it in the renderer
 

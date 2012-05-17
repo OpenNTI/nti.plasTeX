@@ -65,7 +65,8 @@ def main():
 	# XML entities for high characters. This is more likely to survive
 	# through various processing steps that may not be UTF-8 aware
 	document.config['files']['output-encoding'] = 'ascii'
-	document.config['general']['theme'] = 'AoPS'
+	document.config['general']['theme'] = 'NTIDefault'
+	document.config['general']['theme-base'] = 'NTIDefault'
 	# Read a config if present
 	document.config.add_section( 'NTI' )
 	document.config.set( 'NTI', 'provider', os.environ.get( 'NTI_PROVIDER', 'AOPS' ) )
