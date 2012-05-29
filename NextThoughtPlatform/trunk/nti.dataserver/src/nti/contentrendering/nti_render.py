@@ -185,7 +185,7 @@ def _section_ntiid(self):
 	# (see plasTeX/__init__.py; also relied on in Renderers/__init__.py)
 	if not hasattr( self, "@hasgenid" ) and getattr( self, "@id", None ):
 		local = getattr( self, "@id" )
-	elif self.title and getattr(self.title, 'textContent', self.title):
+	elif hasattr(self,'title') and self.title and getattr(self.title, 'textContent', self.title):
 		# Sometimes title is a string, sometimes its a TexFragment
 		title = self.title
 		if hasattr(self.title, 'textContent'):
