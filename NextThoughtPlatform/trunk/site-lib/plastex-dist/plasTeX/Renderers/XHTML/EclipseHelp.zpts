@@ -1,13 +1,13 @@
 name: eclipse-toc
 type: xml
-<toc level="root" levelnum="0" tal:attributes="label self/title/textContent | self/title | nothing; href self/filename">
-    <topic level="part" levelnum="1" tal:repeat="part self/fulltableofcontents" tal:attributes="label part/tocEntry/textContent; href part/url">
-       <topic level="chapter" levelnum="2" tal:repeat="chapter part/fulltableofcontents" tal:attributes="label chapter/tocEntry/textContent | nothing; href chapter/url">
-          <topic level="section" levelnum="3" tal:repeat="section chapter/fulltableofcontents" tal:attributes="label section/tocEntry/textContent | nothing; href section/url">
-             <topic level="subsection" levelnum="4" tal:repeat="subsection section/fulltableofcontents" tal:attributes="label subsection/tocEntry/textContent | nothing; href subsection/url">
-                <topic level="subsubsection" levelnum="5" tal:repeat="subsubsection subsection/fulltableofcontents" tal:attributes="label subsubsection/tocEntry/textContent | nothing; href subsubsection/url">
-                   <topic level="paragraph" levelnum="6" tal:repeat="paragraph subsubsection/fulltableofcontents" tal:attributes="label paragraph/tocEntry/textContent | nothing; href paragraph/url">
-                      <topic level="subparagraph" levelnum="7" tal:repeat="subparagraph paragraph/fulltableofcontents" tal:attributes="label subparagraph/tocEntry/textContent | nothing; href subparagraph/url">
+<toc level="root" levelnum="0" tal:attributes="label self/title/textContent | self/title | nothing; href self/filename; ntiid self/ntiid | nothing">
+    <topic level="part" levelnum="1" tal:repeat="part self/fulltableofcontents" tal:attributes="label part/tocEntry/textContent; href part/url; ntiid part/ntiid | nothing">
+       <topic level="chapter" levelnum="2" tal:repeat="chapter part/fulltableofcontents" tal:attributes="label chapter/tocEntry/textContent | nothing; href chapter/url; ntiid chapter/ntiid | nothing">
+          <topic level="section" levelnum="3" tal:repeat="section chapter/fulltableofcontents" tal:attributes="label section/tocEntry/textContent | nothing; href section/url; ntiid section/ntiid | nothing">
+             <topic level="subsection" levelnum="4" tal:repeat="subsection section/fulltableofcontents" tal:attributes="label subsection/tocEntry/textContent | nothing; href subsection/url; ntiid subsection/ntiid | nothing">
+                <topic level="subsubsection" levelnum="5" tal:repeat="subsubsection subsection/fulltableofcontents" tal:attributes="label subsubsection/tocEntry/textContent | nothing; href subsubsection/url; ntiid subsubsection/ntiid | nothing">
+                   <topic level="paragraph" levelnum="6" tal:repeat="paragraph subsubsection/fulltableofcontents" tal:attributes="label paragraph/tocEntry/textContent | nothing; href paragraph/url; ntiid paragraph/ntiid | nothing">
+                      <topic level="subparagraph" levelnum="7" tal:repeat="subparagraph paragraph/fulltableofcontents" tal:attributes="label subparagraph/tocEntry/textContent | nothing; href subparagraph/url; ntiid subparagraph/ntiid | nothing">
                       </topic>
                    </topic>
                 </topic>
