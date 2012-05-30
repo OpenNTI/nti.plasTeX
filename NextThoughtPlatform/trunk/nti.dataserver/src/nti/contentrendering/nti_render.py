@@ -116,6 +116,13 @@ def main():
 	document.userdata['extra_scripts'] = document.config['NTI']['extra-scripts'].split()
 	document.userdata['extra_styles'] = document.config['NTI']['extra-styles'].split()
 
+	# When changes are made to the rendering process that would impact the ability
+	# of deployed code to properly consume documents, this needs to be incremented.
+	# Currently it is for an entire renderable package (book) but in the future we
+	# might need/want to make it per-page/per-feature (e.g., if a unit doesn't use
+	# new quiz functionality, it may be compatible with older viewers)
+	document.userdata['renderVersion'] = 2
+
 	setupResources()
 
 	# Load aux files for cross-document references
