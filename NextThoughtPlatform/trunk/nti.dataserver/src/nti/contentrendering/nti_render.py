@@ -5,33 +5,49 @@ $Id$
 """
 from __future__ import print_function, unicode_literals
 
-
 import os
 import sys
 import string
 import datetime
-import logging
+from pkg_resources import resource_filename
 import hashlib
+import subprocess
+
+import logging
 
 import plasTeX
 from plasTeX.TeX import TeX
 from plasTeX.Logging import getLogger
+log = getLogger(__name__)
+logger = log
 
-import transforms
+
 from zope.configuration import xmlconfig
 from zope.deprecation import deprecate
 
 import nti.contentrendering
+from nti.contentrendering import interfaces
+from nti.contentrendering import transforms
+from nti.contentrendering import mirror
+from nti.contentrendering import indexer
+from nti.contentrendering import tociconsetter
+from nti.contentrendering import html5cachefile
+from nti.contentrendering import contentsizesetter
+from nti.contentrendering import relatedlinksetter
+from nti.contentrendering import contentthumbnails
+from nti.contentrendering import sectionvideoadder
+from nti.contentrendering import ntiidlinksetter
+from nti.contentrendering import contentchecks
+from nti.contentrendering.RenderedBook import RenderedBook
 
-from pkg_resources import resource_filename
-
-log = getLogger(__name__)
-logger = log
+from nti.contentrendering.resources import ResourceDB, ResourceTypeOverrides
+from nti.contentrendering.resources.ResourceRenderer import createResourceRenderer
 
 
 def _configure_logging():
 	logging.basicConfig( level=logging.INFO )
 	logging.root.handlers[0].setFormatter( logging.Formatter( '[%(name)s] %(levelname)s: %(message)s' ) )
+
 
 def main():
 	""" Main program routine """
@@ -87,6 +103,11 @@ def main():
 
 	# Populate variables for use later
 	jobname = document.userdata['jobname'] = tex.jobname
+	# Create a component lookup ("site manager") that will
+	# look for components named for the job implicitly
+	# TODO: Consider installing hooks and using 'with site()' for this?
+	components = interfaces.JobComponents(jobname)
+
 	document.userdata['working-dir'] = os.getcwd()
 	document.userdata['generated_time'] = str(datetime.datetime.now())
 	document.userdata['transform_process'] = True
@@ -147,7 +168,7 @@ def main():
 		os.chdir(outdir)
 
 	# Perform prerender transforms
-	transforms.performTransforms( document )
+	transforms.performTransforms( document, context=components )
 
 	if outFormat == 'images' or outFormat == 'xhtml':
 		logger.info( "Generating images" )
@@ -155,7 +176,7 @@ def main():
 
 	if outFormat == 'xhtml':
 		render( document, 'XHTML', db )
-		postRender(document, jobname=jobname)
+		postRender(document, jobname=jobname, context=components)
 
 	if outFormat == 'xml':
 		toXml( document, jobname )
@@ -288,23 +309,7 @@ def _par_id_get(self):
 plasTeX.Base.par.id = property(_par_id_get,plasTeX.Base.par.id.fset)
 
 
-
-import mirror
-import indexer
-import tociconsetter
-import html5cachefile
-import contentsizesetter
-import relatedlinksetter
-import contentthumbnails
-import sectionvideoadder
-import ntiidlinksetter
-
-from RenderedBook import RenderedBook
-
-import contentchecks
-import subprocess
-
-def postRender(document, contentLocation='.', jobname='prealgebra'):
+def postRender(document, contentLocation='.', jobname='prealgebra', context=None):
 	logger.info( 'Performing post render steps' )
 
 	# We very likely will get a book that has no pages
@@ -315,29 +320,29 @@ def postRender(document, contentLocation='.', jobname='prealgebra'):
 	# on-disk content.
 	logger.info( 'Adding icons to toc and pages' )
 	toc_file = os.path.join(contentLocation, 'eclipse-toc.xml')
-	tociconsetter.transform(book)
+	tociconsetter.transform(book, context=context)
 
 	logger.info( 'Fetching page info' )
 	book = RenderedBook(document, contentLocation)
 
 	logger.info( 'Storing content height in pages' )
-	contentsizesetter.transform(book)
+	contentsizesetter.transform(book, context=context)
 
 	logger.info( 'Adding related links to toc' )
-	relatedlinksetter.performTransforms(book)
+	relatedlinksetter.performTransforms(book, context=context)
 
 	logger.info( 'Generating thumbnails for pages' )
-	contentthumbnails.transform(book)
+	contentthumbnails.transform(book,context=context)
 
 	# PhantomJS doesn't cope well with the iframes
 	# for embedded videos: you get a black box, and we put them at the top
 	# of the pages, so many thumbnails end up looking the same, and looking
 	# bad. So do this after taking thumbnails.
 	logger.info( 'Adding videos' )
-	sectionvideoadder.performTransforms(book)
+	sectionvideoadder.performTransforms(book,context=context)
 
 	logger.info( 'Running checks on content' )
-	contentchecks.performChecks(book)
+	contentchecks.performChecks(book,context=context)
 
 	contentPath = os.path.realpath(contentLocation)
 	if not os.path.exists( os.path.join( contentPath, 'indexdir' ) ):
@@ -386,7 +391,7 @@ def postRender(document, contentLocation='.', jobname='prealgebra'):
 	mirror.main( contentPath, contentPath, zip_root_dir=jobname )
 
 
-from resources.ResourceRenderer import createResourceRenderer
+
 
 def render(document, rname, db):
 	# Apply renderer
@@ -398,7 +403,7 @@ def toXml( document, jobname ):
 	with open(outfile,'w') as f:
 		f.write(document.toXML().encode('utf-8'))
 
-from resources import ResourceDB, ResourceTypeOverrides
+
 
 def setupResources():
 	from plasTeX.Base import Arrays
