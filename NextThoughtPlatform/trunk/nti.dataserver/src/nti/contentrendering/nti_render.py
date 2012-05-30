@@ -96,7 +96,8 @@ def main():
 	# Configure components and utilities
 	zope_conf_name = os.path.join( source_dir, 'configure.zcml' )
 	if os.path.exists( zope_conf_name ):
-		xmlconfig.file( zope_conf_name, package=nti.contentrendering )
+		# Must be sure to use an absolute path if we're going to also be giving a package
+		xmlconfig.file( os.path.abspath( zope_conf_name ), package=nti.contentrendering )
 
 	# Instantiate the TeX processor
 	tex = TeX(document, file=sourceFile)
