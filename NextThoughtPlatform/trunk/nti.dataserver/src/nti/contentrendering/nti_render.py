@@ -7,6 +7,7 @@ from __future__ import print_function, unicode_literals
 
 import os
 import sys
+import functools
 import string
 import datetime
 from pkg_resources import resource_filename
@@ -219,6 +220,8 @@ def _section_ntiid(self):
 		title = self.title
 		if hasattr(self.title, 'textContent'):
 			title = self.title.textContent
+		# TODO: When we need to generate a number, if the object is associated
+		# with a counter, could/should we use the counter?
 		_section_ntiids_map = document.userdata.setdefault( '_section_ntiids_map', {} )
 		counter = _section_ntiids_map.setdefault( title, 0 )
 		if counter == 0:
@@ -255,11 +258,13 @@ def _section_ntiid_filename(self):
 	return self.ntiid.replace( ':', '_' ) if self.ntiid else None
 
 def catching(f):
+	@functools.wraps(f)
 	def y(self):
 		try:
 			return f(self)
 		except Exception:
-			logger.exception("Failed to compute NTIID for %s", self )
+			#from IPython.core.debugger import Tracer; debug_here = Tracer()()
+			logger.exception("Failed to compute NTIID for %s (%s)", type(self), repr(self)[:50] )
 			raise
 	return y
 
