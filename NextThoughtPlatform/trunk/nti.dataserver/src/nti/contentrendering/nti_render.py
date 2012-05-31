@@ -206,6 +206,11 @@ plasTeX.TeXDocument.nextNTIID = nextID
 from plasTeX.Base.LaTeX.Sectioning import SectionUtils
 def _section_ntiid(self):
 
+	# If an NTIID was specified in the source, use that
+	if hasattr(self, 'attributes') and 'NTIID' in self.attributes:
+		return self.attributes['NTIID']
+
+	# Use a cached value if one exists
 	if hasattr(self,"@NTIID"):
 		return getattr(self, "@NTIID")
 
