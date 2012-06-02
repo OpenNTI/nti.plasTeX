@@ -39,6 +39,7 @@ from nti.contentrendering import contentthumbnails
 from nti.contentrendering import sectionvideoadder
 from nti.contentrendering import ntiidlinksetter
 from nti.contentrendering import contentchecks
+from nti.contentrendering import plastexids
 from nti.contentrendering.RenderedBook import RenderedBook
 
 from nti.contentrendering.resources import ResourceDB, ResourceTypeOverrides
@@ -75,6 +76,13 @@ def main():
 
 	# Create document instance that output will be put into
 	document = plasTeX.TeXDocument()
+	# setup id generation
+	plastexids.patch_all()
+	# Certain things like to assume that the root document is called index.html. Make it so.
+	# This is actually plasTeX.Base.LaTeX.Document.document, but games are played
+	# with imports. damn it.
+	plasTeX.Base.document.filenameoverride = property(lambda s: 'index') #.html added automatically
+
 
 	#setup default config options we want
 	document.config['files']['split-level'] = 1
@@ -189,142 +197,6 @@ def main():
 
 	if outFormat == 'xml':
 		toXml( document, jobname )
-
-@deprecate("Prefer the section element ntiid attribute")
-def nextID(self):
-	ntiid = getattr(self, 'NTIID', -1)
-
-	ntiid = ntiid + 1
-
-	setattr(self, 'NTIID', ntiid)
-	provider = self.config.get( "NTI", "provider" )
-	return 'tag:nextthought.com,2011-10:%s-HTML-%s.%s' % (provider,self.userdata['jobname'], ntiid)
-
-plasTeX.TeXDocument.nextNTIID = nextID
-
-# SectionUtils is the (a) parent of chapter, section, ..., paragraph, as well as document
-from plasTeX.Base.LaTeX.Sectioning import SectionUtils
-def _section_ntiid(self):
-
-	# If an NTIID was specified in the source, use that
-	if hasattr(self, 'attributes') and 'NTIID' in self.attributes:
-		return self.attributes['NTIID']
-
-	# Use a cached value if one exists
-	if hasattr(self,"@NTIID"):
-		return getattr(self, "@NTIID")
-
-	document = self.ownerDocument
-	config = document.config
-	# Use an ID if it exists and WAS NOT generated
-	# (see plasTeX/__init__.py; also relied on in Renderers/__init__.py)
-	if not hasattr( self, "@hasgenid" ) and getattr( self, "@id", None ):
-		local = getattr( self, "@id" )
-	elif self.title and getattr(self.title, 'textContent', self.title):
-		# Sometimes title is a string, sometimes its a TexFragment
-		title = self.title
-		if hasattr(self.title, 'textContent'):
-			title = self.title.textContent
-		# TODO: When we need to generate a number, if the object is associated
-		# with a counter, could/should we use the counter?
-		_section_ntiids_map = document.userdata.setdefault( '_section_ntiids_map', {} )
-		counter = _section_ntiids_map.setdefault( title, 0 )
-		if counter == 0:
-			local = title
-		else:
-			local = title + '.' + str(counter)
-		_section_ntiids_map[title] = counter + 1
-	else:
-		# Hmm. An untitled element that is also not
-		# labeled. This is most likely a paragraph. What can we do for a persistent
-		# name? Does it even matter?
-		setattr(self, "@NTIID", nextID(document))
-		return getattr(self, "@NTIID")
-
-	# TODO: This is a half-assed approach to escaping
-	local = local.replace( ' ', '_' ).replace( '-', '_' ).replace('?','_').lower()
-	provider = config.get( "NTI", "provider" )
-	ntiid = 'tag:nextthought.com,2011-10:%s-HTML-%s.%s' % (provider,document.userdata['jobname'], local)
-	setattr( self, "@NTIID", ntiid )
-	return ntiid
-
-def _section_ntiid_filename(self):
-	if not hasattr(self, 'config'):
-		return
-
-	level = getattr(self, 'splitlevel',	self.config['files']['split-level'])
-
-	# If our level doesn't invoke a split, don't return a filename
-	# (This is duplicated from Renderers)
-	if self.level > level:
-		return
-	# It's confusing to have the filenames be valid
-	# URLs (tag:) themselves. Escaping is required, but doesn't happen.
-	return self.ntiid.replace( ':', '_' ) if self.ntiid else None
-
-def catching(f):
-	@functools.wraps(f)
-	def y(self):
-		try:
-			return f(self)
-		except Exception:
-			#from IPython.core.debugger import Tracer; debug_here = Tracer()()
-			logger.exception("Failed to compute NTIID for %s (%s)", type(self), repr(self)[:50] )
-			raise
-	return y
-
-SectionUtils.ntiid = property(catching(_section_ntiid))
-SectionUtils.filenameoverride = property(catching(_section_ntiid_filename))
-# Certain things like to assume that the root document is called index.html. Make it so.
-# This is actuall plasTeX.Base.LaTeX.Document.document, but games are played
-# with imports. damn it.
-plasTeX.Base.document.filenameoverride = property(lambda s: 'index') #.html added automatically
-
-# Attempt to generate stable IDs for paragraphs. Our current approach
-# is to use a hash of the source. This is very, very fragile to changes
-# in the text, but works well for reorganizing content. We should probably try to do
-# something like a Soundex encoding
-def _par_id_get(self):
-	_id = getattr( self, "@id", self )
-	if _id is not self: return _id
-
-	if self.isElementContentWhitespace or not self.source.strip():
-		return None
-
-	document = self.ownerDocument
-	source = self.source
-	# A fairly common case is to have a label as a first child (maybe following some whitespace); in that case,
-	# for all intents and purposes (in rendering) we want our external id to be the same
-	# as the label value. However, we don't want to duplicate IDs in the DOM
-	first_non_blank_child = None
-	for child in self.childNodes:
-		first_non_blank_child = child
-		if child.nodeType != child.TEXT_NODE or child.textContent.strip():
-			break
-
-	if first_non_blank_child.nodeName == 'label' and 'label' in first_non_blank_child.attributes:
-		setattr( self, "@id", None )
-		return None
-
-	if source and source.strip():
-		_id = hashlib.md5(source.strip().encode('utf-8')).hexdigest()
-	else:
-		counter = document.userdata.setdefault( '_par_counter', 1 )
-		_id = 'p%10d' % counter
-		document.userdata['_par_counter'] = counter + 1
-
-	used_pars = document.userdata.setdefault( '_par_used_ids', set() )
-	while _id in used_pars:
-		counter = document.userdata.setdefault( '_par_counter', 1 )
-		_id = _id + '.' + str(counter)
-		document.userdata['_par_counter'] = counter + 1
-	used_pars.add( _id )
-
-	setattr( self, "@id", _id )
-	setattr( self, "@hasgenid", True )
-	return _id
-
-plasTeX.Base.par.id = property(_par_id_get,plasTeX.Base.par.id.fset)
 
 
 def postRender(document, contentLocation='.', jobname='prealgebra', context=None):
