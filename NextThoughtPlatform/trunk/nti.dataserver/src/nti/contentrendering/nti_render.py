@@ -158,18 +158,7 @@ def main():
 					  resource_filename( __name__, 'zpts' ),
 					  os.environ.get('XHTMLTEMPLATES', ''))
 	os.environ['XHTMLTEMPLATES'] = os.path.pathsep.join( xhtmltemplates )
-	# Set up a cache for these things to make subsequent renders faster
-	if not 'CHAMELEON_CACHE' in os.environ:
-		parent = os.getcwd()
-		for p in ('DATASERVER_ENV','DATASERVER_DIR','VIRTUAL_ENV'):
-			if p in os.environ:
-				parent = os.environ[p]
-				break
-		os.environ['CHAMELEON_CACHE'] = os.path.join( parent, '.chameleon_cache' )
-		logger.info( "Caching templates to %s", os.environ['CHAMELEON_CACHE'] )
-		try:
-			os.mkdir( os.environ['CHAMELEON_CACHE'] )
-		except OSError: pass
+	setupChameleonCache()
 
 	# Parse the document
 	logger.info( "Parsing %s", sourceFile )
@@ -198,6 +187,19 @@ def main():
 	if outFormat == 'xml':
 		toXml( document, jobname )
 
+def setupChameleonCache():
+	# Set up a cache for these things to make subsequent renders faster
+	if not 'CHAMELEON_CACHE' in os.environ:
+		parent = os.getcwd()
+		for p in ('DATASERVER_ENV','DATASERVER_DIR','VIRTUAL_ENV'):
+			if p in os.environ:
+				parent = os.environ[p]
+				break
+		os.environ['CHAMELEON_CACHE'] = os.path.join( parent, '.chameleon_cache' )
+		logger.info( "Caching templates to %s", os.environ['CHAMELEON_CACHE'] )
+		try:
+			os.mkdir( os.environ['CHAMELEON_CACHE'] )
+		except OSError: pass
 
 def postRender(document, contentLocation='.', jobname='prealgebra', context=None):
 	logger.info( 'Performing post render steps' )
