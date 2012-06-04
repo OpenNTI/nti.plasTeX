@@ -21,7 +21,8 @@ def idgen():
 	while 1:
 		yield 'a%.10d' % i
 		i += 1
-idgen = idgen()
+# JAM: Global is BAD. We now look at this in a document-specific way
+#idgen = idgen()
 
 def subclasses(o):
 	""" Return all subclasses of the given class """
@@ -322,10 +323,12 @@ class Macro(Element):
 		def fget(self):
 			id = getattr(self, '@id', None)
 			if id is None:
-				for id in idgen:
-					setattr(self, '@hasgenid', True)
-					self.id = id
-					break
+				idgenerator = self.ownerDocument.userdata.get( 'idgen' )
+				if idgenerator is None:
+					idgenerator = self.ownerDocument.userdata['idgen'] = idgen()
+
+				setattr(self, '@hasgenid', True)
+				id = self.id = idgenerator.next()
 			return id
 		return locals()
 	id = property(**id())
