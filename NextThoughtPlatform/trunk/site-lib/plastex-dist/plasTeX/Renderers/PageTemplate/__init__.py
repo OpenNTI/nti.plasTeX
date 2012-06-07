@@ -9,11 +9,12 @@ support for your own templating engines.
 
 """
 
-import sys, os, re, plasTeX, shutil, string
+import sys
+import os
+import re
+import shutil
+import string
 from plasTeX.Renderers import Renderer as BaseRenderer
-from plasTeX.Renderers.PageTemplate.simpletal import simpleTAL, simpleTALES
-from plasTeX.Renderers.PageTemplate.simpletal.simpleTALES import Context as TALContext
-from plasTeX.Renderers.PageTemplate.simpletal.simpleTALUtils import FastStringOutput as StringIO
 
 import logging
 log = logging.getLogger(__name__)
@@ -42,6 +43,9 @@ def pythontemplate(s, encoding='utf8',filename=None):
 
 # Support for ZPT HTML and XML templates
 # Disabled in favor of chameleon
+#from plasTeX.Renderers.PageTemplate.simpletal import simpleTAL, simpleTALES
+#from plasTeX.Renderers.PageTemplate.simpletal.simpleTALES import Context as TALContext
+#from plasTeX.Renderers.PageTemplate.simpletal.simpleTALUtils import FastStringOutput as StringIO
 # def htmltemplate(s, encoding='utf8'):
 # 	template = simpleTAL.compileHTMLTemplate(s)
 # 	def renderhtml(obj):
@@ -312,7 +316,7 @@ class PageTemplate(BaseRenderer):
 	encodingErrors = 'xmlcharrefreplace'
 
 	def __init__(self, *args, **kwargs):
-		BaseRenderer.__init__(self, *args, **kwargs)
+		super(PageTemplate,self).__init__( *args, **kwargs )
 		self.engines = {}
 		htmlexts = ['.html','.htm','.xhtml','.xhtm','.zpt','.pt']
 		self.registerEngine('pt', None, htmlexts, htmltemplate)
@@ -446,7 +450,7 @@ class PageTemplate(BaseRenderer):
 	def render(self, document, postProcess=None):
 		""" Load templates and render the document """
 		self.loadTemplates(document)
-		BaseRenderer.render(self, document, postProcess=postProcess)
+		super(PageTemplate,self).render(document, postProcess=postProcess)
 
 	def importDirectory(self, templatedir):
 		"""
@@ -674,7 +678,7 @@ class PageTemplate(BaseRenderer):
 					s[i] = '&#%.3d;' % ord(item)
 			s = u''.join(s)
 
-		return BaseRenderer.processFileContent(self, document, s)
+		return super(PageTemplate,self).processFileContent(document, s)
 
 	def setImageData(self, m):
 		"""
