@@ -542,6 +542,8 @@ class PageTemplate(BaseRenderer):
 		options -- dictionary containing the name (or names) and type
 			of the template
 
+		:return: The template compiled by the engine. (JAM)
+
 		"""
 
 		# Get name
@@ -578,18 +580,19 @@ class PageTemplate(BaseRenderer):
 		engine = options.get('engine','zpt').lower()
 
 		templateeng = self.engines.get((engine, ttype),
-							self.engines.get((engine, None)))
+									   self.engines.get((engine, None)))
 
 		try:
 			template = templateeng.compile(template,filename=filename)
 		except Exception as e:
-#			print msg
 			raise ValueError( 'Could not compile template "%s" %s' % (names[0], e) )
 
 		for name in names:
 			self[name] = template
 
-	def parseTemplates(self, filename, options={}):
+		return template
+
+	def parseTemplates(self, filename, options=None):
 		"""
 		Parse templates from the file and set them in the renderer
 
@@ -602,14 +605,14 @@ class PageTemplate(BaseRenderer):
 
 		"""
 		template = []
-		options = options.copy()
-		defaults = {}
+		options = options.copy() if options is not None else {}
+		defaults = options.copy()
 		name = None
 		if not options or 'name' not in options:
 			f = open(filename, 'r')
 			for i, line in enumerate(f):
 
-				#Enable comments in zpt files.
+				#JAM: Enable comments in zpt files.
 				#FIXME If other template engines rely on '#'
 				#this breaks badly
 				if line.startswith('#'):
