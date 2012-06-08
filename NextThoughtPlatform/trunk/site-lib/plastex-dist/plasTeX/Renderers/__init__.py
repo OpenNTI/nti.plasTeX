@@ -5,7 +5,7 @@ import codecs, os, shutil, string
 from zope.dottedname.resolve import resolve as resolve_import
 
 from plasTeX.Filenames import Filenames
-from plasTeX.DOM import Node
+from plasTeX.DOM import Node, Document
 from plasTeX.Logging import getLogger
 #from plasTeX.Imagers import Image, PILImage
 from plasTeX.Imagers import Imager as DefaultImager, VectorImager as DefaultVectorImager
@@ -186,7 +186,7 @@ class Renderable(object):
 		Invoke the rendering process on all of the child nodes.
 
 		"""
-		r = Node.renderer
+		r = self.renderer
 
 		# Short circuit macros that have unicode equivalents
 		uni = self.unicode
@@ -215,13 +215,13 @@ class Renderable(object):
 	@property
 	def image(self):
 		""" Generate an image and return the image filename """
-		return Node.renderer.imager.getImage(self)
+		return self.renderer.imager.getImage(self)
 
 	@property
 	def vectorImage(self):
 		""" Generate a vector image and return the image filename """
-		image = Node.renderer.vectorImager.getImage(self)
-		image.bitmap = Node.renderer.imager.getImage(self)
+		image = self.renderer.vectorImager.getImage(self)
+		image.bitmap = self.renderer.imager.getImage(self)
 		return image
 
 	@property
@@ -268,7 +268,7 @@ class Renderable(object):
 		Objects that don't create new files should simply return `None`.
 
 		"""
-		r = Node.renderer
+		r = self.renderer
 		try:
 			return r.files[self]
 		except KeyError: pass
@@ -368,6 +368,16 @@ def _create_imager(config, document, defaultImager, imageTypes, imageUnits, imag
 
 	return imager
 
+# JAM: Make access to the current renderer thread-safe.
+# In the usual case, when rendering a document, we'll make
+# sure to set the renderer on the document object.
+Node.renderer = property(lambda self: getattr( self, '@renderer', getattr( self.ownerDocument, 'renderer', None) ),
+						 lambda self, nv: setattr( self, '@renderer', nv ) if nv else delattr( self, "@renderer" ),
+						 lambda self: delattr(self, '@renderer') if hasattr( self, '@renderer' ) else None	)
+
+Document.renderer = property(lambda self: getattr( self, '@renderer', None),
+							 lambda self, nv: setattr( self, '@renderer', nv ) if nv else delattr( self, "@renderer" ),
+							 lambda self: delattr(self, '@renderer') if hasattr( self, '@renderer' ) else None	)
 class Renderer(dict):
 	"""
 	Base class for all renderers
@@ -447,48 +457,50 @@ class Renderer(dict):
 						'All objects will use the default rendering method.')
 
 		# Mix in required methods and members
+		document.renderer = self # JAM: Make thread safe. See above
+
+		# FIXME: Not thread safe. XXX JAM
 		mixin(Node, self.renderableClass)
-		# FIXME: Not thread safe. XXX
-		Node.renderer = self
+		try:
 
-		# Create a filename generator
-		self.newFilename = Filenames(config['files'].get('filename', raw=True),
-									 (config['files']['bad-chars'],
-									  config['files']['bad-chars-sub']),
-									 {'jobname':document.userdata.get('jobname', '')},
-									 self.fileExtension)
+			# Create a filename generator
+			self.newFilename = Filenames(config['files'].get('filename', raw=True),
+										 (config['files']['bad-chars'],
+										  config['files']['bad-chars-sub']),
+										 {'jobname':document.userdata.get('jobname', '')},
+										 self.fileExtension)
 
-		self.cacheFilenames(document)
+			self.cacheFilenames(document)
 
-		# Instantiate appropriate imager
-		self.imager = _create_imager(config, document, DefaultImager, self.imageTypes, self.imageUnits, self.imageAttrs)
+			# Instantiate appropriate imager
+			self.imager = _create_imager(config, document, DefaultImager, self.imageTypes, self.imageUnits, self.imageAttrs)
 
-		# Instantiate appropriate vector imager
-		self.vectorImager = _create_imager(config, document, DefaultVectorImager, self.vectorImageTypes, self.imageUnits, self.imageAttrs, kind='vector-imager')
+			# Instantiate appropriate vector imager
+			self.vectorImager = _create_imager(config, document, DefaultVectorImager, self.vectorImageTypes, self.imageUnits, self.imageAttrs, kind='vector-imager')
 
 
-		# Invoke the rendering process
-		if self.renderMethod:
-			getattr(document, self.renderMethod)()
-		else:
-			unicode(document)
+			# Invoke the rendering process
+			if self.renderMethod:
+				getattr(document, self.renderMethod)()
+			else:
+				unicode(document)
 
-		# Finish rendering images
-		self.imager.close()
-		self.vectorImager.close()
+			# Finish rendering images
+			self.imager.close()
+			self.vectorImager.close()
 
-		# Run any cleanup activities
-		self.cleanup(document, self.files.values(), postProcess=postProcess)
+			# Run any cleanup activities
+			self.cleanup(document, self.files.values(), postProcess=postProcess)
 
-		# Write out auxilliary information
-		pauxname = os.path.join(document.userdata.get('working-dir','.'),
-								'%s.paux' % document.userdata.get('jobname',''))
-		rname = config['general']['renderer']
-		document.context.persist(pauxname, rname)
-
-		# Remove mixins
-		del Node.renderer
-		unmix(Node, self.renderableClass)
+			# Write out auxilliary information
+			pauxname = os.path.join(document.userdata.get('working-dir','.'),
+									'%s.paux' % document.userdata.get('jobname',''))
+			rname = config['general']['renderer']
+			document.context.persist(pauxname, rname)
+		finally:
+			# Remove mixins
+			unmix(Node, self.renderableClass)
+			del document.renderer
 
 	def processFileContent(self, document, s):
 		return s
