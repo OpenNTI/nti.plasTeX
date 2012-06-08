@@ -269,7 +269,6 @@ class Renderable(object):
 
 		"""
 		r = Node.renderer
-
 		try:
 			return r.files[self]
 		except KeyError: pass

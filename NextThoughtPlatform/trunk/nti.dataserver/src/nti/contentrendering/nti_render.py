@@ -132,8 +132,6 @@ def main():
 	# new quiz functionality, it may be compatible with older viewers)
 	document.userdata['renderVersion'] = 2
 
-	setupResources()
-
 	# Load aux files for cross-document references
 	# pauxname = '%s.paux' % jobname
 
@@ -295,52 +293,6 @@ def toXml( document, jobname ):
 	with open(outfile,'w') as f:
 		f.write(document.toXML().encode('utf-8'))
 
-
-
-def setupResources():
-	from plasTeX.Base import Arrays
-	tabularTypes = ['png', 'svg']
-
-	Arrays.tabular.resourceTypes = tabularTypes
-	Arrays.TabularStar.resourceTypes = tabularTypes
-	Arrays.tabularx.resourceTypes = tabularTypes
-
-	from plasTeX.Base import Math
-
-	#The math package does not correctly implement the sqrt macro.	It takes two args
-	Math.sqrt.args = '[root]{arg}'
-
-	inlineMathTypes = ['mathjax_inline']
-	displayMathTypes = ['mathjax_display']
-
-	#inlineMathTypes = ['mathjax_inline', 'png', 'svg']
-	#displayMathTypes = ['mathjax_display', 'png', 'svg']
-
-	Math.math.resourceTypes = inlineMathTypes
-	Math.ensuremath.resourceTypes = inlineMathTypes
-
-	Math.displaymath.resourceTypes = displayMathTypes
-	Math.EqnarrayStar.resourceTypes = displayMathTypes
-	Math.equation.resourceTypes = displayMathTypes
-
-
-	from plasTeX.Packages.graphicx import includegraphics
-	includegraphics.resourceTypes = ['png']
-
-	from plasTeX.Packages import amsmath
-	amsmath.align.resourceTypes = displayMathTypes
-	amsmath.AlignStar.resourceTypes = displayMathTypes
-	amsmath.alignat.resourceTypes = displayMathTypes
-	amsmath.AlignatStar.resourceTypes = displayMathTypes
-	amsmath.gather.resourceTypes = displayMathTypes
-	amsmath.GatherStar.resourceTypes = displayMathTypes
-
-	# XXX FIXME If we don't do this, then we can get
-	# a module called graphicx reloaded from this package
-	# which doesn't inherit our type. Who is doing that?
-	sys.modules['graphicx'] = sys.modules['plasTeX.Packages.graphicx']
-
-	#includegraphics.resourceTypes = ['png', 'svg']
 
 def generateImages(document):
 	### Generates required images ###

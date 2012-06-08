@@ -661,12 +661,12 @@ class PageTemplate(BaseRenderer):
 		# Purge any awaiting templates
 		if template:
 			try:
-				self.setTemplate(''.join(template), options,filename=filename)
+				self.setTemplate(''.join(template), options, filename=filename)
 			except ValueError, msg:
 				print 'ERROR: %s in template %s in file %s' % (msg, ''.join(template), filename)
 
-		elif name and not(template):
-			self.setTemplate('', options)
+		elif name and not template:
+			self.setTemplate('', options, filename=filename)
 
 	def processFileContent(self, document, s):
 		# Add width, height, and depth to images
