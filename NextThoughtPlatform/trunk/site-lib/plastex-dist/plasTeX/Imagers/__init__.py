@@ -471,7 +471,7 @@ class Imager(object):
 
 		# Start the document with a preamble
 		self.source = StringIO()
-		self.source.write('\\scrollmode\n')
+		self.source.write('\\batchmode\n')
 		self.writePreamble(document)
 		self.source.write('\\begin{document}\n')
 
@@ -603,7 +603,6 @@ class Imager(object):
 
 		# Make a temporary directory to work in
 		tempdir = tempfile.mkdtemp()
-		os.chdir(tempdir)
 
 		filename = 'images.tex'
 
@@ -612,39 +611,38 @@ class Imager(object):
 			self.source.seek(0)
 			codecs.open(os.path.join(cwd,filename), 'w', self.config['files']['input-encoding']).write(self.source.read())
 		self.source.seek(0)
-		codecs.open(filename, 'w', self.config['files']['input-encoding']).write(self.source.read())
+		codecs.open(os.path.join( tempdir, filename ), 'w', self.config['files']['input-encoding']).write(self.source.read())
 
 		# Run LaTeX
-		os.environ['SHELL'] = '/bin/sh'
+		#os.environ['SHELL'] = '/bin/sh'
 		program = self.config['images']['compiler']
 		if not program:
 			program = self.compiler
 
+		args = [program]
+		if program.endswith( 'tex' ):
+			args.append( '--interaction=batchmode' )
 
-		os.system(r"%s %s" % (program, filename))
-		#JAM: This does not work. Fails to read input
-		# cmd = str('%s %s' % (program, filename))
-		# print shlex.split(cmd)
-		# p = subprocess.Popen(shlex.split(cmd),
-		# 			 stdout=subprocess.PIPE,
-		# 			 stderr=subprocess.STDOUT,
-		# 			 )
-		# while True:
-		# 	line = p.stdout.readline()
-		# 	done = p.poll()
-		# 	if line:
-		# 		imagelog.info(str(line.strip()))
-		# 	elif done is not None:
-		# 		break
+		args.append( filename )
+
+		kwargs = {}
+		if program.endswith( 'tex' ):
+			# JAM: Given batchmode, we expect to produce very little output,
+			# so we can buffer it without reading it
+			kwargs['bufsize'] = -1 # System default, fully buffererd
+			kwargs['stdout'] = subprocess.PIPE
+
+		subprocess.check_call( args,
+							   cwd=tempdir,
+							   **kwargs )
+
 
 		output = None
 		for ext in ['.dvi','.pdf','.ps']:
-			if os.path.isfile('images'+ext):
-				output = WorkingFile('images'+ext, 'rb', tempdir=tempdir)
+			filename = os.path.join( tempdir, 'images' + ext )
+			if os.path.isfile(filename):
+				output = WorkingFile(filename, 'rb', tempdir=tempdir)
 				break
-
-		# Change back to original working directory
-		os.chdir(cwd)
 
 		return output
 
@@ -922,4 +920,3 @@ class WorkingFile(file):
 
 	def __del__(self):
 		self.close()
-
