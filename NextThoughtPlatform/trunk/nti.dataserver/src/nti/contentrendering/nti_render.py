@@ -25,6 +25,7 @@ logger = log
 
 from zope.configuration import xmlconfig
 from zope.deprecation import deprecate
+import zope.exceptions.log
 
 import nti.contentrendering
 from nti.contentrendering import interfaces
@@ -48,9 +49,23 @@ from nti.contentrendering.resources.ResourceRenderer import createResourceRender
 
 def _configure_logging():
 	logging.basicConfig( level=logging.INFO )
-	logging.root.handlers[0].setFormatter( logging.Formatter( '[%(name)s] %(levelname)s: %(message)s' ) )
+	logging.root.handlers[0].setFormatter( zope.exceptions.log.Formatter( '[%(name)s] %(levelname)s: %(message)s' ) )
+
+def _catching(f):
+	@functools.wraps(f)
+	def y():
+		try:
+			f()
+		except subprocess.CalledProcessError as spe:
+			logger.exception( "Failed to run subprocess" )
+			sys.exit( spe.returncode )
+		except:
+			logger.exception( "Failed to run main" )
+			sys.exit( 1 )
+	return y
 
 
+@_catching
 def main():
 	""" Main program routine """
 	argv = sys.argv[1:]

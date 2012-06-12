@@ -632,9 +632,22 @@ class Imager(object):
 			kwargs['bufsize'] = -1 # System default, fully buffererd
 			kwargs['stdout'] = subprocess.PIPE
 
-		subprocess.check_call( args,
-							   cwd=tempdir,
-							   **kwargs )
+		try:
+			subprocess.check_call( args,
+								   cwd=tempdir,
+								   **kwargs )
+		except:
+			# JAM: If the process failed, we'd like to include some info
+			# about the reason, which would be in 'images.log'
+			# TODO: Adopt this everywhere we're calling latex
+			logname = os.path.join( tempdir, 'images.log' )
+			if os.path.isfile( logname ):
+				lines = open(os.path.join(tempdir,'images.log'), 'rU' ).readlines()
+				log = '\t\t'.join( [line for line in lines if 'Error' in line] )
+				__traceback_info__ = log
+			shutil.rmtree(tempdir, True) # Try to clean up
+			raise
+
 
 
 		output = None
