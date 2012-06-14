@@ -25,6 +25,7 @@ logger = log
 
 from zope.configuration import xmlconfig
 from zope.deprecation import deprecate
+from zope import component
 import zope.exceptions.log
 
 import nti.contentrendering
@@ -75,7 +76,7 @@ def main():
 	sourceFile = argv.pop(0)
 	source_dir = os.path.dirname( os.path.abspath( os.path.expanduser( sourceFile ) ) )
 
-	outFormat = 'xml'
+	outFormat = 'xhtml'
 	if argv:
 		outFormat = argv.pop(0)
 
@@ -216,6 +217,9 @@ def setupChameleonCache():
 
 def postRender(document, contentLocation='.', jobname='prealgebra', context=None):
 	logger.info( 'Performing post render steps' )
+	# FIXME: This was not particularly well thought out. We're using components,
+	# but named utilities, not generalized adapters or subscribers.
+	# That makes this not as extensible as it should be.
 
 	# We very likely will get a book that has no pages
 	# because NTIIDs are not added yet.
@@ -295,6 +299,10 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	logger.info( "Creating a mirror file" )
 	mirror.main( contentPath, contentPath, zip_root_dir=jobname )
 
+	logger.info( "Extracting assessments" )
+	extractor = component.queryUtility( interfaces.IRenderedBookTransformer, name='AssessmentExtractor' )
+	if extractor:
+		extractor.transform( book )
 
 
 
