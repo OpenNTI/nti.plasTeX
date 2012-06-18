@@ -44,7 +44,9 @@ from nti.contentrendering import contentchecks
 from nti.contentrendering import plastexids
 from nti.contentrendering.RenderedBook import RenderedBook
 
-from nti.contentrendering.resources import ResourceDB, ResourceTypeOverrides
+from nti.contentrendering.resources.ResourceDB import ResourceDB
+from nti.contentrendering.resources.resourcetypeoverrides import ResourceTypeOverrides
+
 from nti.contentrendering.resources.ResourceRenderer import createResourceRenderer
 
 
