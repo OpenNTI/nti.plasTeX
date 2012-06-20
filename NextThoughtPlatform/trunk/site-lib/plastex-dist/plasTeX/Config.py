@@ -206,7 +206,7 @@ files['bad-chars'] = StringOption(
 files['bad-chars-sub'] = StringOption(
     """ Character that should be used instead of an illegal character """,
     options = '--bad-filename-chars-sub',
-    default = '-',
+    default = '_',
     category = 'files',
 )
 
