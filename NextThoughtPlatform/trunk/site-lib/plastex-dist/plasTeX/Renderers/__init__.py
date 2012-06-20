@@ -278,7 +278,7 @@ class Renderable(object):
 		try:
 			# Nothing in the plasTeX code base actually ever
 			# sets a filenameoverride on a Node
-			override = str(self.filenameoverride) if self.filenameoverride is not None else None
+			override = str(self.filenameoverride.encode('ascii','ignore')) if self.filenameoverride is not None else None
 			if override:
 				assert override is not None
 				userdata = self.ownerDocument.userdata
