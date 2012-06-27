@@ -644,7 +644,8 @@ class Imager(object):
 			if os.path.isfile( logname ):
 				lines = open(os.path.join(tempdir,'images.log'), 'rU' ).readlines()
 				log = '\t\t'.join( [line for line in lines if 'Error' in line] )
-				__traceback_info__ = log
+				__traceback_info__ = logname, log
+
 			shutil.rmtree(tempdir, True) # Try to clean up
 			raise
 
