@@ -333,7 +333,9 @@ def write_dc_metadata( document, jobname ):
 		mapping['Creator'] = [x.textContent for x in metadata['author']]
 	if 'title' in metadata:
 		# DC Title is an array, latex title is scalar
-		mapping['Title'] = (metadata['title'].textContent,)
+		# Sometimes title may be a string or it may be a TeXElement, depending
+		# on what packages have dorked things up
+		mapping['Title'] = (getattr( metadata['title'], 'textContent', metadata['title']),)
 	# The 'date' command in latex is free form, which is not
 	# what we want for DC...what do we want?
 
