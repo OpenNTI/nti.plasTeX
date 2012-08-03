@@ -27,6 +27,7 @@ from zope.configuration import xmlconfig
 from zope.deprecation import deprecate
 from zope import component
 import zope.exceptions.log
+import zope.dublincore.xmlmetadata
 
 import nti.contentrendering
 from nti.contentrendering import interfaces
@@ -203,6 +204,8 @@ def main():
 	if outFormat == 'xml':
 		toXml( document, jobname )
 
+	write_dc_metadata( document, jobname )
+
 def setupChameleonCache():
 	# Set up a cache for these things to make subsequent renders faster
 	if not 'CHAMELEON_CACHE' in os.environ:
@@ -317,6 +320,33 @@ def toXml( document, jobname ):
 	outfile = '%s.xml' % jobname
 	with open(outfile,'w') as f:
 		f.write(document.toXML().encode('utf-8'))
+
+def write_dc_metadata( document, jobname ):
+	"""
+	Write an XML file containing the DublinCore metadata we can extract for this document.
+	"""
+	mapping = {}
+	metadata = document.userdata
+
+	if 'author' in metadata:
+		# latex author and DC Creator are both arrays
+		mapping['Creator'] = [x.textContent for x in metadata['author']]
+	if 'title' in metadata:
+		# DC Title is an array, latex title is scalar
+		mapping['Title'] = (metadata['title'].textContent,)
+	# The 'date' command in latex is free form, which is not
+	# what we want for DC...what do we want?
+
+
+	# For other options, see zope.dublincore.dcterms.name_to_element
+	# Publisher, in particular, would be a good one
+
+	if not mapping:
+		return
+
+	xml_string = unicode(zope.dublincore.xmlmetadata.dumpString( mapping ))
+	with open( 'dc_metadata.xml', 'w' ) as f:
+		f.write( xml_string.encode( 'utf-8' ) )
 
 
 def generateImages(document):
