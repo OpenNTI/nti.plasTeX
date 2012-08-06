@@ -260,36 +260,13 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 
 	contentPath = os.path.realpath(contentLocation)
 	if not os.path.exists( os.path.join( contentPath, 'indexdir' ) ):
-		# Try with pypy, it's much faster
-		env = dict(os.environ)
-		# Need whoosh, etc, on the path, but NOT the standard lib, or the
-		# raw site-packages (so no site.py). This requires whoosh to be
-		# installed as an egg using easy_intstall.pth. Note that rejecting
-		# the standard lib is only required if we're not
-		# in a virtual environment.
-		def try_pypy( in_virtual_env=True ):
-			if in_virtual_env:
-				path = [p for p in sys.path if not p.startswith( '/opt' )]
-			else:
-				path = [p for p in sys.path
-						if not p.endswith('site-packages') and not p.endswith('site-packages/') and not p.endswith('python2.7')]
-			env['PYTHONPATH'] = ':'.join(path)
-
-			logger.info( 'Indexing content with pypy' )
-			subprocess.check_call( ['pypy-c', '-m', 'nti.contentrendering.indexer',
-									toc_file, contentPath, 'indexdir', jobname],
-									env=env )
-
-		try:
-			try_pypy()
-		except (subprocess.CalledProcessError,OSError):
-			logger.info( "pypy virtualenv failed; trying system" )
-			try:
-				try_pypy( False )
-			except (subprocess.CalledProcessError,OSError):
-				logger.info( 'pypy failed to index, falling back to current' )
-				logger.debug( 'pypy exception', exc_info=True )
-				indexer.index_content(tocFile=toc_file, contentPath=contentPath, indexname=jobname)
+		# We'd like to be able to run this with pypy (it's /much/ faster)
+		# but some of the Zope libs we import during contentsearch (notably Persistent)
+		# are not quite compatible. A previous version of this code made the correct
+		# changes PYTHONPATH changes for this to work (before contentsearch grew those deps);
+		# now it just generates exceptions, so we don't try right now
+		logger.info( "Indexing content in-process." )
+		indexer.index_content(tocFile=toc_file, contentPath=contentPath, indexname=jobname)
 
 	# TODO: Aren't the things in the archive mirror file the same things
 	# we want to list in the manifest? If so, we should be able to combine
