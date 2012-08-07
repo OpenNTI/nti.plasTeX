@@ -82,7 +82,7 @@ def _as_unicode(child, val):
 		val = unicode(val, child.config['files']['input-encoding'])
 	return val
 
-def _render_children(r, childNodes):
+def render_children(r, childNodes):
 	"""
 	:return: An iterable of Unicode objects representing the rendered
 		versions of `childNodes`. Note that the lengths may not be equal
@@ -171,6 +171,35 @@ def _render_children(r, childNodes):
 
 	return s
 
+_render_children = render_children
+
+def renderable_as_unicode( self ):
+	"""
+	Invoke the rendering process on all of the child nodes.
+
+	"""
+	r = self.renderer
+
+	# Short circuit macros that have unicode equivalents
+	uni = self.unicode
+	if uni is not None:
+		return r.outputType(r.textDefault(uni))
+
+	# If we don't have childNodes, then we're done
+	if not self.hasChildNodes():
+		return u''
+
+	# At the very top level, only render the DOCUMENT_LEVEL node
+	if self.nodeType == Node.DOCUMENT_NODE:
+		childNodes = [x for x in self.childNodes
+						if x.level == Node.DOCUMENT_LEVEL]
+	else:
+		childNodes = self.childNodes
+
+	# Render all child nodes
+	s = _render_children( r, childNodes )
+
+	return r.outputType(u''.join(s))
 
 class Renderable(object):
 	"""
@@ -185,29 +214,12 @@ class Renderable(object):
 		"""
 		Invoke the rendering process on all of the child nodes.
 
+		Uses :func:`renderable_as_unicode` to allow subclasses to be able
+		to duplicate this method (because it's not possible to call
+		:func:`super` in a mixed-in subclass).
+
 		"""
-		r = self.renderer
-
-		# Short circuit macros that have unicode equivalents
-		uni = self.unicode
-		if uni is not None:
-			return r.outputType(r.textDefault(uni))
-
-		# If we don't have childNodes, then we're done
-		if not self.hasChildNodes():
-			return u''
-
-		# At the very top level, only render the DOCUMENT_LEVEL node
-		if self.nodeType == Node.DOCUMENT_NODE:
-			childNodes = [x for x in self.childNodes
-							if x.level == Node.DOCUMENT_LEVEL]
-		else:
-			childNodes = self.childNodes
-
-		# Render all child nodes
-		s = _render_children( r, childNodes )
-
-		return r.outputType(u''.join(s))
+		return renderable_as_unicode( self )
 
 	def __str__(self):
 		return unicode(self)

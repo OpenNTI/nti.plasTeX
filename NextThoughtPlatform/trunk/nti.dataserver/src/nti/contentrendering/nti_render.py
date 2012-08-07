@@ -290,8 +290,9 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 
 def render(document, rname, db):
 	# Apply renderer
-	renderer = createResourceRenderer(rname, db)
+	renderer = createResourceRenderer(rname, db, unmix=False)
 	renderer.render(document)
+	return renderer
 
 def toXml( document, jobname ):
 	outfile = '%s.xml' % jobname
