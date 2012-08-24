@@ -43,6 +43,7 @@ from nti.contentrendering import sectionvideoadder
 from nti.contentrendering import ntiidlinksetter
 from nti.contentrendering import contentchecks
 from nti.contentrendering import plastexids
+from nti.contentrendering import jsonpbuilder
 from nti.contentrendering.RenderedBook import RenderedBook
 
 from nti.contentrendering.resources.ResourceDB import ResourceDB
@@ -286,6 +287,8 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	if extractor:
 		extractor.transform( book )
 
+	logger.info( "Creating JSONP content" )
+	jsonpbuilder.transform( book )
 
 
 def render(document, rname, db):
@@ -305,6 +308,8 @@ def write_dc_metadata( document, jobname ):
 	"""
 	mapping = {}
 	metadata = document.userdata
+
+	logger.info("Writing DublinCore Metadata.")
 
 	if 'author' in metadata:
 		# latex author and DC Creator are both arrays
