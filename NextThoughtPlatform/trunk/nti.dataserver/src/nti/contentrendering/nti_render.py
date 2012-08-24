@@ -234,7 +234,6 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	# This step adds NTIIDs to the TOC in addition to modifying
 	# on-disk content.
 	logger.info( 'Adding icons to toc and pages' )
-	toc_file = os.path.join(contentLocation, 'eclipse-toc.xml')
 	tociconsetter.transform(book, context=context)
 
 	logger.info( 'Fetching page info' )
@@ -267,7 +266,7 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 		# changes PYTHONPATH changes for this to work (before contentsearch grew those deps);
 		# now it just generates exceptions, so we don't try right now
 		logger.info( "Indexing content in-process." )
-		indexer.index_content(tocFile=toc_file, contentPath=contentPath, indexname=jobname)
+		indexer.transform( book )#index_content(tocFile=toc_file, contentPath=contentPath, indexname=jobname)
 
 	# TODO: Aren't the things in the archive mirror file the same things
 	# we want to list in the manifest? If so, we should be able to combine
