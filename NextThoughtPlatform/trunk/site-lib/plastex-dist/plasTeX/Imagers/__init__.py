@@ -1,14 +1,20 @@
 #!/usr/bin/env python
 
-import os, time, tempfile, shutil, re, string, pickle, codecs
-try: from hashlib import md5
-except ImportError: from md5 import new as md5
+import os
+
+import tempfile
+import shutil
+import re
+import string
+import cPickle as pickle
+import codecs
+from hashlib import md5
 from plasTeX.Logging import getLogger
 from StringIO import StringIO
 from plasTeX.Filenames import Filenames
 from plasTeX.dictutils import ordereddict
 import subprocess
-import shlex
+
 
 log = getLogger()
 depthlog = getLogger('render.images.depth')
@@ -84,7 +90,7 @@ def autoCrop(im, bgcolor=None, margin=0):
 			bbox = tuple([max(0,x) for x in bbox])
 		return im.crop(bbox), tuple([abs(x-y) for x,y in zip(origbbox,bbox)]), bgcolor
 	return PILImage.new("RGB", (1,1), bgcolor), (0,0,0,0), bgcolor
-	return None, None, bgcolor # no contents
+	#return None, None, bgcolor # no contents
 
 class Box(object):
 	pass
@@ -643,10 +649,18 @@ class Imager(object):
 			logname = os.path.join( tempdir, 'images.log' )
 			if os.path.isfile( logname ):
 				lines = open(os.path.join(tempdir,'images.log'), 'rU' ).readlines()
-				log = '\t\t'.join( [line for line in lines if 'Error' in line] )
-				__traceback_info__ = logname, log
+				log = []
+				for i, line in enumerate(lines):
+					if 'Error' in line:
+						log.append( line )
+					elif line.startswith( '!' ) and i + 1 < len(lines):
+						log.append( line )
+						log.append( lines[i+1] )
+				log = '\t\t'.join( log )
+				__traceback_info__ = 'Set NTI_KEEP_TEMP=1 to save', logname, log
 
-			shutil.rmtree(tempdir, True) # Try to clean up
+			if not os.environ.get( 'NTI_KEEP_TEMP' ):
+				shutil.rmtree(tempdir, True) # Try to clean up
 			raise
 
 
@@ -816,7 +830,7 @@ class Imager(object):
 		# Populate image attrs that will be bound later
 		if self.imageAttrs:
 			tmpl = string.Template(self.imageAttrs)
-			vars = {'filename':filename}
+			vars = {'filename': filename}
 			for name in ['height','width','depth']:
 				if getattr(img, name) is None:
 					vars['attr'] = name
