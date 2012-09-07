@@ -33,7 +33,6 @@ import nti.contentrendering
 from nti.contentrendering import interfaces
 from nti.contentrendering import transforms
 from nti.contentrendering import mirror
-from nti.contentrendering import indexer
 from nti.contentrendering import tociconsetter
 from nti.contentrendering import html5cachefile
 from nti.contentrendering import contentsizesetter
@@ -266,6 +265,9 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 		# changes PYTHONPATH changes for this to work (before contentsearch grew those deps);
 		# now it just generates exceptions, so we don't try right now
 		logger.info( "Indexing content in-process." )
+		# Defer the import to the last possible moment, as this pulls in a boatload of deps,
+		# including gevent patches we don't want
+		from nti.contentrendering import indexer
 		indexer.transform( book )#index_content(tocFile=toc_file, contentPath=contentPath, indexname=jobname)
 
 	# TODO: Aren't the things in the archive mirror file the same things
