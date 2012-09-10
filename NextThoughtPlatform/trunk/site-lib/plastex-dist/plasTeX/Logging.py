@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 import textwrap, types
-from logging import CRITICAL, DEBUG, INFO, Logger, StreamHandler, Formatter
+from logging import CRITICAL, DEBUG, Logger as _Logger, StreamHandler as _StreamHandler, Formatter
 from logging import addLevelName, setLoggerClass
-from plasTeX.Config import config as _config
+
 
 MAX_WIDTH = 75
 LOG_FORMAT = '[%(name)s] %(levelname)s: %(message)s'
@@ -22,19 +22,16 @@ addLevelName(DEBUG3, 'DEBUG-3')
 addLevelName(DEBUG4, 'DEBUG-4')
 addLevelName(DEBUG5, 'DEBUG-5')
 
-_Logger = Logger
-_StreamHandler = StreamHandler
-
 class Logger(_Logger):
 
 	def __init__(self, name='', *args, **kwargs):
 		_Logger.__init__(self, name, *args, **kwargs)
 		#self.propagate = 0
-		try: level = eval(_config['logging'][name])
-		except: level = None
 		# JM: plastex is evil and overrides
 		# configuration and forces a formatter. And a
-		# handler. This is not its place.
+		# handler. And a level. This is not its place.
+		#try: level = eval(_config['logging'][name])
+		#except: level = None
 
 		# if not name:
 		# 	handler = StreamHandler()
@@ -47,8 +44,8 @@ class Logger(_Logger):
 		# 	handler = StreamHandler()
 		# 	handler.setFormatter(StreamFormatter(LOG_FORMAT))
 		# self.addHandler(handler)
-		if level is not None:
-			self.setLevel(level)
+		#if level is not None:
+		#	self.setLevel(level)
 
 	def debug1(self, *args, **kwargs):
 		return self.log(DEBUG1, *args, **kwargs)

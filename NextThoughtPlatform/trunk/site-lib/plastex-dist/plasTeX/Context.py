@@ -2,11 +2,12 @@
 
 import new, os, ConfigParser, re, time, codecs
 import plasTeX
-from plasTeX import ismacro, macroName
-from plasTeX.DOM import Node
-from plasTeX.Logging import getLogger
-from Tokenizer import Tokenizer, Token, DEFAULT_CATEGORIES, VERBATIM_CATEGORIES
+from ._util import ismacro, macroName
 
+from plasTeX.Logging import getLogger
+from plasTeX.Tokenizer import Tokenizer, Token, DEFAULT_CATEGORIES, VERBATIM_CATEGORIES
+
+import cPickle as pickle
 import zope.dottedname.resolve
 
 # Only export the Context singleton
@@ -25,8 +26,8 @@ class ContextItem(dict):
 
 	"""
 
-	def __init__(self, data={}):
-		dict.__init__(self, data)
+	def __init__(self, data=None):
+		dict.__init__(self, data or {})
 		self.categories = None
 		self.obj = None
 		self.parent = None
@@ -86,8 +87,8 @@ class Counters(dict):
 class LanguageParser(object):
 	""" Parser for language commands """
 
-	def __init__(self, output={}):
-		self.data = output
+	def __init__(self, output=None):
+		self.data = output if output is not None else {}
 		self.language = None
 		self.term = None
 
@@ -229,13 +230,12 @@ class Context(object):
 			renderer may be different.
 
 		"""
-		import pickle
 		if os.path.exists(filename):
 			try:
 				d = pickle.load(open(filename,'rb'))
 				if rtype not in d:
 					d[rtype] = {}
-			except:
+			except Exception:
 				os.remove(filename)
 				d = {rtype:{}}
 		else:
@@ -243,10 +243,11 @@ class Context(object):
 		data = d[rtype]
 		for key, value in self.persistentLabels.items():
 			data[key] = value.persist()
+
 		try:
 			pickle.dump(d, open(filename,'wb'))
-		except Exception, msg:
-			log.warning('Could not save auxiliary information. (%s)' % msg)
+		except Exception:
+			log.exception('Could not save auxiliary information.')
 
 	def restore(self, filename, rtype='none'):
 		"""
@@ -261,13 +262,16 @@ class Context(object):
 			renderer may be different.
 
 		"""
-		import pickle
+
 		if not os.path.exists(filename):
 			return
+
 		try:
 			d = pickle.load(open(filename,'rb'))
-			try: data = d[rtype]
-			except KeyError: return
+			try:
+				data = d[rtype]
+			except KeyError:
+				return
 			wou = self.warnOnUnrecognized
 			self.warnOnUnrecognized = False
 			for key, value in data.items():
@@ -275,8 +279,8 @@ class Context(object):
 				n.restore(value)
 				self.labels[key] = n
 			self.warnOnUnrecognized = wou
-		except Exception, msg:
-			log.warning('Could not load auxiliary information. (%s)' % msg)
+		except Exception:
+			log.exception('Could not load auxiliary information.' )
 
 	@property
 	def isMathMode(self):
@@ -289,7 +293,7 @@ class Context(object):
 
 	def loadBaseMacros(self):
 		""" Import all builtin macros """
-		from plasTeX import Base
+		from plasTeX import Base # TODO: Circular imports
 		self.importMacros(vars(Base))
 
 	def loadLanguage(self, lang, document):
@@ -366,7 +370,7 @@ class Context(object):
 												{'args': value})
 			self.importMacros(macros)
 
-	def loadPackage(self, tex, file, options={}):
+	def loadPackage(self, tex, package_file, options=None):
 		"""
 		Load a Python or LaTeX package
 
@@ -386,46 +390,47 @@ class Context(object):
 		boolean indicating whether or not the package loaded successfully
 
 		"""
-		module = os.path.splitext(file)[0]
+		module = os.path.splitext(package_file)[0]
 
 		# See if it has already been loaded
 		if self.packages.has_key(module):
 			return True
 
 		packagesini = os.path.join(os.path.dirname(plasTeX.Packages.__file__),
-								   os.path.basename(module)+'.ini')
+								   os.path.basename(module) + '.ini')
 
 		try:
 			# Try to import a Python package by that name
 			#m = __import__(module, globals(), locals())
 			# JAM: We want to allow for dottednames
 			m = zope.dottedname.resolve.resolve( module )
-			status.info('Loaded package %s (%s)', file, m.__file__)
+			status.info('Loaded package %s (%s)', package_file, m.__file__)
 			if hasattr(m, 'ProcessOptions'):
 				m.ProcessOptions(options or {}, tex.ownerDocument)
 			self.importMacros(vars(m))
-			moduleini = os.path.splitext(m.__file__)[0]+'.ini'
+			moduleini = os.path.splitext(m.__file__)[0] + '.ini'
 			self.loadINIPackage([packagesini, moduleini])
 			self.packages[module] = options
 			#status.info(' ) ')
 			return True
 
-		except ImportError, msg:
+		except ImportError as e:
 			# No Python module
-			if 'No module' in str(msg):
+			if 'No module' in str(e):
 				#pass
 				# Failed to load Python package
-				log.debug('No Python version of %s was found', file, exc_info=True)
+				log.debug('No Python version of %s was found', package_file, exc_info=True)
 			# Error while importing
 			else:
 				raise
 
-		result = tex.loadPackage(file, options)
+		result = tex.loadPackage(package_file, options)
 		try:
-			moduleini = os.path.join(os.path.dirname(tex.kpsewhich(file)),
-									 os.path.basename(module)+'.ini')
+			moduleini = os.path.join(os.path.dirname(tex.kpsewhich(package_file)),
+									 os.path.basename(module) + '.ini')
 			self.loadINIPackage([packagesini, moduleini])
-		except OSError: pass
+		except OSError:
+			pass
 		return result
 
 
@@ -509,7 +514,8 @@ class Context(object):
 		Returns: instance of requested macro
 
 		"""
-		try: return self.top[key]
+		try:
+			return self.top[key]
 		except KeyError: pass
 
 		# Didn't find it, so generate a new class
@@ -545,6 +551,7 @@ class Context(object):
 				# If we hit a document element, make sure that we start
 				# at the global context.
 				if context.level == context.DOCUMENT_LEVEL:
+					stacklog.debug( "Popping all contexts up to document due to %s", context )
 					while len(self.contexts) > 1:
 						self.contexts.pop()
 			stacklog.debug('pushing %s onto %s', name, self.top)
@@ -626,7 +633,9 @@ class Context(object):
 		Returns: ContextItem instance removed from stack
 
 		"""
-#		print 'POP', type(obj).__name__, self.contexts[-1]
+
+		#stacklog.debug( 'Popping %s %s from %s', obj, type(obj), self.contexts[-1] )
+
 		if obj is None:
 			# Pop until we hit a None in the context
 			while len(self.contexts) > 1:

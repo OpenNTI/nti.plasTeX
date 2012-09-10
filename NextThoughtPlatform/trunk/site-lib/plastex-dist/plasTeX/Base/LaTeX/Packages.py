@@ -5,7 +5,7 @@ C.5 Classes, Packages, and Page Styles (p176)
 
 """
 
-import codecs, sys, os
+import sys, os
 from plasTeX import Command, Environment, DimenCommand, Token
 from plasTeX.Logging import getLogger
 
@@ -19,11 +19,11 @@ status = getLogger(__name__ + '.status')
 
 class PackageLoader(Command):
 	extension = '.sty'
-	def load(self, tex, file, options={}):
+	def load(self, tex, package_file, options=None):
 		try:
-			self.ownerDocument.context.loadPackage(tex, file+self.extension, options)
-		except Exception, msg:
-			log.error('Could not load package "%s": %s' % (file, msg))
+			self.ownerDocument.context.loadPackage(tex, package_file + self.extension, options if options is not None else {})
+		except Exception:
+			log.exception('Could not load package "%s"', package_file )
 
 #
 # C.5.1 Document Class
@@ -69,10 +69,14 @@ class usepackage(PackageLoader):
 		# Allow & in option names (this happens in natbib)
 		catcode = self.ownerDocument.context.whichCode('&')
 		self.ownerDocument.context.catcode('&', Token.CC_LETTER)
-		a = self.parse(tex)
-		for file in a['names']:
-			self.load(tex, file, a['options'])
-		self.ownerDocument.context.catcode('&', catcode)
+		try:
+			a = self.parse(tex)
+			for package_file in a['names']:
+				self.load(tex, package_file, a['options'])
+		except:
+			from IPython.core.debugger import Tracer; Tracer()() ## DEBUG ##
+		finally:
+			self.ownerDocument.context.catcode('&', catcode)
 
 class RequirePackage(usepackage):
 	pass

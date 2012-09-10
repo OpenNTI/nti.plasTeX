@@ -2,10 +2,18 @@
 
 __version__ = '9.3'
 
-import string, re
-from DOM import Element, Text, Node, DocumentFragment, Document
-from Tokenizer import Token, BeginGroup, EndGroup, Other
+import string
+import re
+from plasTeX.DOM import Element, Node, DocumentFragment, Document
+from plasTeX.Tokenizer import Token, BeginGroup, EndGroup
 from plasTeX import Logging
+
+from plasTeX import Context
+from plasTeX import Config
+
+### BBB exports
+from plasTeX.DOM import Text
+from plasTeX.Tokenizer import Other
 
 log = Logging.getLogger(__name__)
 status = Logging.getLogger(__name__ + '.status')
@@ -24,46 +32,10 @@ def idgen():
 # JAM: Global is BAD. We now look at this in a document-specific way
 #idgen = idgen()
 
-def subclasses(o):
-	""" Return all subclasses of the given class """
-	output = [o]
-	for item in o.__subclasses__():
-		output.extend(subclasses(item))
-	return output
+from ._util import subclasses, sourceChildren, sourceArguments, ismacro, issection, macroName
 
-def sourceChildren(o, par=True):
-	""" Return the LaTeX source of the child nodes """
-	if o.hasChildNodes():
-		if par:
-			return u''.join([x.source for x in o.childNodes])
-		else:
-			source = []
-			for par in o.childNodes:
-				source += [x.source for x in par]
-			return u''.join(source)
-	return u''
 
-def sourceArguments(o):
-	""" Return the LaTeX source of the arguments """
-	return o.argSource
 
-def ismacro(o):
-	""" Is the given object a macro? """
-	return hasattr(o, 'macroName')
-
-def issection(o):
-	""" Is the given object a section? """
-	return o.level >= Node.DOCUMENT_LEVEL and o.level < Node.ENDSECTIONS_LEVEL
-
-def macroName(o):
-	 """ Return the macro name of the given object """
-	 if o.macroName is None:
-		 if type(o) is type:
-			 return o.__name__
-		 return type(o).__name__
-	 return o.macroName
-
-import pdb
 class Argument(object):
 	"""
 	Macro argument
@@ -73,18 +45,19 @@ class Argument(object):
 	arguments thereafter.
 
 	"""
-	def __init__(self, name, index, options={}):
+	def __init__(self, name, index, options=None):
 		self.name = name
 		self.index = index
 		self.source = ''
-		self.options = options.copy()
+		self.options = options.copy() if options else {}
 
 	def __repr__(self):
 		return '%s: %s' % (self.name, self.options)
 
 	def __cmp__(self, other):
 		c = cmp(self.name, other.name)
-		if c: return c
+		if c:
+			return c
 		return cmp(self.options, other.options)
 
 
@@ -130,7 +103,7 @@ class Macro(Element):
 
 	# Attributes that should be persisted between runs for nodes
 	# that can be referenced.  This allows for cross-document links.
-	refAttributes = ['macroName','ref','title','captionName','id','url']
+	refAttributes = ('macroName','ref','title','captionName','id','url')
 
 	# Source of the TeX macro arguments
 	argSource = ''
@@ -352,7 +325,7 @@ class Macro(Element):
 		# If this is a \begin token or the element needs to be
 		# closed automatically (i.e. \section, \item, etc.), just
 		# push the new context and return the instance.
-		elif self.macroMode == Macro.MODE_BEGIN:
+		if self.macroMode == Macro.MODE_BEGIN:
 			self.ownerDocument.context.push(self)
 			self.parse(tex)
 			# If a unicode value is set, just return that
@@ -800,6 +773,7 @@ class TeXFragment(DocumentFragment):
 	def source(self):
 		return sourceChildren(self)
 
+
 class TeXDocument(Document):
 	""" TeX Document node """
 	documentFragmentClass = TeXFragment
@@ -828,13 +802,11 @@ class TeXDocument(Document):
 		#super(TeXDocument, self).__init__(*args, **kwargs)
 
 		if 'context' not in kwargs:
-			import Context
 			self.context = Context.Context(load=True)
 		else:
 			self.context = kwargs['context']
 
 		if 'config' not in kwargs:
-			import Config
 			self.config = Config.config
 		else:
 			self.config = kwargs['config']

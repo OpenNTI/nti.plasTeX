@@ -48,9 +48,10 @@ class BoxCommand(Command):
 	args = 'self'
 	mathMode = False
 	def parse(self, tex):
-		MathShift.inEnv.append(None)
+		# JAM: TODO: Do we have an ownerDocument at this point?
+		MathShift._getEnvStack( self ).append(None)
 		Command.parse(self, tex)
-		MathShift.inEnv.pop()
+		MathShift._getEnvStack( self ).pop()
 		return self.attributes
 
 class hbox(BoxCommand): pass
@@ -66,7 +67,20 @@ class MathShift(Command):
 
 	"""
 	macroName = 'active::$'
-	inEnv = []
+
+	@classmethod
+	def _getEnvStack(cls, instance):
+		# This used to use a list on MathShift class. But that fails
+		# in multi-threading. It also fails if the parse blows up and a
+		# subsequent document is started: The shiftmode would not be reset for
+		# the new document leading to premature pushing/popping
+		inEnv = getattr( instance.ownerDocument, '@MathShift.inEnv', None )
+		if inEnv is None:
+			inEnv = list()
+			setattr( instance.ownerDocument, '@MathShift.inEnv', inEnv )
+
+		return inEnv
+
 
 	def invoke(self, tex):
 		"""
@@ -75,7 +89,8 @@ class MathShift(Command):
 		account \mbox{}es.
 
 		"""
-		inEnv = type(self).inEnv
+		inEnv = self._getEnvStack(self)
+
 		math = self.ownerDocument.createElement('math')
 		displaymath = self.ownerDocument.createElement('displaymath')
 
@@ -110,6 +125,7 @@ class MathShift(Command):
 class AlignmentChar(Command):
 	""" The '&' character in TeX """
 	macroName = 'active::&'
+
 
 class SuperScript(Command):
 	""" The '^' character in TeX """

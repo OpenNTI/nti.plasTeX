@@ -9,17 +9,20 @@ import new, sys
 from plasTeX import Macro, Environment, Command, DimenCommand
 from plasTeX import sourceChildren, sourceArguments
 
+#pylint: disable=R0904
+
 class ColumnType(Macro):
 
-	columnAttributes = {}
-	columnTypes = {}
+	columnAttributes = None # instance
+	columnTypes = {} # class
 
-	def __init__(self, *args, **kwargs):
-		Macro.__init__(self, *args, **kwargs)
-		self.style.update(self.columnAttributes)
+	def __init__(self): #, *args, **kwargs):
+		super(ColumnType,self).__init__()
+		#Macro.__init__(self, *args, **kwargs)
+		self.style.update(self.columnAttributes or {})
 
 	@classmethod
-	def new(cls, name, attributes, args='', before=[], after=[], between=[]):
+	def new(cls, name, attributes, args='', before=(), after=(), between=()):
 		"""
 		Generate a new column type definition
 
@@ -34,8 +37,11 @@ class ColumnType(Macro):
 
 		"""
 		newclass = new.classobj(name, (cls,),
-			{'columnAttributes':attributes, 'args':args,
-			 'before':before, 'after':after, 'between':between})
+								{'columnAttributes': attributes,
+								 'args': args,
+								 'before': before,
+								 'after': after,
+								 'between': between})
 		cls.columnTypes[name] = newclass
 
 	def __repr__(self):
@@ -280,7 +286,7 @@ class Array(Environment):
 				self.endToken = None
 
 			# Check for multicols
-			hasmulticol = False
+			# hasmulticol = False
 			for item in self:
 				if item.attributes and item.attributes.has_key('colspan'):
 					self.attributes['colspan'] = item.attributes['colspan']
@@ -292,7 +298,7 @@ class Array(Environment):
 			# Cache the border information.	 This must be done before
 			# grouping paragraphs since a paragraph might swallow
 			# an hline/vline/cline command.
-			h,v = self.borders
+			_h, _v = self.borders
 
 			# Throw out the border commands, we're done with them
 #			for i in range(len(self)-1, -1, -1):
@@ -378,7 +384,7 @@ class Array(Environment):
 		""" Column spanning cell """
 		args = 'colspan:int colspec:nox self'
 		isHeader = False
-
+		colspec = None
 		def invoke(self, tex):
 			Command.invoke(self, tex)
 			self.colspec = Array.compileColspec(tex, self.attributes['colspec']).pop(0)
@@ -442,7 +448,7 @@ class Array(Environment):
 		"""
 		# Link cells to colspec
 		if self.colspec:
-			for r, row in enumerate(self):
+			for _, row in enumerate(self):
 				for c, cell in enumerate(row):
 					colspan = cell.attributes.get('colspan', 0)
 					if colspan > 1:
@@ -562,7 +568,7 @@ class Array(Environment):
 			if tok == '*':
 				num = tex.readArgument(type=int, expanded=True)
 				spec = tex.readArgument()
-				for i in range(num):
+				for _ in range(num):
 					tex.pushTokens(spec)
 				continue
 
