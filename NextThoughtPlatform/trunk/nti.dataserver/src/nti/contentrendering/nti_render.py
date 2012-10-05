@@ -206,19 +206,7 @@ def main():
 
 	write_dc_metadata( document, jobname )
 
-def setupChameleonCache():
-	# Set up a cache for these things to make subsequent renders faster
-	if not 'CHAMELEON_CACHE' in os.environ:
-		parent = os.getcwd()
-		for p in ('DATASERVER_ENV','DATASERVER_DIR','VIRTUAL_ENV'):
-			if p in os.environ:
-				parent = os.environ[p]
-				break
-		os.environ['CHAMELEON_CACHE'] = os.path.join( parent, '.chameleon_cache' )
-		logger.info( "Caching templates to %s", os.environ['CHAMELEON_CACHE'] )
-		try:
-			os.mkdir( os.environ['CHAMELEON_CACHE'] )
-		except OSError: pass
+from nti.utils import setupChameleonCache
 
 def postRender(document, contentLocation='.', jobname='prealgebra', context=None):
 	logger.info( 'Performing post render steps' )
