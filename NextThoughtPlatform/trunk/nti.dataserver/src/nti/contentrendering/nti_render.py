@@ -326,8 +326,8 @@ def write_dc_metadata( document, jobname ):
 def generateImages(document):
 	### Generates required images ###
 	# Replace this with configuration/use of ZCA?
-	local_overrides = os.path.join( os.getcwd(), 'nti.resourceoverrides', ResourceTypeOverrides.OVERRIDE_INDEX_NAME )
-	if os.path.exists( local_overrides ):
+	local_overrides = os.path.join( os.getcwd(), '../nti.resourceoverrides' )
+	if os.path.exists( os.path.join(local_overrides, ResourceTypeOverrides.OVERRIDE_INDEX_NAME) ):
 		overrides = local_overrides
 	else:
 		overrides = resource_filename(__name__, 'resourceoverrides')
