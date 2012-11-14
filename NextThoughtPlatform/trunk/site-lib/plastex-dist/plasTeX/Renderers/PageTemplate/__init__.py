@@ -18,6 +18,7 @@ from plasTeX.Renderers import Renderer as BaseRenderer
 
 import logging
 log = logging.getLogger(__name__)
+logger = log
 
 import ConfigParser
 
@@ -88,6 +89,8 @@ def pythontemplate(s, encoding='utf8',filename=None):
 
 from z3c.pt import pagetemplate
 from chameleon.zpt.program import MacroProgram as BaseMacroProgram
+from chameleon.astutil import Builtin
+
 import ast
 
 class MacroProgram(BaseMacroProgram):
@@ -127,18 +130,20 @@ class _Scope(chameleon.utils.Scope):
 chameleon.template.Scope = _Scope
 
 def zpttemplate(s,encoding='utf8',filename=None):
-
+	# It improves error message slightly if we keep the body around
+	# The source is not as necessary, but what the heck, it's only memory
+	config = {'keep_body': True, 'keep_source': True}
 	if filename:
-		template = _PageTemplate( s, filename=filename )
-	else:
-		template = _PageTemplate( s )
+		config['filename'] = filename
+	template = _PageTemplate( s, **config )
 
 	def render(obj):
-		context = dict(here=obj, container=obj.parentNode,
-					   config=obj.ownerDocument.config,
-					   context=obj.ownerDocument.context,
-					   template=template,
-					   templates=obj.renderer)
+		context = {'here': obj,
+				   'container': obj.parentNode,
+				   'config': obj.ownerDocument.config,
+				   'context': obj.ownerDocument.context,
+				   'template': template,
+				   'templates': obj.renderer}
 		rdr = template.render( **context )
 		return rdr if isinstance(rdr,unicode) else unicode(rdr,encoding)
 	return render
@@ -612,7 +617,7 @@ class PageTemplate(BaseRenderer):
 			f = open(filename, 'r')
 			for i, line in enumerate(f):
 
-				#JAM: Enable comments in zpt files.
+				#JAM: Enable python-like line comments in zpt files (ZPT has other comment types)
 				#FIXME If other template engines rely on '#'
 				#this breaks badly
 				if line.startswith('#'):
@@ -621,12 +626,15 @@ class PageTemplate(BaseRenderer):
 				# Found a meta-data command
 				if re.match(r'(default-)?\w+:', line):
 
-					# Purge any awaiting templates
+					# parse any awaiting templates
 					if template:
 						try:
-							self.setTemplate(''.join(template), options, filename=filename)
-						except ValueError, msg:
-							print 'ERROR: %s at line %s in file %s' % (msg, i, filename)
+							self.setTemplate('\n'.join(template).rstrip(), # Preserve line breaks
+											 options,
+											 filename=filename)
+						except ValueError:
+							logger.exception( "Failed to parse template at line %s in %s", i, filename )
+
 						options = defaults.copy()
 						template = []
 

@@ -973,6 +973,9 @@ class Node(object):
 			self.insert(i, node)
 			self.pop(i+1)
 
+	def __delitem__( self, i ):
+		raise NotImplementedError()
+
 	def extend(self, other, setParent=True):
 		""" self += other """
 		for item in other:
