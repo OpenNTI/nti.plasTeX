@@ -208,8 +208,13 @@ class Array(Environment):
 	class ArrayRow(Macro):
 		""" Table row class """
 		endToken = None
+		rowspec = None
 
 		def digest(self, tokens):
+			# SAJ: Initialize rowspec to an empty dictionary
+			#if not self.rowspec:
+			self.rowspec = {}
+
 			# Absorb tokens until the end of the row
 			self.endToken = self.digestUntil(tokens, Array.EndRow)
 			if self.endToken is not None:
@@ -277,8 +282,8 @@ class Array(Environment):
 		isHeader = False
 
 		def digest(self, tokens):
-			self.endToken = self.digestUntil(tokens, (Array.CellDelimiter,
-													  Array.EndRow))
+			self.endToken = self.digestUntil(tokens, (Array.CellDelimiter, 
+								  Array.EndRow))
 			if isinstance(self.endToken, Array.CellDelimiter):
 				tokens.next()
 				self.endToken.digest(tokens)
@@ -512,6 +517,10 @@ class Array(Environment):
 					for spec, cell in zip(self.colspec, cells):
 						spec = getattr(cell, 'colspec', spec)
 						cell.style.update(spec.style)
+				# SAJ: Row styles take precidence over column styles.
+				if row.rowspec:
+					for cell in row:
+						cell.style.update(row.rowspec)
 				prev = row
 
 		# Pop empty rows
@@ -572,9 +581,17 @@ class Array(Environment):
 					tex.pushTokens(spec)
 				continue
 
-			output.append(ColumnType.columnTypes.get(tok, ColumnType)())
+			# SAJ: Added test to warn if we have a unknown column type
+			columnType = ColumnType.columnTypes.get(tok, ColumnType)()
+			if columnType.style:
+				output.append(columnType)
+			else:
+				output.append(columnType)
+				print('Unknown column type: %s' % tok)
 
-			if tok.lower() in ['p','d']:
+			# SAJ: Change from reading args only from column types 'p' and 'd' to all types with a not
+			# empty args attribute.
+			if columnType.args:
 				tex.readArgument()
 
 			if before:
