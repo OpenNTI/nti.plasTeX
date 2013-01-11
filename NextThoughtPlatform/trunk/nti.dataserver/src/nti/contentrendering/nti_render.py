@@ -7,12 +7,12 @@ from __future__ import print_function, unicode_literals
 
 import os
 import sys
+import functools
 import string
 import datetime
-import functools
-import subprocess
-
 from pkg_resources import resource_filename
+import hashlib
+import subprocess
 
 import logging
 
@@ -23,9 +23,9 @@ log = getLogger(__name__)
 logger = log
 
 
-from zope import component
 from zope.configuration import xmlconfig
-
+from zope.deprecation import deprecate
+from zope import component
 import zope.exceptions.log
 import zope.dublincore.xmlmetadata
 
