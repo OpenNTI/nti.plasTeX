@@ -96,6 +96,18 @@ class SectionUtils(object):
 			f.mark.attributes['num'] = i+1
 		return tuple(output)
 
+	# SAJ: Allows fetching of only the glossary entries for the current section
+	@cachedproperty
+	def glossary(self):
+		output = []
+		for f in self.ownerDocument.userdata.get('glossary', ()):
+			s = f.currentSection
+			while s is not None and not s.filename:
+				s = s.currentSection
+			if s is self:
+				output.append(f)
+		return tuple(output)
+
 	@cachedproperty
 	def subsections(self):
 		""" Retrieve a list of all immediate subsections of this section """
