@@ -78,7 +78,8 @@ class Filenames(object):
 		self.vars = vars or {}
 		self.extension = extension
 		self.invalid = invalid or {}
-		self.newFilename = self._newFilename()
+		self._filename_gen = _FilenameGenerator( self.files, self.charsub, self.vars, self.extension, self.invalid )
+		self.newFilename = self._filename_gen.filenames()
 
 	def parseFilenames(self, spec):
 		""" Parse and expand the filename string """
@@ -114,7 +115,7 @@ class Filenames(object):
 
 			# Append the character to the current filename
 			if isinstance(files[-1], list):
-				for i, item in enumerate(files[-1]):
+				for i, _ in enumerate(files[-1]):
 					files[-1][i] += char
 			else:
 				files[-1] += char
@@ -130,15 +131,41 @@ class Filenames(object):
 		for name in self.newFilename:
 			return name
 
-	forceExtension = False
+	def _get_forceExtension( self ):
+		return self.__dict__.get( 'forceExtension', False )
+	def _set_forceExtension( self, val ):
+		self.__dict__['forceExtension'] = val
+		self._filename_gen.forceExtension = val
+	forceExtension = property(_get_forceExtension, _set_forceExtension )
+
 	def addExtension(self, filename):
 		""" Add a file extension to the filename if none exists """
-		ext = os.path.splitext(filename)[-1]
-		if not ext or self.forceExtension:
-			return filename + self.extension
-		return filename
+		return _addExtension( filename, self.extension, self.forceExtension )
 
-	def _newFilename(self):
+
+
+def _addExtension(filename, extension, forceExtension):
+	""" Add a file extension to the filename if none exists """
+	ext = os.path.splitext(filename)[-1]
+	if not ext or forceExtension:
+		return filename + extension
+	return filename
+
+class _FilenameGenerator(object):
+	# JAM: Factored this out from a method on the Filenames class
+	# to avoid uncollectable cycles (the generator method referred to the class,
+	# which referred to the generator method, and somehow a this became uncollectable)
+
+	forceExtension = False
+	def __init__( self, files, charsub, vars, extension, invalid ):
+		self.files = files
+		self.charsub = charsub
+		self.vars = vars
+		self.extension = extension
+		self.invalid = invalid
+
+
+	def filenames(self):
 		""" Generator that generates new filenames """
 		g = self.vars.copy()
 
@@ -179,7 +206,7 @@ class Filenames(object):
 				elif format and key in currentns:
 					value = currentns[key].split()
 					newvalue = []
-					for i in range(int(format)):
+					for _ in range(int(format)):
 						newvalue.append(value.pop(0))
 						if not value:
 							break
@@ -193,11 +220,11 @@ class Filenames(object):
 					num += 1
 				self.vars.clear()
 				self.vars.update(g)
-				result = self.addExtension(result)
+				result = _addExtension(result, self.extension, self.forceExtension)
 				if result not in self.invalid:
 					self.invalid[result] = None
 					yield result
-			except KeyError, key:
+			except KeyError:
 				continue
 
 		# We've reached the wildcard stage.	 The wildcard gives us
@@ -221,7 +248,7 @@ class Filenames(object):
 					elif format and key in currentns:
 						value = currentns[key].split()
 						newvalue = []
-						for i in range(int(format)):
+						for _ in range(int(format)):
 							newvalue.append(value.pop(0))
 							if not value:
 								break
@@ -235,14 +262,14 @@ class Filenames(object):
 						num += 1
 					self.vars.clear()
 					self.vars.update(g)
-					result = self.addExtension(result)
+					result = _addExtension(result, self.extension, self.forceExtension)
 					if result not in self.invalid:
 						self.invalid[result] = None
 						yield result
 					else:
 						continue
 					break
-				except KeyError, key:
+				except KeyError:
 					if 'num' in self.vars:
 						del self.vars['num']
 					continue
@@ -252,4 +279,4 @@ class Filenames(object):
 				if passes > 100:
 					break
 
-		raise ValueError, 'Filename could not be created.'
+		raise ValueError( 'Filename could not be created.' )
