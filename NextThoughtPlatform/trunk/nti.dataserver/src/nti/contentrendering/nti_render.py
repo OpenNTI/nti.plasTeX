@@ -175,7 +175,7 @@ def main():
 					  resource_filename( __name__, 'zpts' ),
 					  os.environ.get('XHTMLTEMPLATES', ''))
 	os.environ['XHTMLTEMPLATES'] = os.path.pathsep.join( xhtmltemplates )
-	setupChameleonCache()
+	setupChameleonCache(config=True)
 
 	# Parse the document
 	logger.info( "Parsing %s", sourceFile )
