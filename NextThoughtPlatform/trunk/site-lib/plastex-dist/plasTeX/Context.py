@@ -404,7 +404,7 @@ class Context(object):
 			#m = __import__(module, globals(), locals())
 			# JAM: We want to allow for dottednames
 			m = zope.dottedname.resolve.resolve( module )
-			status.info('Loaded package %s (%s)', package_file, m.__file__)
+			status.debug('Loaded package %s (%s)', package_file, m.__file__)
 			if hasattr(m, 'ProcessOptions'):
 				m.ProcessOptions(options or {}, tex.ownerDocument)
 			self.importMacros(vars(m))
