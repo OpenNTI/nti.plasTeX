@@ -8,6 +8,10 @@ C.10.2 The array and tabular Environments
 import new, sys
 from plasTeX import Macro, Environment, Command, DimenCommand
 from plasTeX import sourceChildren, sourceArguments
+from plasTeX.Base.TeX.Text import bgroup
+
+from plasTeX.Logging import getLogger
+logger = getLogger(__name__)
 
 #pylint: disable=R0904
 
@@ -18,7 +22,6 @@ class ColumnType(Macro):
 
 	def __init__(self): #, *args, **kwargs):
 		super(ColumnType,self).__init__()
-		#Macro.__init__(self, *args, **kwargs)
 		self.style.update(self.columnAttributes or {})
 
 	@classmethod
@@ -212,7 +215,6 @@ class Array(Environment):
 
 		def digest(self, tokens):
 			# SAJ: Initialize rowspec to an empty dictionary
-			#if not self.rowspec:
 			self.rowspec = {}
 
 			# Absorb tokens until the end of the row
@@ -282,8 +284,8 @@ class Array(Environment):
 		isHeader = False
 
 		def digest(self, tokens):
-			self.endToken = self.digestUntil(tokens, (Array.CellDelimiter, 
-								  Array.EndRow))
+			self.endToken = self.digestUntil(tokens, (Array.CellDelimiter,
+													  Array.EndRow))
 			if isinstance(self.endToken, Array.CellDelimiter):
 				tokens.next()
 				self.endToken.digest(tokens)
@@ -547,9 +549,20 @@ class Array(Environment):
 		tex.pushToken(Array)
 		tex.pushTokens(colspec)
 
-		for tok in tex.itertokens():
+		# JAM: change from itertokens to just __iter__ to expand macros...
+		for tok in tex:
+			# This lets us detect complex things like the second column spec in:
+			#     {@{\extracolsep{-0.09in}}rcrcr}
+			# which arrives as a bgroup
+
 			if tok is Array:
 				break
+
+			if isinstance(tok,bgroup):
+				tok.digest(tex) # slurp up the contents
+				# and we simply ignore it. We don't know what else to do
+				logger.debug( 'Ignoring grouping macro %s at %s', tok, tex)
+				continue
 
 			if tok.isElementContentWhitespace:
 				continue
@@ -583,11 +596,10 @@ class Array(Environment):
 
 			# SAJ: Added test to warn if we have a unknown column type
 			columnType = ColumnType.columnTypes.get(tok, ColumnType)()
-			if columnType.style:
+			output.append(columnType)
+			if not columnType.style:
 				output.append(columnType)
-			else:
-				output.append(columnType)
-				print('Unknown column type: %s' % tok)
+				logger.debug('Unknown column type: %s', tok)
 
 			# SAJ: Change from reading args only from column types 'p' and 'd' to all types with a not
 			# empty args attribute.
