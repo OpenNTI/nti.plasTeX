@@ -74,7 +74,7 @@ def main():
 	""" Main program routine """
 	argv = sys.argv[1:]
 	_configure_logging()
-	xmlconfig.file( 'configure.zcml', package=nti.contentrendering )
+
 
 	sourceFile = argv.pop(0)
 	source_dir = os.path.dirname( os.path.abspath( os.path.expanduser( sourceFile ) ) )
@@ -82,6 +82,13 @@ def main():
 	outFormat = 'xhtml'
 	if argv:
 		outFormat = argv.pop(0)
+
+	zope_pre_conf_name = os.path.join( source_dir, 'pre_configure.zcml' )
+	xml_conf_context = None
+	if os.path.exists( zope_pre_conf_name ):
+		xml_conf_context = xmlconfig.file( os.path.abspath( zope_pre_conf_name ), package=nti.contentrendering )
+
+	xml_conf_context = xmlconfig.file( 'configure.zcml', package=nti.contentrendering, context=xml_conf_context )
 
 	# Set up imports for style files. The preferred, if verbose, way is to
 	# use a fully qualified python name. But for legacy and convenience
@@ -124,8 +131,7 @@ def main():
 	# Configure components and utilities
 	zope_conf_name = os.path.join( source_dir, 'configure.zcml' )
 	if os.path.exists( zope_conf_name ):
-		# Must be sure to use an absolute path if we're going to also be giving a package
-		xmlconfig.file( os.path.abspath( zope_conf_name ), package=nti.contentrendering )
+		xml_conf_context = xmlconfig.file( os.path.abspath( zope_conf_name ), package=nti.contentrendering, context=xml_conf_context )
 
 	# Instantiate the TeX processor
 	tex = TeX(document, file=sourceFile)
