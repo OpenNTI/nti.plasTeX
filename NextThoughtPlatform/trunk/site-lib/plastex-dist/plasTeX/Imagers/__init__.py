@@ -647,6 +647,7 @@ class Imager(object):
 			# about the reason, which would be in 'images.log'
 			# TODO: Adopt this everywhere we're calling latex
 			logname = os.path.join( tempdir, 'images.log' )
+			__traceback_info__ = args, logname
 			if os.path.isfile( logname ):
 				lines = open(os.path.join(tempdir,'images.log'), 'rU' ).readlines()
 				log = []
