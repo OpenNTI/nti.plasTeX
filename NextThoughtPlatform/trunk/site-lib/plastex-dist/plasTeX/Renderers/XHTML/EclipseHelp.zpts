@@ -1,13 +1,57 @@
+# -*- mode: html -*-
+
+# JAM: Yuck, this template is terrible. It's very repetitive
+# and not at all extensible.
+# Should probably refactor to a language that supports recursion.
+# Instead of
+#      ${python:templates['eclipse-toc-embedded-objects'](part)}
+# we could possibly do
+#      tal:content="self/special_attribute"
+# if we modified Sectioning.py:TableOfContents appropriately
+
 name: eclipse-toc
 type: xml
-<toc level="root" levelnum="0" renderVersion="1" tal:attributes="renderVersion container/userdata/renderVersion | default; label self/title/textContent | self/title | nothing; href self/filename; ntiid self/ntiid | nothing">
-    <topic level="part" levelnum="1" tal:repeat="part self/fulltableofcontents" tal:attributes="label part/tocEntry/textContent; href part/url; ntiid part/ntiid | nothing">
-       <topic level="chapter" levelnum="2" tal:repeat="chapter part/fulltableofcontents" tal:attributes="label chapter/tocEntry/textContent | nothing; href chapter/url; ntiid chapter/ntiid | nothing">
-          <topic level="section" levelnum="3" tal:repeat="section chapter/fulltableofcontents" tal:attributes="label section/tocEntry/textContent | nothing; href section/url; ntiid section/ntiid | nothing">
-             <topic level="subsection" levelnum="4" tal:repeat="subsection section/fulltableofcontents" tal:attributes="label subsection/tocEntry/textContent | nothing; href subsection/url; ntiid subsection/ntiid | nothing">
-                <topic level="subsubsection" levelnum="5" tal:repeat="subsubsection subsection/fulltableofcontents" tal:attributes="label subsubsection/tocEntry/textContent | nothing; href subsubsection/url; ntiid subsubsection/ntiid | nothing">
-                   <topic level="paragraph" levelnum="6" tal:repeat="paragraph subsubsection/fulltableofcontents" tal:attributes="label paragraph/tocEntry/textContent | nothing; href paragraph/url; ntiid paragraph/ntiid | nothing">
-                      <topic level="subparagraph" levelnum="7" tal:repeat="subparagraph paragraph/fulltableofcontents" tal:attributes="label subparagraph/tocEntry/textContent | nothing; href subparagraph/url; ntiid subparagraph/ntiid | nothing">
+<toc level="root" levelnum="0" renderVersion="1"
+	 tal:attributes="renderVersion container/userdata/renderVersion | default;
+					 label self/title/textContent | self/title | nothing;
+					 href self/filename;
+					 ntiid self/ntiid | nothing">
+	${python:templates['eclipse-toc-embedded-objects'](self)}
+    <topic level="part" levelnum="1" tal:repeat="part self/fulltableofcontents"
+		   tal:attributes="label part/tocEntry/textContent;
+						   href part/url;
+						   ntiid part/ntiid | nothing">
+		${python:templates['eclipse-toc-embedded-objects'](part)}
+       <topic level="chapter" levelnum="2" tal:repeat="chapter part/fulltableofcontents"
+			  tal:attributes="label chapter/tocEntry/textContent | nothing;
+							  href chapter/url;
+							  ntiid chapter/ntiid | nothing">
+		   ${python:templates['eclipse-toc-embedded-objects'](chapter)}
+          <topic level="section" levelnum="3" tal:repeat="section chapter/fulltableofcontents"
+				 tal:attributes="label section/tocEntry/textContent | nothing;
+								 href section/url;
+								 ntiid section/ntiid | nothing">
+			  ${python:templates['eclipse-toc-embedded-objects'](section)}
+             <topic level="subsection" levelnum="4" tal:repeat="subsection section/fulltableofcontents"
+					tal:attributes="label subsection/tocEntry/textContent | nothing;
+									href subsection/url;
+									ntiid subsection/ntiid | nothing">
+				 ${python:templates['eclipse-toc-embedded-objects'](subsection)}
+                <topic level="subsubsection" levelnum="5" tal:repeat="subsubsection subsection/fulltableofcontents"
+					   tal:attributes="label subsubsection/tocEntry/textContent | nothing;
+									   href subsubsection/url;
+									   ntiid subsubsection/ntiid | nothing">
+					${python:templates['eclipse-toc-embedded-objects'](subsubsection)}
+                   <topic level="paragraph" levelnum="6" tal:repeat="paragraph subsubsection/fulltableofcontents"
+						  tal:attributes="label paragraph/tocEntry/textContent | nothing;
+										  href paragraph/url;
+										  ntiid paragraph/ntiid | nothing">
+					   ${python:templates['eclipse-toc-embedded-objects'](paragraph)}
+                      <topic level="subparagraph" levelnum="7" tal:repeat="subparagraph paragraph/fulltableofcontents"
+							 tal:attributes="label subparagraph/tocEntry/textContent | nothing;
+											 href subparagraph/url;
+											 ntiid subparagraph/ntiid | nothing">
+						  ${python:templates['eclipse-toc-embedded-objects'](subparagraph)}
                       </topic>
                    </topic>
                 </topic>
@@ -16,6 +60,22 @@ type: xml
        </topic>
     </topic>
 </toc>
+
+# When subcontainers are embedded in sections,
+# note that in the TOC. Notice that we directly render this ourself,
+# not through tal:content, because it is likely that the IEmbedded object
+# is the same object as the node, and we don't want to render the entire
+# object here
+name: eclipse-toc-embedded-objects
+type: xml
+<tal:block tal:define="IEmbedded import: nti.contentrendering.interfaces.IEmbeddedContainer"
+		   tal:repeat="node python:self.containedChildNodesImplementing(IEmbedded)">
+<object tal:define="embedded python:IEmbedded(node, None)"
+		tal:condition="python: embedded is not None"
+		tal:attributes="ntiid embedded/ntiid;
+						mimeType embedded/mimeType;">
+</object>
+</tal:block>
 
 #name: eclipse-plugin
 #type: xml

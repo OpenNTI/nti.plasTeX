@@ -87,7 +87,8 @@ def pythontemplate(s, encoding='utf8',filename=None):
 # See http://chameleon.repoze.org/docs/latest/reference.html
 # and http://docs.zope.org/zope2/zope2book/AppendixC.html#tales-path-expressions
 
-from z3c.pt import pagetemplate
+from z3c.pt.pagetemplate import PageTemplate as Z3CPageTemplate
+from chameleon.zpt.template import PageTemplate as ChameleonPageTemplate
 from chameleon.zpt.program import MacroProgram as BaseMacroProgram
 from chameleon.astutil import Builtin
 
@@ -98,7 +99,7 @@ class MacroProgram(BaseMacroProgram):
 		# For compatibility with simpletal, we default everything to be non-escaped (substitition)
 		return BaseMacroProgram._make_content_node( self, expression, default, 'substitution', translate )
 
-class _PageTemplate(pagetemplate.PageTemplate):
+class _NTIPageTemplate(Z3CPageTemplate):
 	def parse(self, body):
 		if self.literal_false:
 			default_marker = ast.Str(s="__default__")
@@ -115,7 +116,11 @@ class _PageTemplate(pagetemplate.PageTemplate):
 			trim_attribute_space=self.trim_attribute_space,
 			)
 		return program
-_PageTemplate.expression_types['stripped'] = _PageTemplate.expression_types['path']
+# Allow all of the chameleon expression types, like import...
+_NTIPageTemplate.expression_types = ChameleonPageTemplate.expression_types.copy()
+# ...except where they are overridded explicitly
+_NTIPageTemplate.expression_types.update(Z3CPageTemplate.expression_types)
+_NTIPageTemplate.expression_types['stripped'] = _NTIPageTemplate.expression_types['path']
 
 import chameleon.utils
 import chameleon.template
@@ -135,7 +140,7 @@ def zpttemplate(s,encoding='utf8',filename=None):
 	config = {'keep_body': True, 'keep_source': True}
 	if filename:
 		config['filename'] = filename
-	template = _PageTemplate( s, **config )
+	template = _NTIPageTemplate( s, **config )
 
 	def render(obj):
 		context = {'here': obj,

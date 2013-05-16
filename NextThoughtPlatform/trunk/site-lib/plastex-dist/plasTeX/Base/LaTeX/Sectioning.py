@@ -170,6 +170,27 @@ class SectionUtils(object):
 				return ()
 		return document.allSections
 
+	def containedChildNodesImplementing(self, iface):
+		"""
+		Return a list of nodes within this section (not subsections) that
+		either implement or can be adapted to the given interface.
+		"""
+		nodes_to_inspect = set(self.childNodes) - set(self.subsections)
+		if not nodes_to_inspect:
+			return ()
+
+		result = []
+		for node in nodes_to_inspect:
+			if iface(node,None) is not None:
+				result.append(node)
+			elif node.hasChildNodes():
+				for child in node.allChildNodes:
+					if iface(child,None) is not None:
+						result.append(child)
+
+		return result
+
+
 	@cachedproperty
 	def links(self):
 		"""

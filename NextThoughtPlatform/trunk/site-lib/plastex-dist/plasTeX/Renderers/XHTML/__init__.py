@@ -66,18 +66,18 @@ class XHTML(_Renderer):
 			f.write(help)
 			f.close()
 
-	def doEclipseHelpFiles(self, document, encoding='ISO-8859-1'):
+	def doEclipseHelpFiles(self, document, encoding='ASCII'):
 		""" Generate files needed to use HTML as Eclipse Help """
 		latexdoc = document.getElementsByTagName('document')[0]
 
 		# Create table of contents
 		if 'eclipse-toc' in self:
 			toc = self['eclipse-toc'](latexdoc)
-			f = codecs.open('eclipse-toc.xml', 'w', encoding, errors='xmlcharrefreplace')
 			toc = re.sub(r'(<topic\b[^>]*[^/])\s*>\s*</topic>', r'\1 />', toc)
-			f.write("<?xml version='1.0' encoding='%s' ?>\n" % encoding)
-			f.write(toc)
-			f.close()
+			toc = '\n'.join( [line for line in toc.split('\n') if line.strip()] ) # trim blank lines
+			with codecs.open('eclipse-toc.xml', 'w', encoding, errors='xmlcharrefreplace') as f:
+				f.write("<?xml version='1.0' encoding='%s' ?>\n" % encoding)
+				f.write(toc)
 
 		# Create plugin file
 		if 'eclipse-plugin' in self:
