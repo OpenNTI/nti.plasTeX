@@ -1,44 +1,24 @@
 #!/usr/bin/env python
 
-import os, re
+from __future__ import absolute_import
+
+import re
 from plasTeX import Command
 
-from graphics import DeclareGraphicsExtensions, graphicspath
+from .graphics import DeclareGraphicsExtensions, graphicspath, _locate_image_file
 
 class includegraphics(Command):
 	args = '* [ options:dict ] file:str'
 	packageName = 'graphicx'
 	captionable = True
 
+	default_extensions = ('.png','.jpg','.jpeg','.gif','.pdf','.ps','.eps')
+
 	def invoke(self, tex):
 		res = Command.invoke(self, tex)
 
 		f = self.attributes['file']
-		ext = self.ownerDocument.userdata.getPath(
-					  'packages/%s/extensions' % self.packageName,
-					  ['.png','.jpg','.jpeg','.gif','.pdf','.ps','.eps'])
-		paths = self.ownerDocument.userdata.getPath(
-						'packages/%s/paths' % self.packageName, ['.'])
-		img = None
-
-		# Check for file using graphicspath
-		for p in paths:
-			for e in ['']+ext:
-				fname = os.path.join(p,f+e)
-				if os.path.isfile(fname):
-					img = os.path.abspath(fname)
-					break
-			if img is not None:
-				break
-
-		# Check for file using kpsewhich
-		if img is None:
-			for e in ['']+ext:
-				try:
-					img = os.path.abspath(tex.kpsewhich(f+e))
-					break
-				except (OSError, IOError):
-					pass
+		img = _locate_image_file( self, tex, f, self.packageName, self.default_extensions )
 
 		options = self.attributes['options']
 
