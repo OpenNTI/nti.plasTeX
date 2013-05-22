@@ -261,10 +261,10 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 		logger.info("Indexing content in-process.")
 		# Defer the import to the last possible moment, as this pulls in a boatload of deps,
 		# including gevent patches we don't want
+		from nti.contentrendering import nticard_indexer as nticard_indexer
 		from nti.contentrendering import book_content_indexer as book_indexer
-		from nti.contentrendering import nti_card_indexer as nti_card_indexer
 		from nti.contentrendering import video_transcript_indexer as video_trax_indexer
-		for indexer in (book_indexer, nti_card_indexer, video_trax_indexer):
+		for indexer in (book_indexer, nticard_indexer, video_trax_indexer):
 			indexer.transform(book)
 
 	# TODO: Aren't the things in the archive mirror file the same things
