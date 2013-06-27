@@ -259,13 +259,9 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 		# changes PYTHONPATH changes for this to work (before contentsearch grew those deps);
 		# now it just generates exceptions, so we don't try right now
 		logger.info("Indexing content in-process.")
-		# Defer the import to the last possible moment, as this pulls in a boatload of deps,
-		# including gevent patches we don't want
-		from nti.contentrendering import nticard_indexer as nticard_indexer
-		from nti.contentrendering import book_content_indexer as book_indexer
-		from nti.contentrendering import video_transcript_indexer as video_trax_indexer
-		for indexer in (book_indexer, nticard_indexer, video_trax_indexer):
-			indexer.transform(book)
+		for name, impl in component.getUtilitiesFor(interfaces.IRenderedBookIndexer):
+			logger.info("Indexing %s content" % name)
+			impl.transform(book, jobname)
 
 	# TODO: Aren't the things in the archive mirror file the same things
 	# we want to list in the manifest? If so, we should be able to combine
