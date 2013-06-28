@@ -273,9 +273,6 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	logger.info('Changing intra-content links')
 	ntiidlinksetter.transform(book)
 
-	logger.info("Creating a mirror file")
-	mirror.main(contentPath, contentPath, zip_root_dir=jobname)
-
 	logger.info("Extracting assessments")
 	extractor = component.queryUtility(interfaces.IRenderedBookTransformer, name='AssessmentExtractor')
 	if extractor:
@@ -288,6 +285,9 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	logger.info("Creating JSONP content")
 	jsonpbuilder.transform(book)
 
+	logger.info("Creating an archive file")
+	archiver = component.getUtility(interfaces.IRenderedBookArchiver)
+	archiver.archive(book)
 
 def render(document, rname, db):
 	# Apply renderer
