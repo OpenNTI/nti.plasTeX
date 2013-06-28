@@ -7,49 +7,46 @@ from __future__ import print_function, unicode_literals
 
 import os
 import sys
-import functools
 import string
-import datetime
-from pkg_resources import resource_filename
 import hashlib
+import datetime
+import functools
 import subprocess
+from pkg_resources import resource_filename
 
 import logging
 
 import plasTeX
 from plasTeX.TeX import TeX
 from plasTeX.Logging import getLogger
+
 log = getLogger(__name__)
 logger = log
 
-
-from zope.configuration import xmlconfig
-from zope.deprecation import deprecate
 from zope import component
+from zope.deprecation import deprecate
+from zope.configuration import xmlconfig
 import zope.exceptions.log
 import zope.dublincore.xmlmetadata
 
 import nti.contentrendering
+from nti.contentrendering import archive
 from nti.contentrendering import interfaces
 from nti.contentrendering import transforms
-from nti.contentrendering import mirror
+from nti.contentrendering import plastexids
+from nti.contentrendering import jsonpbuilder
+from nti.contentrendering import contentchecks
 from nti.contentrendering import tociconsetter
 from nti.contentrendering import html5cachefile
+from nti.contentrendering import ntiidlinksetter
 from nti.contentrendering import contentsizesetter
 from nti.contentrendering import relatedlinksetter
 from nti.contentrendering import contentthumbnails
 from nti.contentrendering import sectionvideoadder
-from nti.contentrendering import ntiidlinksetter
-from nti.contentrendering import contentchecks
-from nti.contentrendering import plastexids
-from nti.contentrendering import jsonpbuilder
 from nti.contentrendering.RenderedBook import RenderedBook
-
 from nti.contentrendering.resources.ResourceDB import ResourceDB
-from nti.contentrendering.resources.resourcetypeoverrides import ResourceTypeOverrides
-
 from nti.contentrendering.resources.ResourceRenderer import createResourceRenderer
-
+from nti.contentrendering.resources.resourcetypeoverrides import ResourceTypeOverrides
 
 def _configure_logging():
 	logging.basicConfig(level=logging.INFO)
@@ -286,8 +283,7 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	jsonpbuilder.transform(book)
 
 	logger.info("Creating an archive file")
-	archiver = component.getUtility(interfaces.IRenderedBookArchiver)
-	archiver.archive(book)
+	archive.create_archive(book, name=jobname)
 
 def render(document, rname, db):
 	# Apply renderer
