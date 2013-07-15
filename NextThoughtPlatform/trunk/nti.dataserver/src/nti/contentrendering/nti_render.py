@@ -275,6 +275,11 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	if extractor:
 		extractor.transform(book)
 
+	extractor = component.queryUtility(interfaces.IRenderedBookTransformer, name='CourseExtractor')
+	if extractor:
+		logger.info("Extracting course information")
+		extractor.transform(book)
+
 	for name, extractor in component.getUtilitiesFor(interfaces.IRenderedBookExtractor):
 		logger.info("Extracting %s data" % name)
 		extractor.transform(book)
