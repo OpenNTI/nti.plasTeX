@@ -235,8 +235,9 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	logger.info('Adding related links to toc')
 	relatedlinksetter.performTransforms(book, context=context)
 
-	logger.info('Generating thumbnails for pages')
-	contentthumbnails.transform(book, context=context)
+	# SAJ: Disabled until we determine what thumbnails we need and how to create them in a useful manner.
+	#logger.info('Generating thumbnails for pages')
+	#contentthumbnails.transform(book, context=context)
 
 	# PhantomJS doesn't cope well with the iframes
 	# for embedded videos: you get a black box, and we put them at the top
