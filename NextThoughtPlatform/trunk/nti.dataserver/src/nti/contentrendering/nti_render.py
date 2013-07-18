@@ -281,6 +281,11 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 		logger.info("Extracting course information")
 		extractor.transform(book)
 
+	extractor = component.queryUtility(interfaces.IRenderedBookTransformer, name='NTIVideoExtractor')
+	if extractor:
+		logger.info("Extracting videos...")
+		extractor.transform(book)
+
 	extractor = component.queryUtility(interfaces.IRenderedBookTransformer, name='DiscussionExtractor')
 	if extractor:
 		logger.info("Extracting discussions...")
