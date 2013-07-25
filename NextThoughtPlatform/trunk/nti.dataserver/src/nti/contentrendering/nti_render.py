@@ -23,10 +23,11 @@ from plasTeX.Logging import getLogger
 log = getLogger(__name__)
 logger = log
 
+import zope.exceptions.log
 from zope import component
 from zope.deprecation import deprecate
 from zope.configuration import xmlconfig
-import zope.exceptions.log
+
 import zope.dublincore.xmlmetadata
 
 import nti.contentrendering
@@ -271,34 +272,18 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	logger.info('Changing intra-content links')
 	ntiidlinksetter.transform(book)
 
-	logger.info("Extracting assessments")
-	extractor = component.queryUtility(interfaces.IRenderedBookTransformer, name='AssessmentExtractor')
-	if extractor:
-		extractor.transform(book)
+	extractors = [('AssessmentExtractor', 'assessments'),
+				  ('CourseExtractor', 'course information'),
+				  ('NTIVideoExtractor', 'videos'),
+				  ('DiscussionExtractor', 'discussions'),
+				  ('HackExtractor', 'hacks'),
+				  ('RelatedWorkExtractor', 'related work information')]
 
-	extractor = component.queryUtility(interfaces.IRenderedBookTransformer, name='CourseExtractor')
-	if extractor:
-		logger.info("Extracting course information")
-		extractor.transform(book)
-
-	extractor = component.queryUtility(interfaces.IRenderedBookTransformer, name='NTIVideoExtractor')
-	if extractor:
-		logger.info("Extracting videos...")
-		extractor.transform(book)
-
-	extractor = component.queryUtility(interfaces.IRenderedBookTransformer, name='DiscussionExtractor')
-	if extractor:
-		logger.info("Extracting discussions...")
-		extractor.transform(book)
-
-	extractor = component.queryUtility(interfaces.IRenderedBookTransformer, name='HackExtractor')
-	if extractor:
-		extractor.transform(book)
-
-	extractor = component.queryUtility(interfaces.IRenderedBookTransformer, name='RelatedWorkExtractor')
-	if extractor:
-		logger.info("Extracting related work information")
-		extractor.transform(book)
+	for name, msg in extractors:
+		extractor = component.queryUtility(interfaces.IRenderedBookTransformer, name=name)
+		if extractor:
+			logger.info("Extracting %s" % msg)
+			extractor.transform(book)
 
 	for name, extractor in component.getUtilitiesFor(interfaces.IRenderedBookExtractor):
 		logger.info("Extracting %s data" % name)
