@@ -277,17 +277,14 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 				  ('NTIVideoExtractor', 'videos'),
 				  ('DiscussionExtractor', 'discussions'),
 				  ('HackExtractor', 'hacks'),
-				  ('RelatedWorkExtractor', 'related work information')]
+				  ('RelatedWorkExtractor', 'related work information'),
+				  ('SlideDeckExtractor', 'slide decks')]
 
 	for name, msg in extractors:
 		extractor = component.queryUtility(interfaces.IRenderedBookTransformer, name=name)
 		if extractor:
 			logger.info("Extracting %s" % msg)
 			extractor.transform(book)
-
-	for name, extractor in component.getUtilitiesFor(interfaces.IRenderedBookExtractor):
-		logger.info("Extracting %s data" % name)
-		extractor.transform(book)
 
 	logger.info("Creating JSONP content")
 	jsonpbuilder.transform(book)
