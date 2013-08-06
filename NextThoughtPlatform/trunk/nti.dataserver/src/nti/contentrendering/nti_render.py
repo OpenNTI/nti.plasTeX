@@ -105,7 +105,6 @@ def main():
 	# with imports. damn it.
 	plasTeX.Base.document.filenameoverride = property(lambda s: 'index')  # .html added automatically
 
-
 	# setup default config options we want
 	document.config['files']['split-level'] = 1
 	document.config['document']['toc-depth'] = sys.maxint  # Arbitrary number greater than the actual depth possible
@@ -258,12 +257,13 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 		# are not quite compatible. A previous version of this code made the correct
 		# changes PYTHONPATH changes for this to work (before contentsearch grew those deps);
 		# now it just generates exceptions, so we don't try right now
-		now = time.time()
+		start_t = time.time()
 		logger.info("Indexing content in-process.")
 		for name, impl in component.getUtilitiesFor(interfaces.IRenderedBookIndexer):
 			logger.info("Indexing %s content" % name)
 			impl.transform(book, jobname)
-		logger.info("Content indexing took %s(s)" % time.time() - now)
+		elapsed = time.time() - start_t
+		logger.info("Content indexing took %s(s)" % elapsed)
 
 	# TODO: Aren't the things in the archive mirror file the same things
 	# we want to list in the manifest? If so, we should be able to combine
