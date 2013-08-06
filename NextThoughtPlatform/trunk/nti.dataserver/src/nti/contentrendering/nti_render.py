@@ -279,7 +279,7 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 				  ('CourseExtractor', 'course information'),
 				  ('NTIVideoExtractor', 'videos'),
 				  ('DiscussionExtractor', 'discussions'),
-				  ('HackExtractor', 'hacks'),
+				  ('LessonQuestionSetExtractor', 'lesson question sets'),
 				  ('RelatedWorkExtractor', 'related work information'),
 				  ('SlideDeckExtractor', 'slide decks')]
 
