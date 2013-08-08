@@ -227,8 +227,8 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	logger.info('Adding icons to toc and pages')
 	tociconsetter.transform(book, context=context)
 
-	logger.info('Fetching page info')
-	book = RenderedBook(document, contentLocation)
+	# logger.info('Fetching page info')
+	# book = RenderedBook(document, contentLocation)
 
 	logger.info('Storing content height in pages')
 	contentsizesetter.transform(book, context=context)
