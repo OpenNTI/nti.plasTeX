@@ -49,7 +49,7 @@ from nti.contentrendering.resources.resourcetypeoverrides import ResourceTypeOve
 
 def _configure_logging():
 	logging.basicConfig(level=logging.INFO)
-	logging.root.handlers[0].setFormatter(zope.exceptions.log.Formatter('[%(name)s] %(levelname)s: %(message)s'))
+	logging.root.handlers[0].setFormatter(zope.exceptions.log.Formatter('[%(asctime)-15s] [%(name)s] %(levelname)s: %(message)s'))
 
 def _catching(f):
 	@functools.wraps(f)
@@ -226,9 +226,6 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	# on-disk content.
 	logger.info('Adding icons to toc and pages')
 	tociconsetter.transform(book, context=context)
-
-	# logger.info('Fetching page info')
-	# book = RenderedBook(document, contentLocation)
 
 	logger.info('Storing content height in pages')
 	contentsizesetter.transform(book, context=context)
