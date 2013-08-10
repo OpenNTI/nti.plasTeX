@@ -81,7 +81,7 @@ def _set_argparser():
 							 action='store_true',
 							 default=False,
 							 help="Index content files." )
-	arg_parser.add_argument( '--outputformat',
+	arg_parser.add_argument('-o', '--outputformat',
 							 default='xhtml',
 							 help="Output format for rendered files. Default is xhtml" )
 	arg_parser.add_argument( '--loglevel',
