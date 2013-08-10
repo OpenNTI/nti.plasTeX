@@ -9,12 +9,12 @@ import os
 import sys
 import time
 import string
+import logging
+import argparse
 import datetime
 import functools
 import subprocess
 from pkg_resources import resource_filename
-
-import logging
 
 import plasTeX
 from plasTeX.TeX import TeX
@@ -47,8 +47,10 @@ from nti.contentrendering.resources.ResourceDB import ResourceDB
 from nti.contentrendering.resources.ResourceRenderer import createResourceRenderer
 from nti.contentrendering.resources.resourcetypeoverrides import ResourceTypeOverrides
 
-def _configure_logging():
-	logging.basicConfig(level=logging.INFO)
+def _configure_logging(level='INFO'):
+	numeric_level = getattr(logging, level.upper(), None)
+	numeric_level = logging.INFO if not isinstance(numeric_level, int) else numeric_level
+	logging.basicConfig(level=numeric_level)
 	logging.root.handlers[0].setFormatter(zope.exceptions.log.Formatter('[%(asctime)-15s] [%(name)s] %(levelname)s: %(message)s'))
 
 def _catching(f):
@@ -64,20 +66,46 @@ def _catching(f):
 			sys.exit(1)
 	return y
 
+def _set_argparser():
+	arg_parser = argparse.ArgumentParser( description="Render NextThought contetn." )
+	
+	arg_parser.add_argument( 'contentpath',  
+							help="Path to top level content file." )
+	arg_parser.add_argument( '-c', '--config', 
+							help='Used by render_content wrapper. Ignore if running nti_render standalone.')
+	arg_parser.add_argument( '--nochecking',
+							 action='store_true',
+							 default=False,
+							 help="Perform content checks." )
+	arg_parser.add_argument( '--noindexing',
+							 action='store_true',
+							 default=False,
+							 help="Index content files." )
+	arg_parser.add_argument( '--outputformat',
+							 default='xhtml',
+							 help="Output format for rendered files. Default is xhtml" )
+	arg_parser.add_argument( '--loglevel',
+							 default='INFO',
+							 help="Set logging level to INFO, DEBUG, WARNING, ERROR or CRITICAL. Default is INFO." )
+	return arg_parser
+	
 
 @_catching
 def main():
 	""" Main program routine """
 	argv = sys.argv[1:]
-	_configure_logging()
-
+	arg_parser = _set_argparser()
+	args = arg_parser.parse_args(args=argv) 
+	
+	sourceFile = args.contentpath
+	_configure_logging(args.loglevel)
+	dochecking = not args.nochecking
+	doindexing = not args.noindexing
+	outFormat = args.outputformat
+	
+	logger.info("Start main")
 	start_t = time.time()
-	sourceFile = argv.pop(0)
 	source_dir = os.path.dirname(os.path.abspath(os.path.expanduser(sourceFile)))
-
-	outFormat = 'xhtml'
-	if argv:
-		outFormat = argv.pop(0)
 
 	zope_pre_conf_name = os.path.join(source_dir, 'pre_configure.zcml')
 	xml_conf_context = None
@@ -179,7 +207,7 @@ def main():
 	setupChameleonCache(config=True)
 
 	# Parse the document
-	logger.info("Parsing %s", sourceFile)
+	logger.info("Tex Parsing %s", sourceFile)
 	tex.parse()
 
 	# Change to specified directory to output to
@@ -192,6 +220,7 @@ def main():
 		os.chdir(outdir)
 
 	# Perform prerender transforms
+	logger.info("Perform prerender transforms.")
 	transforms.performTransforms(document, context=components)
 
 	if outFormat == 'images' or outFormat == 'xhtml':
@@ -199,12 +228,16 @@ def main():
 		db = generateImages(document)
 
 	if outFormat == 'xhtml':
+		logger.info("Begin render")
 		render(document, 'XHTML', db)
-		postRender(document, jobname=jobname, context=components)
-
+		logger.info("Begin post render")
+		postRender(document, jobname=jobname, context=components, dochecking=dochecking, doindexing=doindexing)
+		
 	if outFormat == 'xml':
+		logger.info("To Xml.")
 		toXml(document, jobname)
-
+		
+	logger.info("Write metadata.")
 	write_dc_metadata(document, jobname)
 
 	elapsed = time.time() - start_t
@@ -212,14 +245,14 @@ def main():
 
 from nti.utils import setupChameleonCache
 
-def postRender(document, contentLocation='.', jobname='prealgebra', context=None):
-	logger.info('Performing post render steps')
+def postRender(document, contentLocation='.', jobname='prealgebra', context=None, dochecking=True, doindexing=True):
 	# FIXME: This was not particularly well thought out. We're using components,
 	# but named utilities, not generalized adapters or subscribers.
 	# That makes this not as extensible as it should be.
 
 	# We very likely will get a book that has no pages
 	# because NTIIDs are not added yet.
+	logger.info('Creating rendered book')
 	book = RenderedBook(document, contentLocation)
 
 	# This step adds NTIIDs to the TOC in addition to modifying
@@ -243,12 +276,13 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	# bad. So do this after taking thumbnails.
 	logger.info('Adding videos')
 	sectionvideoadder.performTransforms(book, context=context)
-
-	logger.info('Running checks on content')
-	contentchecks.performChecks(book, context=context)
+	
+	if dochecking:
+		logger.info('Running checks on content')
+		contentchecks.performChecks(book, context=context)
 
 	contentPath = os.path.realpath(contentLocation)
-	if not os.path.exists(os.path.join(contentPath, 'indexdir')):
+	if doindexing and  not os.path.exists(os.path.join(contentPath, 'indexdir')):
 		# We'd like to be able to run this with pypy (it's /much/ faster)
 		# but some of the Zope libs we import during contentsearch (notably Persistent)
 		# are not quite compatible. A previous version of this code made the correct
@@ -285,7 +319,7 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 		if extractor:
 			logger.info("Extracting %s" % msg)
 			extractor.transform(book)
-
+			
 	logger.info("Creating JSONP content")
 	jsonpbuilder.transform(book)
 
@@ -333,7 +367,6 @@ def write_dc_metadata(document, jobname):
 	xml_string = unicode(zope.dublincore.xmlmetadata.dumpString(mapping))
 	with open('dc_metadata.xml', 'w') as f:
 		f.write(xml_string.encode('utf-8'))
-
 
 def generateImages(document):
 	### Generates required images ###
