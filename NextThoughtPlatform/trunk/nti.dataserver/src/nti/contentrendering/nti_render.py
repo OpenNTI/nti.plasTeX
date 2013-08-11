@@ -252,8 +252,11 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 
 	# We very likely will get a book that has no pages
 	# because NTIIDs are not added yet.
+	start_t = time.time()
 	logger.info('Creating rendered book')
 	book = RenderedBook(document, contentLocation)
+	elapsed = time.time() - start_t
+	logger.info("Rendered book created in %s(s)" % elapsed)
 
 	# This step adds NTIIDs to the TOC in addition to modifying
 	# on-disk content.
