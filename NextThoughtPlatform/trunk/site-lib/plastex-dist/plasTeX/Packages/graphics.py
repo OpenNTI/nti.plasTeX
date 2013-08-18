@@ -37,7 +37,7 @@ def _locate_image_file( self, tex, file_name, packageName, default_extensions, q
 	return img
 
 class includegraphics(Command):
-	args = '* [ ll ] [ ur ] file:str'
+	args = '* [ ll ] [ ur ] file:str < alttext:str >'
 	packageName = 'graphics'
 	captionable = True
 	imageoverride = None
@@ -45,6 +45,9 @@ class includegraphics(Command):
 
 	def invoke(self, tex):
 		res = Command.invoke(self, tex)
+		
+		if 'alttext' not in self.attributes:
+			self.attributes['alttext'] = ''
 
 		f = self.attributes['file']
 
