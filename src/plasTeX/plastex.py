@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys, codecs, string, glob
-import plasTeX
+#import plasTeX
 from plasTeX.TeX import TeX
 from plasTeX.Config import config
 from plasTeX.ConfigManager import *
