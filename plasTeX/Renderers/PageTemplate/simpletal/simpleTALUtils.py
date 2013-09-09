@@ -118,8 +118,8 @@ class TemplateCache:
 		self.misses = 0
 		
 	def getTemplate (self, name, inputEncoding='ISO-8859-1'):
-		""" Name should be the path of a template file.  If the path ends in 'xml' it is treated
-			as an XML Template, otherwise it's treated as an HTML Template.  If the template file
+		""" Name should be the path of a template file.	 If the path ends in 'xml' it is treated
+			as an XML Template, otherwise it's treated as an HTML Template.	 If the template file
 			has changed since the last cache it will be re-compiled.
 			
 			inputEncoding is only used for HTML templates, and should be the encoding that the template

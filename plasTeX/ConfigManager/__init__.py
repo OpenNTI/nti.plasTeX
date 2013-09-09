@@ -265,7 +265,7 @@ class ConfigSection(UserDict, object):
 			if isinstance(value, key):
 				# Handle booleans this way until support for
 				# true booleans shows up in Python.
-				if isinstance(value,basestring)  and \
+				if isinstance(value,basestring)	 and \
 					str(value).lower().strip() in ['on','off','true','false','yes','no']:
 					opttype = BooleanOption
 				self.data[option] = opttype(name=option, source=source)

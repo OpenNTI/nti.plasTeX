@@ -700,17 +700,17 @@ class Imager(object):
 		return os.system('%s %s%s' % (self.command, options, 'images.out')), None
 		# cmd = r'%s %s%s' % (self.command, options, 'images.out')
 		# p = subprocess.Popen(shlex.split(cmd),
-		# 					 stdout=subprocess.PIPE,
-		# 					 stderr=subprocess.STDOUT,
-		# 				   )
+		#					 stdout=subprocess.PIPE,
+		#					 stderr=subprocess.STDOUT,
+		#				   )
 		# done = None
 		# while True:
-		# 	line = p.stdout.readline()
-		# 	done = p.poll()
-		# 	if line:
-		# 		imagelog.info(str(line.strip()))
-		# 	elif done is not None:
-		# 		break
+		#	line = p.stdout.readline()
+		#	done = p.poll()
+		#	if line:
+		#		imagelog.info(str(line.strip()))
+		#	elif done is not None:
+		#		break
 		# return done, None
 
 	def convert(self, output):

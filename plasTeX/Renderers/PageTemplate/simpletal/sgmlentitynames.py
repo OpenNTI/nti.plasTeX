@@ -250,14 +250,14 @@ htmlNameToUnicodeNumber = {"nbsp": 160
 						,"clubs": 9827 
 						,"hearts": 9829 
 						,"diams": 9830 
-						,"quot": 34   
-						,"amp": 38   
-						,"lt": 60   
-						,"gt": 62   
+						,"quot": 34	  
+						,"amp": 38	 
+						,"lt": 60	
+						,"gt": 62	
 						,"OElig": 338  
 						,"oelig": 339  
-						,"Scaron": 352  
-						,"scaron": 353  
+						,"Scaron": 352	
+						,"scaron": 353	
 						,"Yuml": 376  
 						,"circ": 710  
 						,"tilde": 732  

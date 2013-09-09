@@ -12,38 +12,38 @@ class StringOption(StringParser, GenericOption, UserString):
    synopsis = ''
 
    def __init__(self, docstring=DEFAULTS['docstring'],
-                      options=DEFAULTS['options'],
-                      default=DEFAULTS['default'],
-                      optional=DEFAULTS['optional'],
-                      values=DEFAULTS['values'],
-                      category=DEFAULTS['category'],
-                      callback=DEFAULTS['callback'],
-                      synopsis=DEFAULTS['synopsis'],
-                      environ=DEFAULTS['environ'],
-                      registry=DEFAULTS['registry'],
-                      mandatory=None,
-                      name=DEFAULTS['name'],
-                      source=DEFAULTS['source']):
-      UserString.__init__(self, '')
-      GenericOption.initialize(self, locals())
+					  options=DEFAULTS['options'],
+					  default=DEFAULTS['default'],
+					  optional=DEFAULTS['optional'],
+					  values=DEFAULTS['values'],
+					  category=DEFAULTS['category'],
+					  callback=DEFAULTS['callback'],
+					  synopsis=DEFAULTS['synopsis'],
+					  environ=DEFAULTS['environ'],
+					  registry=DEFAULTS['registry'],
+					  mandatory=None,
+					  name=DEFAULTS['name'],
+					  source=DEFAULTS['source']):
+	  UserString.__init__(self, '')
+	  GenericOption.initialize(self, locals())
 
    def cast(self, arg):
-      if arg is None: return
-      return unicode(arg)
+	  if arg is None: return
+	  return unicode(arg)
 
    def __iadd__(self, other):
-      if callable(self.callback):
-         other = self.callback(self.cast(other))
+	  if callable(self.callback):
+		 other = self.callback(self.cast(other))
 
-      if other is None:
-         return self
+	  if other is None:
+		 return self
 
-      if self.data is None:
-         self.data = self.cast(other)
-      else:
-         self.data += '\n%s' % self.cast(other)
+	  if self.data is None:
+		 self.data = self.cast(other)
+	  else:
+		 self.data += '\n%s' % self.cast(other)
 
-      return self
+	  return self
 
 
 class StringArgument(GenericArgument, StringOption):

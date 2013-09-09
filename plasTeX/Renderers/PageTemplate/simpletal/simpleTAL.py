@@ -47,13 +47,13 @@ import FixedHTMLParser
 __version__ = simpletal.__version__
 
 try:
-    # Is PyXML's LexicalHandler available?
-    from xml.sax.saxlib import LexicalHandler
-    use_lexical_handler = 1
+	# Is PyXML's LexicalHandler available?
+	from xml.sax.saxlib import LexicalHandler
+	use_lexical_handler = 1
 except ImportError:
-    use_lexical_handler = 0
-    class LexicalHandler:
-        pass
+	use_lexical_handler = 0
+	class LexicalHandler:
+		pass
 
 try:
 	# Is PyXML's DOM2SAX available?
@@ -130,7 +130,7 @@ class TemplateInterpreter:
 		self.commandList = None
 		self.symbolTable = None
 		self.slotParameters = {}
-		self.commandHandler  = {}
+		self.commandHandler	 = {}
 		self.commandHandler [TAL_DEFINE] = self.cmdDefine
 		self.commandHandler [TAL_CONDITION] = self.cmdCondition
 		self.commandHandler [TAL_REPEAT] = self.cmdRepeat
@@ -191,8 +191,8 @@ class TemplateInterpreter:
 	def pushProgram (self):
 		vars = (self.programCounter
 					 ,self.scopeStack
-		       ,self.slotParameters
-		       ,self.currentSlots
+			   ,self.slotParameters
+			   ,self.currentSlots
 					 ,self.movePCForward
 					 ,self.movePCBack
 					 ,self.outputTag
@@ -209,7 +209,7 @@ class TemplateInterpreter:
 		cmndList = self.commandList
 		while (self.programCounter < programLength):
 			cmnd = cmndList [self.programCounter]
-			#print "PC: %s  -  Executing command: %s" % (str (self.programCounter), str (cmnd))
+			#print "PC: %s	-  Executing command: %s" % (str (self.programCounter), str (cmnd))
 			self.commandHandler[cmnd[0]] (cmnd[0], cmnd[1])
 
 	def cmdDefine (self, command, args):
@@ -441,11 +441,11 @@ class TemplateInterpreter:
 					elif (isinstance (resultVal, types.StringType)):
 						# THIS IS NOT A BUG!
 						# Use Unicode in the Context object if you are not using Ascii
-                                                self.file.write (contentType (unicode (resultVal, 'ascii')))
+												self.file.write (contentType (unicode (resultVal, 'ascii')))
 					else:
 						# THIS IS NOT A BUG!
 						# Use Unicode in the Context object if you are not using Ascii
-                                                self.file.write (contentType (unicode (resultVal)))
+												self.file.write (contentType (unicode (resultVal)))
 			else:
 				if (isinstance (resultVal, types.UnicodeType)):
 					self.file.write (cgi.escape (resultVal))
@@ -600,7 +600,7 @@ class Template:
 
 	def expand (self, context, outputFile, outputEncoding=None, interpreter=None):
 		""" This method will write to the outputFile, using the encoding specified,
-				the expanded version of this template.  The context passed in is used to resolve
+				the expanded version of this template.	The context passed in is used to resolve
 				all expressions with the template.
 		"""
 		# This method must wrap outputFile if required by the encoding, and write out
@@ -618,7 +618,7 @@ class Template:
 			ourInterpreter.execute (self)
 		except UnicodeError, unierror:
 			logging.error ("UnicodeError caused by placing a non-Unicode string in the Context object.")
-                        raise
+						raise
 			raise simpleTALES.ContextContentException ("Found non-unicode string in Context!")
 
 	def getProgram (self):
@@ -684,7 +684,7 @@ class HTMLTemplate (Template):
 
 	def expand (self, context, outputFile, outputEncoding="ISO-8859-1",interpreter=None):
 		""" This method will write to the outputFile, using the encoding specified,
-			the expanded version of this template.  The context passed in is used to resolve
+			the expanded version of this template.	The context passed in is used to resolve
 			all expressions with the template.
 		"""
 		# This method must wrap outputFile if required by the encoding, and write out
@@ -712,7 +712,7 @@ class XMLTemplate (Template):
 
 	def expand (self, context, outputFile, outputEncoding="iso-8859-1", docType=None, suppressXMLDeclaration=0,interpreter=None):
 		""" This method will write to the outputFile, using the encoding specified,
-			the expanded version of this template.  The context passed in is used to resolve
+			the expanded version of this template.	The context passed in is used to resolve
 			all expressions with the template.
 		"""
 		# This method must wrap outputFile if required by the encoding, and write out
@@ -733,7 +733,7 @@ class XMLTemplate (Template):
 		self.expandInline (context, encodingFile, interpreter)
 
 class TemplateCompiler:
-        structureFlag = lambda self, x:x
+		structureFlag = lambda self, x:x
 	def __init__ (self):
 		""" Initialise a template compiler.
 		"""
@@ -743,13 +743,13 @@ class TemplateCompiler:
 		self.macroMap = {}
 		self.endTagSymbol = 1
 
-                self.contentType = {}
-                self.contentType ['text'] = 0
-                self.contentType ['escape'] = 0
-                self.contentType ['structure'] = lambda x: x
-                self.contentType ['stripped'] = lambda x: re.sub(r'</?\w+[^>]*>', r'', x)
+				self.contentType = {}
+				self.contentType ['text'] = 0
+				self.contentType ['escape'] = 0
+				self.contentType ['structure'] = lambda x: x
+				self.contentType ['stripped'] = lambda x: re.sub(r'</?\w+[^>]*>', r'', x)
 
-		self.commandHandler  = {}
+		self.commandHandler	 = {}
 		self.commandHandler [TAL_DEFINE] = self.compileCmdDefine
 		self.commandHandler [TAL_CONDITION] = self.compileCmdCondition
 		self.commandHandler [TAL_REPEAT] = self.compileCmdRepeat
@@ -831,14 +831,14 @@ class TemplateCompiler:
 			self.commandList.append (command)
 
 	def addTag (self, tag, tagProperties={}):
-		""" Used to add a tag to the stack.  Various properties can be passed in the dictionary
-		    as being information required by the tag.
-		    Currently supported properties are:
-		    		'command'         - The (command,args) tuple associated with this command
-		    		'originalAtts'    - The original attributes that include any metal/tal attributes
-		    		'endTagSymbol'    - The symbol associated with the end tag for this element
-		    		'popFunctionList' - A list of functions to execute when this tag is popped
-					'singletonTag'    - A boolean to indicate that this is a singleton flag
+		""" Used to add a tag to the stack.	 Various properties can be passed in the dictionary
+			as being information required by the tag.
+			Currently supported properties are:
+					'command'		  - The (command,args) tuple associated with this command
+					'originalAtts'	  - The original attributes that include any metal/tal attributes
+					'endTagSymbol'	  - The symbol associated with the end tag for this element
+					'popFunctionList' - A list of functions to execute when this tag is popped
+					'singletonTag'	  - A boolean to indicate that this is a singleton flag
 		"""
 		# Add the tag to the tagStack (list of tuples (tag, properties, useMacroLocation))
 		self.log.debug ("Adding tag %s to stack" % tag[0])
@@ -863,7 +863,7 @@ class TemplateCompiler:
 
 	def popTag (self, tag, omitTagFlag=0):
 		""" omitTagFlag is used to control whether the end tag should be included in the
-				output or not.  In HTML 4.01 there are several tags which should never have
+				output or not.	In HTML 4.01 there are several tags which should never have
 				end tags, this flag allows the template compiler to specify that these
 				should not be output.
 		"""
@@ -1046,7 +1046,7 @@ class TemplateCompiler:
 		# Break up the list of defines first
 		commandArgs = []
 		# We only want to match semi-colons that are not escaped
-		argumentSplitter =  re.compile ('(?<!;);(?!;)')
+		argumentSplitter =	re.compile ('(?<!;);(?!;)')
 		for defineStmt in argumentSplitter.split (argument):
 			#  remove any leading space and un-escape any semi-colons
 			defineStmt = defineStmt.lstrip().replace (';;', ';')
@@ -1085,7 +1085,7 @@ class TemplateCompiler:
 		# Sanity check
 		if (len (argument) == 0):
 			# No argument passed
-			msg = "No argument passed!  condition commands must be of the form: 'path'"
+			msg = "No argument passed!	condition commands must be of the form: 'path'"
 			self.log.error (msg)
 			raise TemplateParseException (self.tagAsText (self.currentStartTag), msg)
 
@@ -1112,16 +1112,16 @@ class TemplateCompiler:
 		# Sanity check
 		if (len (argument) == 0):
 			# No argument passed
-			msg = "No argument passed!  content/replace commands must be of the form: 'path'"
+			msg = "No argument passed!	content/replace commands must be of the form: 'path'"
 			self.log.error (msg)
 			raise TemplateParseException (self.tagAsText (self.currentStartTag), msg)
 
 		structureFlag = self.structureFlag
 		attProps = argument.split (' ')
 		if (len(attProps) > 1):
-                        flag = self.contentType.get(attProps[0])
-                        if flag is not None:
-                                structureFlag = flag
+						flag = self.contentType.get(attProps[0])
+						if flag is not None:
+								structureFlag = flag
 				express = " ".join (attProps[1:])
 			else:
 				# It's not a type selection after all - assume it's part of the path
@@ -1140,7 +1140,7 @@ class TemplateCompiler:
 		# Break up the list of attribute settings first
 		commandArgs = []
 		# We only want to match semi-colons that are not escaped
-		argumentSplitter =  re.compile ('(?<!;);(?!;)')
+		argumentSplitter =	re.compile ('(?<!;);(?!;)')
 		for attributeStmt in argumentSplitter.split (argument):
 			#  remove any leading space and un-escape any semi-colons
 			attributeStmt = attributeStmt.lstrip().replace (';;', ';')
@@ -1171,7 +1171,7 @@ class TemplateCompiler:
 		# Sanity check
 		if (len (argument) == 0):
 			# No argument passed
-			msg = "No argument passed!  use-macro commands must be of the form: 'use-macro: path'"
+			msg = "No argument passed!	use-macro commands must be of the form: 'use-macro: path'"
 			self.log.error (msg)
 			raise TemplateParseException (self.tagAsText (self.currentStartTag), msg)
 		cmnd = (METAL_USE_MACRO, (argument, {}, self.endTagSymbol))
@@ -1181,7 +1181,7 @@ class TemplateCompiler:
 	def compileMetalDefineMacro (self, argument):
 		if (len (argument) == 0):
 			# No argument passed
-			msg = "No argument passed!  define-macro commands must be of the form: 'define-macro: name'"
+			msg = "No argument passed!	define-macro commands must be of the form: 'define-macro: name'"
 			self.log.error (msg)
 			raise TemplateParseException (self.tagAsText (self.currentStartTag), msg)
 
@@ -1203,7 +1203,7 @@ class TemplateCompiler:
 	def compileMetalFillSlot (self, argument):
 		if (len (argument) == 0):
 			# No argument passed
-			msg = "No argument passed!  fill-slot commands must be of the form: 'fill-slot: name'"
+			msg = "No argument passed!	fill-slot commands must be of the form: 'fill-slot: name'"
 			self.log.error (msg)
 			raise TemplateParseException (self.tagAsText (self.currentStartTag), msg)
 
@@ -1254,7 +1254,7 @@ class TemplateCompiler:
 	def compileMetalDefineSlot (self, argument):
 		if (len (argument) == 0):
 			# No argument passed
-			msg = "No argument passed!  define-slot commands must be of the form: 'name'"
+			msg = "No argument passed!	define-slot commands must be of the form: 'name'"
 			self.log.error (msg)
 			raise TemplateParseException (self.tagAsText (self.currentStartTag), msg)
 		# Check that the name of the slot is valid

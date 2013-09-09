@@ -15,120 +15,120 @@ from plasTeX.Packages.hyperref import hypertarget, hyperlink
 from plasTeX.Packages.article import *
 
 class frame(Command):
-    args = '< overlay > self'
-    subtitle = None
+	args = '< overlay > self'
+	subtitle = None
 
-    def invoke(self, tex):
-        # This macro can be an environment or a command each 
-        # with different arguments.
-        if self.macroMode == Command.MODE_BEGIN or \
-           self.macroMode == Command.MODE_END:
-            f = self.ownerDocument.createElement('frameenv')
-            f.parentNode = self.parentNode
-            f.macroMode = self.macroMode
-            f.invoke(tex)
-            # Add to frames collection
-            if self.macroMode == Command.MODE_BEGIN:
-                f.addToFrames()
-            return [f]
-        # Add to frames collection
-        self.addToFrames()
-        return Command.invoke(self, tex)
+	def invoke(self, tex):
+		# This macro can be an environment or a command each 
+		# with different arguments.
+		if self.macroMode == Command.MODE_BEGIN or \
+		   self.macroMode == Command.MODE_END:
+			f = self.ownerDocument.createElement('frameenv')
+			f.parentNode = self.parentNode
+			f.macroMode = self.macroMode
+			f.invoke(tex)
+			# Add to frames collection
+			if self.macroMode == Command.MODE_BEGIN:
+				f.addToFrames()
+			return [f]
+		# Add to frames collection
+		self.addToFrames()
+		return Command.invoke(self, tex)
 
-    def addToFrames(self):
-        """ Add this frame to the frame collection """
-        u = self.ownerDocument.userdata
-        frames = u.get('frames')
-        if frames is None:
-            frames = []
-            u['frames'] = frames
-        frames.append(self) 
+	def addToFrames(self):
+		""" Add this frame to the frame collection """
+		u = self.ownerDocument.userdata
+		frames = u.get('frames')
+		if frames is None:
+			frames = []
+			u['frames'] = frames
+		frames.append(self) 
 
 class frameenv(Environment):
-    args = '< overlay > < defaultoverlay > [ options:dict ] { title } { subtitle }'
-    subtitle = None
-    forcePars = True
+	args = '< overlay > < defaultoverlay > [ options:dict ] { title } { subtitle }'
+	subtitle = None
+	forcePars = True
 
-    def addToFrames(self):
-        """ Add this frame to the frame collection """
-        u = self.ownerDocument.userdata
-        frames = u.get('frames')
-        if frames is None:
-            frames = []
-            u['frames'] = frames
-        frames.append(self) 
+	def addToFrames(self):
+		""" Add this frame to the frame collection """
+		u = self.ownerDocument.userdata
+		frames = u.get('frames')
+		if frames is None:
+			frames = []
+			u['frames'] = frames
+		frames.append(self) 
 
 class frametitle(Command):
-    args = '< overlay > [ shorttitle ] self'
-    def invoke(self, tex):
-        Command.invoke(self, tex)
-        self.ownerDocument.userdata['frames'][-1].title = self
+	args = '< overlay > [ shorttitle ] self'
+	def invoke(self, tex):
+		Command.invoke(self, tex)
+		self.ownerDocument.userdata['frames'][-1].title = self
 
 class framesubtitle(Command):
-    args = '< overlay > self'
-    def invoke(self, tex):
-        Command.invoke(self, tex)
-        self.ownerDocument.userdata['frames'][-1].subtitle = self
+	args = '< overlay > self'
+	def invoke(self, tex):
+		Command.invoke(self, tex)
+		self.ownerDocument.userdata['frames'][-1].subtitle = self
 
 class setbeamertemplate(Command):
-    args = '< overlay > theme [ options ] [ suboptions ]'
+	args = '< overlay > theme [ options ] [ suboptions ]'
 
 class setbeamersize(Command):
-    args = 'options:dict'
+	args = 'options:dict'
 
 class logo(Command):
-    args = '< overlay > self'
+	args = '< overlay > self'
 
 class setbeamercolor(Command):
-    args = 'mode color'
+	args = 'mode color'
 
 class pause(Command):
-    args = '[ number:int ]'
+	args = '[ number:int ]'
 
 class onslide(Command):
-    args = '*+ < overlay > { self }'
+	args = '*+ < overlay > { self }'
 
 class only(Command):
-    args = '< overlay > self < overlay2 >'
+	args = '< overlay > self < overlay2 >'
 
 class onlyenv(Environment):
-    args = '< overlay >'
+	args = '< overlay >'
 
 class uncover(Command):
-    args = '< overlay > self'
+	args = '< overlay > self'
 
 class uncoverenv(Environment):
-    args = uncover.args
+	args = uncover.args
 
 class visible(Command):
-    args = '< overlay > self'
+	args = '< overlay > self'
 
 class visibleenv(Environment):
-    args = visible.args
+	args = visible.args
 
 class invisible(Command):
-    args = '< overlay > self'
+	args = '< overlay > self'
 
 class invisibleenv(Environment):
-    args = invisible.args
+	args = invisible.args
 
 class alt(Command):
-    args = '< overlay > default alternative < overlay2 >'
+	args = '< overlay > default alternative < overlay2 >'
 
 class altenv(Environment):
-    args = '< overlay > begin end alternatebegin alternate end < overlay2 >'
+	args = '< overlay > begin end alternatebegin alternate end < overlay2 >'
 
 class temporal(Command):
-    args = '< overlay > before default after'
+	args = '< overlay > before default after'
 
 class alert(Command):
-    args = '< overlay > self'
+	args = '< overlay > self'
 
 class overlayarea(Environment):
-    args = 'width height'
+	args = 'width height'
 
 class overprint(Environment):
-    args = 'width'
+	args = 'width'
 
 List.item.args = '< alert >' + List.item.args + '< alert2 >'
 textbf.args = '< overlay >' + textbf.args
@@ -162,115 +162,115 @@ quote.args = '< overlay >' + quote.args
 footnote.args = '< overlay > [ options:dict ]' + footnote.args
 
 class resetcounteronoverlays(Command):
-    args = 'counter'
+	args = 'counter'
 
 class resetcountonoverlays(Command):
-    args = 'count'
+	args = 'count'
 
 class action(Command):
-    args = '< action > self'
+	args = '< action > self'
 
 class actionenv(Environment):
-    args = '< action >'
+	args = '< action >'
 
 class beamerdefaultoverlayspecification(Command):
-    args = 'overlay'
+	args = 'overlay'
 
 class AtBeginSection(Command):
-    args = '[ special ] text'
+	args = '[ special ] text'
 
 class AtBeginSubsection(AtBeginSection):
-    pass
+	pass
 
 class AtBeginSubsubsection(AtBeginSection):
-    pass
+	pass
 
 class partpage(Command):
-    pass
+	pass
 
 class AtBeginPart(Command):
-    args = 'text'
+	args = 'text'
 
 class lecture(Command):
-    args = '[ shorttitle ] title { label }'
+	args = '[ shorttitle ] title { label }'
 
 class includeonlylecture(Command):
-    args = 'label'
+	args = 'label'
 
 class AtBeginLecture(Command):
-    args = 'text'
+	args = 'text'
 
 class beamerbutton(Command):
-    args = 'self'
+	args = 'self'
 
 class beamergotobutton(Command):
-    args = 'self'
+	args = 'self'
 
 class beamerskipbutton(Command):
-    args = 'self'
+	args = 'self'
 
 class beamerreturnbutton(Command):
-    args = 'self'
+	args = 'self'
 
 class HyperlinkCommand(Command):
-    args = '< overlay > self < overlay2 >'
+	args = '< overlay > self < overlay2 >'
 
 class hyperlinkslideprev(HyperlinkCommand):
-    pass
+	pass
 
 class hyperlinkslidenext(HyperlinkCommand):
-    pass
+	pass
 
 class hyperlinkframestart(HyperlinkCommand):
-    pass
+	pass
 
 class hyperlinkframeend(HyperlinkCommand):
-    pass
+	pass
 
 class hyperlinkframestartnext(HyperlinkCommand):
-    pass
+	pass
 
 class hyperlinkframeendprev(HyperlinkCommand):
-    pass
+	pass
 
 class hyperlinkpresentationstart(HyperlinkCommand):
-    pass
+	pass
 
 class hyperlinkpresentationend(HyperlinkCommand):
-    pass
+	pass
 
 class hyperlinkappendixstart(HyperlinkCommand):
-    pass
+	pass
 
 class hyperlinkappendixend(HyperlinkCommand):
-    pass
+	pass
 
 class hyperlinkdocumentstart(HyperlinkCommand):
-    pass
+	pass
 
 class hyperlinkdocumentend(HyperlinkCommand):
-    pass
+	pass
 
 class againframe(Command):
-    args = '< overlay > [ default ] [ options:dict ] name'
+	args = '< overlay > [ default ] [ options:dict ] name'
 
 class framezoom(Command):
-    args = '< buttonoverlay > < zoomedoverlay > [ options:dict ] ( pos:list ) ( zoom:list )'
+	args = '< buttonoverlay > < zoomedoverlay > [ options:dict ] ( pos:list ) ( zoom:list )'
 
 class structure(Command):
-    args = '< overlay > self'
+	args = '< overlay > self'
 
 class structureenv(Environment):
-    args = '< overlay >'
+	args = '< overlay >'
 
 class block(Environment):
-    args = '< action > title < action2 >'
+	args = '< action > title < action2 >'
 
 class alertblock(Environment):
-    args = '< action > title < action2 >'
+	args = '< action > title < action2 >'
 
 class exampleblock(Environment):
-    args = '< action > title < action2 >'
+	args = '< action > title < action2 >'
 
 #
 # Theorems
@@ -285,121 +285,121 @@ class exampleblock(Environment):
 # examples.args = '< action > [ text ] < action2 >'
 
 class beamercolorbox(Environment):
-    args = '[ options:dict ] color'
+	args = '[ options:dict ] color'
 
 class beamerboxesrounded(Environment):
-    args = '[ options:dict ] title'
+	args = '[ options:dict ] title'
 
 class columns(Environment):
-    args = '[ options:dict ]'
+	args = '[ options:dict ]'
 
 class column(Command):
-    args = '[ placement ] width'
-    def invoke(self, tex):
-        # This macro can be an environment or a command each 
-        # with different arguments.
-        if self.macroMode == Command.MODE_BEGIN or \
-           self.macroMode == Command.MODE_END:
-            f = self.ownerDocument.createElement('columnenv')
-            f.parentNode = self.parentNode
-            f.macroMode = self.macroMode
-            res = f.invoke(tex)
-            if res is None:
-                res = [f]
-            return res
-        return Command.invoke(self, tex)
+	args = '[ placement ] width'
+	def invoke(self, tex):
+		# This macro can be an environment or a command each 
+		# with different arguments.
+		if self.macroMode == Command.MODE_BEGIN or \
+		   self.macroMode == Command.MODE_END:
+			f = self.ownerDocument.createElement('columnenv')
+			f.parentNode = self.parentNode
+			f.macroMode = self.macroMode
+			res = f.invoke(tex)
+			if res is None:
+				res = [f]
+			return res
+		return Command.invoke(self, tex)
 
 class columnenv(Environment):
-    args = column.args
+	args = column.args
 
 class movie(Command):
-    args = '[ options:dict ] text filename:str'
+	args = '[ options:dict ] text filename:str'
 
 class hyperlinkmovie(Command):
-    args = '[ options:dict ] label text'
+	args = '[ options:dict ] label text'
 
 class animate(Command):
-    args = '< overlay >'
+	args = '< overlay >'
 
 class animatevalue(Command):
-    args = '< interval > name start end'
+	args = '< interval > name start end'
 
 class multiinclude(Command):
-    args = '[ overlay ] [ options:dict ] filename:str'
+	args = '[ overlay ] [ options:dict ] filename:str'
 
 class sound(Command):
-    args = '[ options:dict ] text filename:str'
+	args = '[ options:dict ] text filename:str'
 
 class hyperlinksound(Command):
-    args = '[ options:dict ] label text'
+	args = '[ options:dict ] label text'
 
 class hyperlinkmute(Command):
-    args = 'text'
+	args = 'text'
 
 #
 # Transitions
 #
 
 class TransitionCommand(Command):
-    args = '< overlay > [ options:dict ]'
+	args = '< overlay > [ options:dict ]'
 
 class transblindshorizontal(TransitionCommand):
-    pass
+	pass
 
 class transblindsvertical(TransitionCommand):
-    pass
+	pass
 
 class transboxin(TransitionCommand):
-    pass
+	pass
 
 class transboxout(TransitionCommand):
-    pass
+	pass
 
 class transdissolve(TransitionCommand):
-    pass
+	pass
 
 class transglitter(TransitionCommand):
-    pass
+	pass
 
 class transsplitverticalout(TransitionCommand):
-    pass
+	pass
 
 class transsplitverticalin(TransitionCommand):
-    pass
+	pass
 
 class transsplithorizontalin(TransitionCommand):
-    pass
+	pass
 
 class transsplithorizontalout(TransitionCommand):
-    pass
+	pass
 
 class transwipe(TransitionCommand):
-    pass
+	pass
 
 class transduration(Command):
-    args = '< overlay > seconds:int'
+	args = '< overlay > seconds:int'
 
 #
 # Themes
 #
 
 class usetheme(Command):
-    args = '[ options:dict ] name:list:str'
+	args = '[ options:dict ] name:list:str'
 
 class usecolortheme(Command):
-    args = '[ options:dict ] name:list:str'
+	args = '[ options:dict ] name:list:str'
 
 class usefonttheme(Command):
-    args = '[ options:dict ] name:list:str'
+	args = '[ options:dict ] name:list:str'
 
 class useinnertheme(Command):
-    args = '[ options:dict ] name:list:str'
+	args = '[ options:dict ] name:list:str'
 
 class useoutertheme(Command):
-    args = '[ options:dict ] name:list:str'
+	args = '[ options:dict ] name:list:str'
 
 class addheadbox(Command):
-    args = 'color template'
+	args = 'color template'
 
 class addfootbox(Command):
-    args = 'color template'
+	args = 'color template'
