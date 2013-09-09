@@ -20,6 +20,7 @@ images = ['*.gif','*.png','*.jpg','*.jpeg','*.js','*.htc']
 styles = ['*.css']
 
 TESTS_REQUIRE = [
+	'beautifulsoup4 >= 4.3.1',
 	'blessings >= 1.5.1',  # A thin, practical wrapper around terminal coloring, styling, and positioning. Pulled in by nose-progressive(?)
 	'coverage >= 3.6',  # Test coverage
 	'fudge >= 1.0.3',

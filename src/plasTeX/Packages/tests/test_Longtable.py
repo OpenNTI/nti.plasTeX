@@ -3,9 +3,9 @@
 import unittest, re, os, tempfile, shutil
 from plasTeX.TeX import TeX
 from unittest import TestCase
-from BeautifulSoup import BeautifulSoup as Soup
+from bs4 import BeautifulSoup as Soup
 
-class Longtables(TestCase):
+class TestLongtables(TestCase):
 
 	def runDocument(self, content):
 		"""
@@ -24,12 +24,12 @@ class Longtables(TestCase):
 
 	def runTable(self, content):
 		"""
-		This method compiles and renders a document fragment and 
+		This method compiles and renders a document fragment and
 		returns the result
 
 		Arguments:
 		content - string containing the document fragment
-	  
+
 		Returns: content of output file
 
 		"""
@@ -61,10 +61,10 @@ class Longtables(TestCase):
 
 		numcols = len(out.findAll('tr')[0].findAll('td'))
 		assert numcols == 3, 'Wrong number of columns (expecting 3, but got %s): %s' % (numcols, out)
-		
+
 		numcols = len(out.findAll('tr')[1].findAll('td'))
 		assert numcols == 3, 'Wrong number of columns (expecting 3, but got %s): %s' % (numcols, out)
-		
+
 
 	def testHeaders(self):
 		headers = [
@@ -89,7 +89,7 @@ class Longtables(TestCase):
 			assert text[0]=='M','Cell should contain M, but contains %s' % text[0]
 			assert text[1]=='N','Cell should contain N, but contains %s' % text[1]
 			assert text[2]=='O','Cell should contain O, but contains %s' % text[2]
-		
+
 			numcols = len(out.findAll('tr')[1].findAll('td'))
 			assert numcols == 3, 'Wrong number of columns (expecting 3, but got %s) - %s - %s' % (numcols, header, out)
 
@@ -141,7 +141,7 @@ class Longtables(TestCase):
 			assert text[0]=='F','Cell should contain F, but contains %s' % text[0]
 			assert text[1]=='G','Cell should contain G, but contains %s' % text[1]
 			assert text[2]=='H','Cell should contain H, but contains %s' % text[2]
-		
+
 			numcols = len(out.findAll('tr')[1].findAll('td'))
 			assert numcols == 3, 'Wrong number of columns (expecting 3, but got %s) - %s - %s' % (numcols, header, out)
 
@@ -149,7 +149,7 @@ class Longtables(TestCase):
 		captions = [
 			r'\caption{Caption Text}\\',
 			r'\caption{Caption Text}\\ A & B & C \\\endfirsthead',
-			r'''\caption{Caption Text}\\ A & B & C \\\endfirsthead 
+			r'''\caption{Caption Text}\\ A & B & C \\\endfirsthead
 				\caption{Next Caption Text}\\ X & Y & Z \\\endhead''',
 		]
 
@@ -183,8 +183,7 @@ class Longtables(TestCase):
 		assert len(rows) == 1, 'There should be only 1 row, but found %s' % len(rows)
 		content = re.sub(r'\s+', r' ', rows[0].textContent.strip())
 		assert content == '1 2 3', 'Content should be "1 2 3", but is %s' % content
-		
+
 
 if __name__ == '__main__':
 	unittest.main()
-

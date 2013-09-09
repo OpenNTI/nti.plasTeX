@@ -3,9 +3,9 @@
 import unittest, re, os, tempfile, shutil
 from plasTeX.TeX import TeX
 from unittest import TestCase
-from BeautifulSoup import BeautifulSoup as Soup
+from bs4 import BeautifulSoup as Soup
 
-class Alltt(TestCase):
+class TestAlltt(TestCase):
 
 	def runDocument(self, content):
 		"""
@@ -24,12 +24,12 @@ class Alltt(TestCase):
 
 	def runPreformat(self, content):
 		"""
-		This method compiles and renders a document fragment and 
+		This method compiles and renders a document fragment and
 		returns the result
 
 		Arguments:
 		content - string containing the document fragment
-	  
+
 		Returns: content of output file
 
 		"""
@@ -95,4 +95,3 @@ class Alltt(TestCase):
 
 if __name__ == '__main__':
 	unittest.main()
-

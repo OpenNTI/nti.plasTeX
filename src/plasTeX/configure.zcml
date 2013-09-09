@@ -1,0 +1,50 @@
+<!-- -*- mode: nxml -*- -->
+<configure xmlns="http://namespaces.zope.org/zope"
+		   xmlns:zcml="http://namespaces.zope.org/zcml"
+		   i18n_domain="zope">
+	<include package="zope.component" />
+	<include package="zope.traversing" /> <!-- For rendering -->
+
+	<!--
+	For items used in rendering, we MUST be sure to use
+	the PlastexTraverser
+
+	<adapter for='plasTeX.DOM.NamedNodeMap'
+			 factory='.traversing.PlastexTraverser' />
+
+	<adapter for='plasTeX.DOM.Node'
+			 factory='.traversing.PlastexTraverser' />
+	-->
+	<!--
+	<utility component=".relatedlinksetter.TOCRelatedAdder"
+			 name="TOCRelatedAdder" />
+
+	<utility component=".relatedlinksetter.LinkRelatedAdder"
+			 name="LinkRelatedAdder"
+			 zcml:condition="not-have render:no-href-related-links"/>
+
+	<utility component=".relatedlinksetter.ExistingTOCRelatedAdder"
+			 name="ExistingTOCRelatedAdder" />
+
+	<utility component=".sectionvideoadder.YouTubeRelatedVideoAdder"
+			 name="YouTubeRelatedVideoAdder" />
+	-->
+	<!-- Content fragments and conversion, mime types -->
+	<!--
+	<include package="nti.contentfragments" />
+	-->
+	<!-- icon and image finders for testing book -->
+	<!--
+	<adapter factory=".tociconsetter.SimpleConventionIconFinder"
+			 name="testing" />
+	<adapter factory=".tociconsetter.SimpleConventionBackgroundImageFinder"
+			 name="testing" />
+
+	<include package=".transforms" />
+	<include package=".contentchecks" />
+	<include package=".resources" />
+	<include package=".plastexpackages" />
+	<include package=".indexing" />
+	<include package=".media" />
+	-->
+</configure>

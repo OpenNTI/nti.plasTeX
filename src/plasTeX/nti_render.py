@@ -68,10 +68,10 @@ def _catching(f):
 
 def _set_argparser():
 	arg_parser = argparse.ArgumentParser( description="Render NextThought contetn." )
-	
-	arg_parser.add_argument( 'contentpath',	 
+
+	arg_parser.add_argument( 'contentpath',
 							help="Path to top level content file." )
-	arg_parser.add_argument( '-c', '--config', 
+	arg_parser.add_argument( '-c', '--config',
 							help='Used by render_content wrapper. Ignore if running nti_render standalone.')
 	arg_parser.add_argument( '--nochecking',
 							 action='store_true',
@@ -88,21 +88,21 @@ def _set_argparser():
 							 default='INFO',
 							 help="Set logging level to INFO, DEBUG, WARNING, ERROR or CRITICAL. Default is INFO." )
 	return arg_parser
-	
+
 
 @_catching
 def main():
 	""" Main program routine """
 	argv = sys.argv[1:]
 	arg_parser = _set_argparser()
-	args = arg_parser.parse_args(args=argv) 
-	
+	args = arg_parser.parse_args(args=argv)
+
 	sourceFile = args.contentpath
 	_configure_logging(args.loglevel)
 	dochecking = not args.nochecking
 	doindexing = not args.noindexing
 	outFormat = args.outputformat
-	
+
 	logger.info("Start main")
 	start_t = time.time()
 	source_dir = os.path.dirname(os.path.abspath(os.path.expanduser(sourceFile)))
@@ -232,11 +232,11 @@ def main():
 		render(document, 'XHTML', db)
 		logger.info("Begin post render")
 		postRender(document, jobname=jobname, context=components, dochecking=dochecking, doindexing=doindexing)
-		
+
 	if outFormat == 'xml':
 		logger.info("To Xml.")
 		toXml(document, jobname)
-		
+
 	logger.info("Write metadata.")
 	write_dc_metadata(document, jobname)
 
@@ -279,7 +279,7 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 	# bad. So do this after taking thumbnails.
 	logger.info('Adding videos')
 	sectionvideoadder.performTransforms(book, context=context)
-	
+
 	if dochecking:
 		logger.info('Running checks on content')
 		contentchecks.performChecks(book, context=context)
@@ -322,7 +322,7 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
 		if extractor:
 			logger.info("Extracting %s" % msg)
 			extractor.transform(book)
-			
+
 	logger.info("Creating JSONP content")
 	jsonpbuilder.transform(book)
 

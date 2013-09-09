@@ -616,9 +616,8 @@ class Template:
 			ourInterpreter = interpreter
 		try:
 			ourInterpreter.execute (self)
-		except UnicodeError, unierror:
+		except UnicodeError:
 			logging.error ("UnicodeError caused by placing a non-Unicode string in the Context object.")
-						raise
 			raise simpleTALES.ContextContentException ("Found non-unicode string in Context!")
 
 	def getProgram (self):
@@ -733,7 +732,7 @@ class XMLTemplate (Template):
 		self.expandInline (context, encodingFile, interpreter)
 
 class TemplateCompiler:
-		structureFlag = lambda self, x:x
+	structureFlag = lambda self, x:x
 	def __init__ (self):
 		""" Initialise a template compiler.
 		"""
@@ -743,11 +742,11 @@ class TemplateCompiler:
 		self.macroMap = {}
 		self.endTagSymbol = 1
 
-				self.contentType = {}
-				self.contentType ['text'] = 0
-				self.contentType ['escape'] = 0
-				self.contentType ['structure'] = lambda x: x
-				self.contentType ['stripped'] = lambda x: re.sub(r'</?\w+[^>]*>', r'', x)
+		self.contentType = {}
+		self.contentType ['text'] = 0
+		self.contentType ['escape'] = 0
+		self.contentType ['structure'] = lambda x: x
+		self.contentType ['stripped'] = lambda x: re.sub(r'</?\w+[^>]*>', r'', x)
 
 		self.commandHandler	 = {}
 		self.commandHandler [TAL_DEFINE] = self.compileCmdDefine
@@ -1119,9 +1118,9 @@ class TemplateCompiler:
 		structureFlag = self.structureFlag
 		attProps = argument.split (' ')
 		if (len(attProps) > 1):
-						flag = self.contentType.get(attProps[0])
-						if flag is not None:
-								structureFlag = flag
+			flag = self.contentType.get(attProps[0])
+			if flag is not None:
+				structureFlag = flag
 				express = " ".join (attProps[1:])
 			else:
 				# It's not a type selection after all - assume it's part of the path

@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 import os, sys, codecs, string, glob
-#import plasTeX
+import plasTeX
 from plasTeX.TeX import TeX
 from plasTeX.Config import config
 from plasTeX.ConfigManager import *
 from plasTeX.Logging import getLogger
+from zope.configuration import xmlconfig
 
 log = getLogger()
 
@@ -15,6 +16,7 @@ def main(argv):
 	""" Main program routine """
 	print >>sys.stderr, 'plasTeX version %s' % __version__
 
+	xml_conf_context = xmlconfig.file('configure.zcml', package=plasTeX)
 	# Parse the command line options
 	try:
 		opts, args = config.getopt(argv[1:])
