@@ -3,50 +3,50 @@
 from plasTeX import Command, Environment, DimenCommand, Counter
 
 def ProcessOptions(options, document):
-    context = document.context
+	context = document.context
 
 class cbstart(Command):
-    def invoke(self, tex):
-        cb = self.ownerDocument.createElement('changebar')
-        cb.macroMode = self.MODE_BEGIN
-        cb.invoke(tex)
-        return [cb]
+	def invoke(self, tex):
+		cb = self.ownerDocument.createElement('changebar')
+		cb.macroMode = self.MODE_BEGIN
+		cb.invoke(tex)
+		return [cb]
 
 class cbend(Command):
-    def invoke(self, tex):
-        cb = self.ownerDocument.createElement('changebar')
-        cb.macroMode = self.MODE_END
-        cb.invoke(tex)
-        return [cb]
+	def invoke(self, tex):
+		cb = self.ownerDocument.createElement('changebar')
+		cb.macroMode = self.MODE_END
+		cb.invoke(tex)
+		return [cb]
 
 class changebar(Environment):
-    args = '[ width:str ]'
-    blockType = True
-    forcePars = True
+	args = '[ width:str ]'
+	blockType = True
+	forcePars = True
 
 class cbdelete(Command):
-    args = '[ width:str ]'
+	args = '[ width:str ]'
 
 class nochangebars(Command):
-    pass
+	pass
 
 class cbcolor(Command):
-    args = '[ model:str ] color:str'
+	args = '[ model:str ] color:str'
 
 class changebarwidth(DimenCommand):
-    pass
+	pass
 
 class deletebarwidth(DimenCommand):
-    pass
+	pass
 
 class changebarsep(DimenCommand):
-    pass
+	pass
 
 class changebargrey(Counter):
-    pass
+	pass
 
 class outerbarstrue(Command):
-    pass
+	pass
 
 class driver(Command):
-    args = 'name:str'
+	args = 'name:str'

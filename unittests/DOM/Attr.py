@@ -6,17 +6,17 @@ from plasTeX.DOM import *
 
 class AttributeTest(TestCase):
 
-    def testNodeName(self):
-        doc = Document()
-        one = doc.createAttribute('one')
-        assert one.nodeName == 'one'
+	def testNodeName(self):
+		doc = Document()
+		one = doc.createAttribute('one')
+		assert one.nodeName == 'one'
 
-    def testNodeValue(self):
-        doc = Document()
-        one = doc.createAttribute('one')
-        assert one.nodeValue is None
+	def testNodeValue(self):
+		doc = Document()
+		one = doc.createAttribute('one')
+		assert one.nodeValue is None
 
 
 if __name__ == '__main__':
-    unittest.main()
+	unittest.main()
 

@@ -6,10 +6,10 @@ from plasTeX.Base.LaTeX.Quotations import verse
 verse.args = '[ width:nox ]'
 
 class altverse(verse):
-    pass
+	pass
 
 class patverse(verse):
-    pass
+	pass
 
 class patverse__star(verse):
-    macroName = 'patverse*'
+	macroName = 'patverse*'

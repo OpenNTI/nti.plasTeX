@@ -256,13 +256,13 @@ class CachedFuncResult (ContextVariable):
 class PythonPathFunctions:
 	def __init__ (self, context):
 		self.context = context
-                self.pathHandler = {}
-                self.pathHandler['path'] = self.path
-                self.pathHandler['string'] = self.string
-                self.pathHandler['exists'] = self.exists
-                self.pathHandler['nocall'] = self.nocall
-                self.pathHandler['test'] = self.test
-                self.pathHandler['stripped'] = self.stripped
+				self.pathHandler = {}
+				self.pathHandler['path'] = self.path
+				self.pathHandler['string'] = self.string
+				self.pathHandler['exists'] = self.exists
+				self.pathHandler['nocall'] = self.nocall
+				self.pathHandler['test'] = self.test
+				self.pathHandler['stripped'] = self.stripped
 		
 	def path (self, expr):
 		return self.context.evaluatePath (expr)
@@ -270,8 +270,8 @@ class PythonPathFunctions:
 	def string (self, expr):
 		return self.context.evaluateString (expr)
 
-        def stripped (self, expr):
-                return re.sub(r'</?\w+[^>]*>', r'', context.evaluateString (expr))
+		def stripped (self, expr):
+				return re.sub(r'</?\w+[^>]*>', r'', context.evaluateString (expr))
 	
 	def exists (self, expr):
 		return self.context.evaluateExists (expr)
@@ -312,14 +312,14 @@ class Context:
 		self.true = 1
 		self.false = 0
 		self.pythonPathFuncs = PythonPathFunctions (self)
-                self.prefixHandlers = {}
-                self.prefixHandlers['path'] = self.evaluatePath
-                self.prefixHandlers['exists'] = self.evaluateExists
-                self.prefixHandlers['nocall'] = self.evaluateNoCall
-                self.prefixHandlers['not'] = self.evaluateNot
-                self.prefixHandlers['string'] = self.evaluateString
-                self.prefixHandlers['python'] = self.evaluatePython
-                self.prefixHandlers['stripped'] = self.evaluateStripped
+				self.prefixHandlers = {}
+				self.prefixHandlers['path'] = self.evaluatePath
+				self.prefixHandlers['exists'] = self.evaluateExists
+				self.prefixHandlers['nocall'] = self.evaluateNoCall
+				self.prefixHandlers['not'] = self.evaluateNot
+				self.prefixHandlers['string'] = self.evaluateString
+				self.prefixHandlers['python'] = self.evaluatePython
+				self.prefixHandlers['stripped'] = self.evaluateStripped
 		
 	def addRepeat (self, name, var, initialValue):
 		# Pop the current repeat map onto the stack
@@ -367,9 +367,9 @@ class Context:
 		# Supports path, exists, nocall, not, and string
 		expr = expr.strip ()
 		try:
-                        for key, function in self.prefixHandlers.items():
-                                if expr.startswith (key+':'):
-                                        return function (expr[len(key)+1:].lstrip ())
+						for key, function in self.prefixHandlers.items():
+								if expr.startswith (key+':'):
+										return function (expr[len(key)+1:].lstrip ())
 			else:
 				# Not specified - so it's a path
 				return self.evaluatePath (expr)
@@ -378,14 +378,14 @@ class Context:
 				return None
 			raise e
 
-        def evaluateStripped(self, expr):
-                if '${' not in expr:
-                        expr = '${%s}' % expr
-                return re.sub(r'</?\w+[^>]*>', r'', self.evaluateString (expr))
+		def evaluateStripped(self, expr):
+				if '${' not in expr:
+						expr = '${%s}' % expr
+				return re.sub(r'</?\w+[^>]*>', r'', self.evaluateString (expr))
 		
 	def evaluatePython (self, expr):
 		if (not self.allowPythonPath):
-			self.log.warn ("Parameter allowPythonPath is false.  NOT Evaluating python expression %s" % expr)
+			self.log.warn ("Parameter allowPythonPath is false.	 NOT Evaluating python expression %s" % expr)
 			return self.false
 		#self.log.debug ("Evaluating python expression %s" % expr)
 		
@@ -393,8 +393,8 @@ class Context:
 		for name, value in self.globals.items():
 			if (isinstance (value, ContextVariable)): value = value.rawValue()
 			globals [name] = value
-                for key, value in self.pythonPathFuncs.pathHandler.items():
-                        globals [key] = value
+				for key, value in self.pythonPathFuncs.pathHandler.items():
+						globals [key] = value
 			
 		locals={}
 		for name, value in self.locals.items():
@@ -615,8 +615,8 @@ class Context:
 			except ContextVariable, e:
 				# Fast path for those functions that return values
 				return e.value()
-                        except TypeError:
-                                temp = val
+						except TypeError:
+								temp = val
 				
 			if (hasattr (temp, path)):
 				val = getattr (temp, path)
@@ -654,7 +654,7 @@ class Context:
 		vars['default'] = DEFAULTVALUE
 		vars['options'] = options
 		# To start with there are no repeats
-		vars['repeat'] = self.repeatMap	
+		vars['repeat'] = self.repeatMap 
 		vars['attrs'] = None
 		
 		# Add all of these to the global context

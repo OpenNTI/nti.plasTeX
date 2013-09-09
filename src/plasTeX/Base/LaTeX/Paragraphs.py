@@ -10,36 +10,36 @@ from plasTeX import Command, Environment, DimenCommand
 from plasTeX.Logging import getLogger
 
 class noindent(Command):
-    pass
+	pass
 
 class indent(Command):
-    pass
+	pass
 
 # Defined in TeX
 #class par(Command):
-#    pass
+#	 pass
 
 #
 # Style Parameters
 #
 
 class textwidth(DimenCommand):
-    value = DimenCommand.new('6.5in')
+	value = DimenCommand.new('6.5in')
 
 class columnwidth(DimenCommand):
-    value = DimenCommand.new('6.5in')
+	value = DimenCommand.new('6.5in')
 
 class linewidth(DimenCommand):
-    value = DimenCommand.new('6.5in')
+	value = DimenCommand.new('6.5in')
 
 class parindent(DimenCommand):
-    value = DimenCommand.new(0)
+	value = DimenCommand.new(0)
 
 class baselineskip(DimenCommand):
-    value = DimenCommand.new('12pt')
+	value = DimenCommand.new('12pt')
 
 class baselinestretch(Command):
-    unicode = '1'
+	unicode = '1'
 
 class parskip(DimenCommand):
-    value = DimenCommand.new(0)
+	value = DimenCommand.new(0)

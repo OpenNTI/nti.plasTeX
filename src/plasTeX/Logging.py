@@ -34,15 +34,15 @@ class Logger(_Logger):
 		#except: level = None
 
 		# if not name:
-		# 	handler = StreamHandler()
-		# 	handler.setFormatter(StreamFormatter(ROOT_LOG_FORMAT))
+		#	handler = StreamHandler()
+		#	handler.setFormatter(StreamFormatter(ROOT_LOG_FORMAT))
 		# elif name in ['status', '(status)']:
-		# 	handler = StatusHandler()
-		# 	handler.setFormatter(StreamFormatter(STATUS_FORMAT))
-		# 	level = INFO
+		#	handler = StatusHandler()
+		#	handler.setFormatter(StreamFormatter(STATUS_FORMAT))
+		#	level = INFO
 		# else:
-		# 	handler = StreamHandler()
-		# 	handler.setFormatter(StreamFormatter(LOG_FORMAT))
+		#	handler = StreamHandler()
+		#	handler.setFormatter(StreamFormatter(LOG_FORMAT))
 		# self.addHandler(handler)
 		#if level is not None:
 		#	self.setLevel(level)

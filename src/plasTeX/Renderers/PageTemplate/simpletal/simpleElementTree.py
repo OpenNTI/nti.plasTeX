@@ -103,4 +103,3 @@ def parseFile (file):
 		xmlTreeBuilder.feed (file.read())
 	
 	return xmlTreeBuilder.close()
-	

@@ -69,7 +69,7 @@ def _catching(f):
 def _set_argparser():
 	arg_parser = argparse.ArgumentParser( description="Render NextThought contetn." )
 	
-	arg_parser.add_argument( 'contentpath',  
+	arg_parser.add_argument( 'contentpath',	 
 							help="Path to top level content file." )
 	arg_parser.add_argument( '-c', '--config', 
 							help='Used by render_content wrapper. Ignore if running nti_render standalone.')
@@ -184,10 +184,10 @@ def main():
 	# pauxname = '%s.paux' % jobname
 
 	# for dirname in [cwd] + config['general']['paux-dirs']:
-	# 	for fname in glob.glob(os.path.join(dirname, '*.paux')):
-	# 		if os.path.basename(fname) == pauxname:
-	# 			continue
-	# 		document.context.restore(fname, rname)
+	#	for fname in glob.glob(os.path.join(dirname, '*.paux')):
+	#		if os.path.basename(fname) == pauxname:
+	#			continue
+	#		document.context.restore(fname, rname)
 
 
 	# Set up TEXINPUTS to include the current directory for the renderer,

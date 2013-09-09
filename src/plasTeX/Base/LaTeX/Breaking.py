@@ -13,53 +13,53 @@ from plasTeX.Logging import getLogger
 #
 
 class linebreak(Command):
-    args = '[ num:int ]'
+	args = '[ num:int ]'
 
 class nolinebreak(Command):
-    args = '[ num:int ]'
+	args = '[ num:int ]'
 
 
 class newline(Command):
-    pass
+	pass
 
 class NewLine(newline):
-    macroName = '\\'
-    args = '* [ len:dimen ]'
+	macroName = '\\'
+	args = '* [ len:dimen ]'
 
 class AllowHyphen(Command):
-    macroName = '-'
+	macroName = '-'
 
 class hyphenation(Command):
-    args = 'words:str'
+	args = 'words:str'
 
 class sloppy(Command):
-    pass
+	pass
 
 class fussy(Command):
-    pass
+	pass
 
 class sloppypar(Command):
-    pass
+	pass
 
 #
 # C.12.2 Page Breaking
 #
 
 class pagebreak(Command):
-    args = '[ num:int ]'
+	args = '[ num:int ]'
 
 class nopagebreak(Command):
-    args = '[ num:int ]'
+	args = '[ num:int ]'
 
 class enlargethispage(Command):
-    args = '* len:dimen'
+	args = '* len:dimen'
 
 class newpage(Command):
-    pass
+	pass
 
 class clearpage(Command):
-    pass
+	pass
 
 class cleardoublepage(Command):
-    pass
+	pass
 

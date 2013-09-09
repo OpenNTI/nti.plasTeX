@@ -552,7 +552,7 @@ class Array(Environment):
 		# JAM: change from itertokens to just __iter__ to expand macros...
 		for tok in tex:
 			# This lets us detect complex things like the second column spec in:
-			#     {@{\extracolsep{-0.09in}}rcrcr}
+			#	  {@{\extracolsep{-0.09in}}rcrcr}
 			# which arrives as a bgroup
 
 			if tok is Array:

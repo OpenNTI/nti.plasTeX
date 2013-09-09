@@ -48,36 +48,36 @@ def pythontemplate(s, encoding='utf8',filename=None):
 #from plasTeX.Renderers.PageTemplate.simpletal.simpleTALES import Context as TALContext
 #from plasTeX.Renderers.PageTemplate.simpletal.simpleTALUtils import FastStringOutput as StringIO
 # def htmltemplate(s, encoding='utf8'):
-# 	template = simpleTAL.compileHTMLTemplate(s)
-# 	def renderhtml(obj):
-# 		context = TALContext(allowPythonPath=1)
-# 		context.addGlobal('here', obj)
-# 		context.addGlobal('self', obj)
-# 		context.addGlobal('container', obj.parentNode)
-# 		context.addGlobal('config', obj.ownerDocument.config)
-# 		context.addGlobal('context', obj.ownerDocument.context)
-# 		context.addGlobal('template', template)
-# 		context.addGlobal('templates', obj.renderer)
-# 		output = StringIO()
-# 		template.expand(context, output, encoding)
-# 		return unicode(output.getvalue(), encoding)
-# 	return renderhtml
+#	template = simpleTAL.compileHTMLTemplate(s)
+#	def renderhtml(obj):
+#		context = TALContext(allowPythonPath=1)
+#		context.addGlobal('here', obj)
+#		context.addGlobal('self', obj)
+#		context.addGlobal('container', obj.parentNode)
+#		context.addGlobal('config', obj.ownerDocument.config)
+#		context.addGlobal('context', obj.ownerDocument.context)
+#		context.addGlobal('template', template)
+#		context.addGlobal('templates', obj.renderer)
+#		output = StringIO()
+#		template.expand(context, output, encoding)
+#		return unicode(output.getvalue(), encoding)
+#	return renderhtml
 
 # def xmltemplate(s, encoding='utf8'):
-# 	template = simpleTAL.compileXMLTemplate(s)
-# 	def renderxml(obj):
-# 		context = TALContext(allowPythonPath=1)
-# 		context.addGlobal('here', obj)
-# 		context.addGlobal('self', obj)
-# 		context.addGlobal('container', obj.parentNode)
-# 		context.addGlobal('config', obj.ownerDocument.config)
-# 		context.addGlobal('context', obj.ownerDocument.context)
-# 		context.addGlobal('template', template)
-# 		context.addGlobal('templates', obj.renderer)
-# 		output = StringIO()
-# 		template.expand(context, output, encoding, docType=None, suppressXMLDeclaration=1)
-# 		return unicode(output.getvalue(), encoding)
-# 	return renderxml
+#	template = simpleTAL.compileXMLTemplate(s)
+#	def renderxml(obj):
+#		context = TALContext(allowPythonPath=1)
+#		context.addGlobal('here', obj)
+#		context.addGlobal('self', obj)
+#		context.addGlobal('container', obj.parentNode)
+#		context.addGlobal('config', obj.ownerDocument.config)
+#		context.addGlobal('context', obj.ownerDocument.context)
+#		context.addGlobal('template', template)
+#		context.addGlobal('templates', obj.renderer)
+#		output = StringIO()
+#		template.expand(context, output, encoding, docType=None, suppressXMLDeclaration=1)
+#		return unicode(output.getvalue(), encoding)
+#	return renderxml
 
 # Chameleon/z3c.pt is: faster, better documented, i18n, consistent with
 # pyramid, more customizable and powerful (uses zope.traversing), offers much

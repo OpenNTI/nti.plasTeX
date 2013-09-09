@@ -15,7 +15,7 @@ log = getLogger()
 # 
 
 class TextDeclaration(Environment):
-    pass
+	pass
 
 class mdseries(TextDeclaration): pass
 class bfseries(TextDeclaration): pass
@@ -30,7 +30,7 @@ class normalfont(TextDeclaration): pass
 
 
 class TextCommand(Command):
-    args = 'self'
+	args = 'self'
 
 class textmd(TextCommand): pass
 class textbf(TextCommand): pass
@@ -49,7 +49,7 @@ class textnormal(TextCommand): pass
 #
 
 class TextSizeDeclaration(Environment):
-    pass
+	pass
 
 class tiny(TextSizeDeclaration): pass
 class scriptsize(TextSizeDeclaration): pass
@@ -68,4 +68,4 @@ class Huge(TextSizeDeclaration): pass
 #
 
 class symbol(Command):
-    args = 'num:int'
+	args = 'num:int'

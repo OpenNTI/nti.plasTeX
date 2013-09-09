@@ -3,13 +3,13 @@
 from plasTeX import IgnoreCommand, Environment
 
 class doublespacing(IgnoreCommand):
-    pass
+	pass
 
 class singlespacing(IgnoreCommand):
-    pass
+	pass
 
 class onehalfspacing(IgnoreCommand):
-    pass
+	pass
 
 class setstretch(IgnoreCommand):
-    args = 'size:nox'
+	args = 'size:nox'

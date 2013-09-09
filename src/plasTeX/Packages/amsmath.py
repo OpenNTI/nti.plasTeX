@@ -7,99 +7,99 @@ from plasTeX.Base.LaTeX.Math import EqnarrayStar, equation, eqnarray
 from plasTeX.Base.LaTeX.Math import math
 
 class pmatrix(Array):
-    pass
+	pass
 
 class _AMSEquation(eqnarray):
-    pass
+	pass
 
 class _AMSEquationStar(EqnarrayStar):
-    macroName = None
+	macroName = None
 
 class align(_AMSEquation):
-    pass
+	pass
 
 class AlignStar(_AMSEquationStar):
-    macroName = 'align*'
+	macroName = 'align*'
 
 class gather(_AMSEquation):
-    pass
+	pass
 
 class GatherStar(_AMSEquationStar):
-    macroName = 'gather*'
+	macroName = 'gather*'
 
 class falign(_AMSEquation):
-    pass
+	pass
 
 class FAlignStar(_AMSEquationStar):
-    macroName = 'falign*'
+	macroName = 'falign*'
 
 class multiline(_AMSEquation):
-    pass
+	pass
 
 class MultilineStar(_AMSEquationStar):
-    macroName = 'multiline*'
+	macroName = 'multiline*'
 
 class alignat(_AMSEquation):
-    pass
+	pass
 
 class AlignatStar(_AMSEquationStar):
-    macroName = 'alignat*'
+	macroName = 'alignat*'
 
 class split(_AMSEquation):
-    pass
+	pass
 
 #### Added by Tim ####
 class EquationStar(_AMSEquationStar):
-    macroName = 'equation*'
+	macroName = 'equation*'
 
 class aligned(_AMSEquation):
-    pass
+	pass
 
 class cases(_AMSEquation):
-    pass
+	pass
 
 class alignat(_AMSEquation):
-    args = 'column:int'
+	args = 'column:int'
 class AlignatStar(_AMSEquationStar):
-    args = 'column:int'
-    macroName = 'alignat*'
+	args = 'column:int'
+	macroName = 'alignat*'
 
 class flalign(_AMSEquation):
-    pass
+	pass
 class FlalignStar(_AMSEquationStar):
-    macroName = 'flalign*'
+	macroName = 'flalign*'
 
 class subequations(_AMSEquation):
-    pass
+	pass
 
 class xalignat(alignat):
-    pass
+	pass
 
 class multline(multiline):
-    pass
+	pass
 class MultlineStar(MultilineStar):
-    macroName = 'multline*'
+	macroName = 'multline*'
 
 class matrix(Array):
-    pass
+	pass
 
 class vmatrix(Array):
-    pass
+	pass
 class Vmatrix(Array):
-    pass
+	pass
 
 class bmatrix(Array):
-    pass
+	pass
 class Bmatrix(Array):
-    pass
+	pass
 
 #### Inline Math
 class smallmatrix(math):
-    pass
+	pass
 
 class dddot(math):
-    pass
+	pass
 
 class ddddot(math):
-    pass
+	pass
 

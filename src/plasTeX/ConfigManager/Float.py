@@ -12,11 +12,11 @@ class FloatOption(FloatParser, GenericOption):
    synopsis = 'num'
 
    def cast(self, data):
-      name = self.name
-      if self.actual: name = self.actual
-      if data is None: return
-      try: return float(data)
-      except: raise InvalidOptionError(name, data, type='float')
+	  name = self.name
+	  if self.actual: name = self.actual
+	  if data is None: return
+	  try: return float(data)
+	  except: raise InvalidOptionError(name, data, type='float')
 
 
 class FloatArgument(GenericArgument, FloatOption):

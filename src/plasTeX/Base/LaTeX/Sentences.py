@@ -12,95 +12,95 @@ from plasTeX.Logging import getLogger
 #
 # Quotes
 #
-# '          Apostrophe
-# `text'     Single quotes
-# ``text''   Double quotes
+# '			 Apostrophe
+# `text'	 Single quotes
+# ``text''	 Double quotes
 
 #
 # Dashes
 #
-# -      Intra-word
-# --     Number-range
-# ---    Punctuation
+# -		 Intra-word
+# --	 Number-range
+# ---	 Punctuation
 
 #
 # Spacing
 #
 
 class SmallSpace(Command):
-    macroName = ','
-    unicode = u'\u2009'
+	macroName = ','
+	unicode = u'\u2009'
 
 class InterWordSpace(Command):
-    macroName = ' '
-    unicode = u' '
+	macroName = ' '
+	unicode = u' '
 
 class NoLineBreak(Command):
-    macroName = 'active::~'
-    unicode = u'\u00A0'
+	macroName = 'active::~'
+	unicode = u'\u00A0'
 
 class EndOfSentence(Command):
-    macroName = '@'
-    unicode = u''
+	macroName = '@'
+	unicode = u''
 
 class frenchspacing(Command): 
-    pass
+	pass
 
 class nonfrenchspacing(Command):
-    pass
+	pass
 
 #
 # Special characters
 #
 
 class Dollar(Command):
-    macroName = '$'
-    unicode = '$'
+	macroName = '$'
+	unicode = '$'
 
 class Percent(Command):
-    macroName = '%'
-    unicode = '%'
+	macroName = '%'
+	unicode = '%'
 
 class LeftBrace(Command):
-    macroName = '{'
-    unicode = '{'
+	macroName = '{'
+	unicode = '{'
 
 class Underscore(Command):
-    macroName = '_'
-    unicode = '_'
+	macroName = '_'
+	unicode = '_'
 
 class Ampersand(Command):
-    macroName = '&'
-    unicode = '&'
+	macroName = '&'
+	unicode = '&'
 
 class HashMark(Command):
-    macroName = '#'
-    unicode = '#'
+	macroName = '#'
+	unicode = '#'
 
 class RightBrace(Command):
-    macroName = '}'
-    unicode = '}'
+	macroName = '}'
+	unicode = '}'
 
 #
 # Logos
 #
 
 class LaTeX(Command):
-    pass
+	pass
 
 class TeX(Command):
-    pass
+	pass
 
 #
 # Misc
 #
 
 #class today(Command):
-#    unicode = time.strftime('%B %d, %Y')
+#	 unicode = time.strftime('%B %d, %Y')
 
 class emph(Command):
-    args = 'self'
+	args = 'self'
 
 class em(Environment):
-    pass
+	pass
 
