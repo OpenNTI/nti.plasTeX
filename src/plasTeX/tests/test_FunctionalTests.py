@@ -38,22 +38,29 @@ class Process(object):
 		self.process.stdout.close()
 		self.process.stdin.close()
 
-class Benched(TestCase):
+class _ComparisonBenched(object):
 	""" Compile LaTeX file and compare to benchmark file """
 
-	filename = None
-
-	def runTest(self):
-		if not self.filename:
+	def __call__(self, filename):
+		if not filename:
 			return
 
-		src = self.filename
-		root = os.path.dirname(os.path.dirname(src))
+		src = filename
+
 
 		# Create temp dir and files
 		outdir = tempfile.mkdtemp()
 		texfile = os.path.join(outdir, os.path.basename(src))
+
+		try:
+			self._compare( outdir, src, texfile )
+		finally:
+			# Clean up
+			shutil.rmtree(outdir, ignore_errors=True)
+
+	def _compare( self, outdir, src, texfile ):
 		shutil.copyfile(src, texfile)
+		root = os.path.dirname(os.path.dirname(src))
 
 		# Run preprocessing commands
 		for line in open(src):
@@ -61,7 +68,7 @@ class Benched(TestCase):
 				command = line[2:].strip()
 				p = Process(cwd=outdir, *command.split())
 				if p.returncode:
-					raise OSError, 'Preprocessing command exited abnormally with return code %s: %s' % (command, p.log)
+					raise OSError( 'Preprocessing command exited abnormally with return code %s: %s' % (command, p.log) )
 			elif line.startswith('%#'):
 				filename = line[2:].strip()
 				shutil.copyfile(os.path.join(root,'extras',filename),
@@ -74,7 +81,7 @@ class Benched(TestCase):
 				break
 
 		# Run plastex
-		outfile = os.path.join(outdir, os.path.splitext(os.path.basename(src))[0]+'.html')
+		outfile = os.path.join(outdir, os.path.splitext(os.path.basename(src))[0] + '.html')
 		plastex = which('plastex') or 'plastex'
 		python = sys.executable
 		p = Process(python, plastex,'--split-level=0','--no-theme-extras',
@@ -83,9 +90,11 @@ class Benched(TestCase):
 					cwd=outdir)
 		if p.returncode:
 			shutil.rmtree(outdir, ignore_errors=True)
-			raise OSError, 'plastex failed with code %s: %s' % (p.returncode, p.log)
+			raise OSError( 'plastex failed with code %s: %s' % (p.returncode, p.log) )
 
 		# Read output file
+		__traceback_info__ = p.log, outdir, outfile
+		print p.log
 		output = open(outfile)
 
 		# Get name of output file / benchmark file
@@ -94,41 +103,35 @@ class Benched(TestCase):
 			bench = open(benchfile).readlines()
 			output = output.readlines()
 		else:
-			try: os.makedirs(os.path.join(root,'new'))
-			except: pass
+			try:
+				os.makedirs(os.path.join(root,'new'))
+			except:
+				pass
 			newfile = os.path.join(root,'new',os.path.basename(outfile))
 			open(newfile,'w').write(output.read())
 			shutil.rmtree(outdir, ignore_errors=True)
-			raise OSError, 'No benchmark file: %s' % benchfile
+			raise OSError( 'No benchmark file: %s' % benchfile )
 
 		# Compare files
 		diff = ''.join(list(difflib.unified_diff(bench, output))).strip()
 		if diff:
 			shutil.rmtree(outdir, ignore_errors=True)
-			try: os.makedirs(os.path.join(root,'new'))
-			except: pass
+			try:
+				os.makedirs(os.path.join(root,'new'))
+			except:
+				pass
 			newfile = os.path.join(root,'new',os.path.basename(outfile))
 			open(newfile,'w').writelines(output)
 			assert not(diff), 'Differences were found: %s' % diff
 
-		# Clean up
-		shutil.rmtree(outdir, ignore_errors=True)
 
 def testSuite():
-	""" Locate all .tex files and create a test suite from them """
-	suite = unittest.TestSuite()
-	for root, dirs, files in os.walk( os.path.dirname( __file__ ) ):
+	"""
+	Test-generator for use with nose. Finds all .tex files beside/benath
+	us and runs a matching comparison on them.
+	"""
+	for root, _dirs, files in os.walk( os.path.dirname( __file__ ) ):
 		for f in files:
 			if os.path.splitext(f)[-1] != '.tex':
 				continue
-			test = Benched()
-			test.filename = os.path.abspath(os.path.join(root, f))
-			suite.addTest(test)
-	return suite
-
-def test():
-	""" Execute test suite """
-	unittest.TextTestRunner().run(testSuite())
-
-if __name__ == '__main__':
-	test()
+			yield _ComparisonBenched(), os.path.abspath(os.path.join(root, f))
