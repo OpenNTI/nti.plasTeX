@@ -77,6 +77,7 @@ class TestAlltt(TestCase):
 		out = self.runDocument(text).getElementsByTagName('alltt')[0]
 
 		plines = out.textContent.split('\n')
+		__traceback_info__ = text, lines, out, plines
 		assert lines == plines, 'Content doesn\'t match - %s - %s' % (lines, plines)
 
 		bf = out.getElementsByTagName('textbf')[0]

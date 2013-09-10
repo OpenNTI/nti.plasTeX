@@ -40,9 +40,9 @@ titlepage = '''<html xmlns="http://www.w3.org/1999/xhtml">
 				  <li><a tal:attributes="href subsubsection/url" tal:content="subsubsection/entry"></a></li>
 				</span>
 			  </ul>
-			</span>		 
+			</span>
 		  </span>
-		</ul>	 
+		</ul>
 	  </span>
 	</span>
   </ul>
@@ -66,7 +66,7 @@ opf = '''<package xmlns="http://www.idpf.org/2007/opf"
 	<span tal:omit-tag="" tal:repeat="filename data/cssnames">
 	  <item id="style"	 tal:attributes="href filename/fullname" media-type="text/css"/>
 	</span>
-	<item id="titlepage" href="titlepage.html" media-type="application/xhtml+xml"/>	   
+	<item id="titlepage" href="titlepage.html" media-type="application/xhtml+xml"/>
 	<span tal:omit-tag="" tal:repeat="filename data/htmlnames">
 	  <item tal:attributes="id filename/stem;href filename/fullname" media-type="application/xhtml+xml"/>
 	</span>
@@ -128,11 +128,9 @@ ncx = '''<span tal:define="global mycounter python:1" tal:omit-tag="" >
 			</span>
 		  </navPoint>
 		</span>
-	  </navPoint>  
-	</span>	 
+	  </navPoint>
+	</span>
   </navMap>
   </ncx>
 </span>
 '''
-
-

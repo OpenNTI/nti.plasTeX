@@ -1,0 +1,1 @@
+-e git+https://github.com/NextThought/nti.nose_traceback_info#egg=nti.nose_traceback_info

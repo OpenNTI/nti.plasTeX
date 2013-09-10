@@ -42,50 +42,22 @@ def pythontemplate(s, encoding='utf8',filename=None):
 		return unicode(template, encoding) % tvars
 	return renderpython
 
-# Support for ZPT HTML and XML templates
-# Disabled in favor of chameleon
-#from plasTeX.Renderers.PageTemplate.simpletal import simpleTAL, simpleTALES
-#from plasTeX.Renderers.PageTemplate.simpletal.simpleTALES import Context as TALContext
-#from plasTeX.Renderers.PageTemplate.simpletal.simpleTALUtils import FastStringOutput as StringIO
-# def htmltemplate(s, encoding='utf8'):
-#	template = simpleTAL.compileHTMLTemplate(s)
-#	def renderhtml(obj):
-#		context = TALContext(allowPythonPath=1)
-#		context.addGlobal('here', obj)
-#		context.addGlobal('self', obj)
-#		context.addGlobal('container', obj.parentNode)
-#		context.addGlobal('config', obj.ownerDocument.config)
-#		context.addGlobal('context', obj.ownerDocument.context)
-#		context.addGlobal('template', template)
-#		context.addGlobal('templates', obj.renderer)
-#		output = StringIO()
-#		template.expand(context, output, encoding)
-#		return unicode(output.getvalue(), encoding)
-#	return renderhtml
+# Support for ZPT HTML and XML templates was originally provided via
+# an embedded copy of simpleTAL. This version instead uses Chameleon
+# and some other parts of the Zope/Repoze ecosystem.
 
-# def xmltemplate(s, encoding='utf8'):
-#	template = simpleTAL.compileXMLTemplate(s)
-#	def renderxml(obj):
-#		context = TALContext(allowPythonPath=1)
-#		context.addGlobal('here', obj)
-#		context.addGlobal('self', obj)
-#		context.addGlobal('container', obj.parentNode)
-#		context.addGlobal('config', obj.ownerDocument.config)
-#		context.addGlobal('context', obj.ownerDocument.context)
-#		context.addGlobal('template', template)
-#		context.addGlobal('templates', obj.renderer)
-#		output = StringIO()
-#		template.expand(context, output, encoding, docType=None, suppressXMLDeclaration=1)
-#		return unicode(output.getvalue(), encoding)
-#	return renderxml
+# Chameleon/z3c.pt is: faster, better documented, more flexible i18n,
+# consistent with Pyramid, more customizable and powerful (uses
+# zope.traversing), offers much better error messages.
 
-# Chameleon/z3c.pt is: faster, better documented, i18n, consistent with
-# pyramid, more customizable and powerful (uses zope.traversing), offers much
-# better error messages.
 # NOTE: ZCA must be configured (zope.traversing loaded, and usually
-# nti.contentrendering)
-# See http://chameleon.repoze.org/docs/latest/reference.html
-# and http://docs.zope.org/zope2/zope2book/AppendixC.html#tales-path-expressions
+# nti.contentrendering) See
+# http://chameleon.repoze.org/docs/latest/reference.html and
+# http://docs.zope.org/zope2/zope2book/AppendixC.html#tales-path-expressions
+
+# The simpletal implementation did have some conveniences, such as
+# use of 'self' and some more lax traversing rules. These are replicated
+# here.
 
 from z3c.pt.pagetemplate import PageTemplate as Z3CPageTemplate
 from chameleon.zpt.template import PageTemplate as ChameleonPageTemplate
@@ -95,8 +67,8 @@ from chameleon.astutil import Builtin
 import ast
 
 class MacroProgram(BaseMacroProgram):
+	"""For compatibility with simpletal, we default everything to be non-escaped (substitition)"""
 	def _make_content_node( self, expression, default, key, translate ):
-		# For compatibility with simpletal, we default everything to be non-escaped (substitition)
 		return BaseMacroProgram._make_content_node( self, expression, default, 'substitution', translate )
 
 class _NTIPageTemplate(Z3CPageTemplate):
@@ -125,9 +97,9 @@ _NTIPageTemplate.expression_types['stripped'] = _NTIPageTemplate.expression_type
 import chameleon.utils
 import chameleon.template
 class _Scope(chameleon.utils.Scope):
-	# The existing simpletal templates assume 'self', which is not valid
-	# in TAL because the arguments are passed as kword args, and 'self' is already
-	# used. Thus, we use 'here' and then override
+	"""The existing simpletal templates assume 'self', which is not valid
+	in TAL because the arguments are passed as kword args, and 'self' is already
+	used. Thus, we use 'here' and then override."""
 	def __getitem__( self, key ):
 		if key == 'self':
 			key = 'here'
@@ -329,6 +301,7 @@ class PageTemplate(BaseRenderer):
 		super(PageTemplate,self).__init__( *args, **kwargs )
 		self.engines = {}
 		htmlexts = ['.html','.htm','.xhtml','.xhtm','.zpt','.pt']
+		# JAM: TODO: Zope components for this
 		self.registerEngine('pt', None, htmlexts, htmltemplate)
 		self.registerEngine('zpt', None, htmlexts, htmltemplate)
 		self.registerEngine('zpt', 'xml', '.xml', xmltemplate)
@@ -540,8 +513,8 @@ class PageTemplate(BaseRenderer):
 						break
 
 		if self.aliases:
-		   log.warning('The following aliases were unresolved: %s'
-					   % ', '.join(self.aliases.keys()))
+		   log.warning('The following aliases were unresolved: %s',
+					    ', '.join(self.aliases.keys()))
 
 	def setTemplate(self, template, options, filename=None):
 		"""
@@ -562,7 +535,7 @@ class PageTemplate(BaseRenderer):
 			if not names:
 				names = [' ']
 		except KeyError:
-			raise ValueError, 'No name given for template'
+			raise ValueError( 'No name given for template' )
 
 		# If an alias was specified, link the names to the
 		# already specified template.
@@ -571,7 +544,7 @@ class PageTemplate(BaseRenderer):
 			for name in names:
 				self.aliases[name] = alias
 			if ''.join(template).strip():
-				log.warning('Both an alias and a template were specified for: %s' % ', '.join(names))
+				log.warning('Both an alias and a template were specified for: %s', ', '.join(names))
 
 		# Resolve remaining aliases
 		for key, value in self.aliases.items():

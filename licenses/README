@@ -6,4 +6,3 @@ unicode.license		plasTeX/Base/LaTeX/allkeys.txt
 ent.license 		plasTeX/Base/LaTeX/ent.xml
 pyuca.license		plasTeX/Base/LaTeX/pyuca.py
 S5.license		plasTeX/Renderers/S5/Themes/default/ui/default/*
-simpletal.license	plasTeX/Renderers/PageTemplate/simpletal/*
