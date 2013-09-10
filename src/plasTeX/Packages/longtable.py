@@ -2,7 +2,7 @@
 
 import sys
 from plasTeX.Base.LaTeX.Arrays import tabular
-from plasTeX import Command, DimenCommand, CountCommand, GlueCommand 
+from plasTeX import Command, DimenCommand, CountCommand, GlueCommand
 from plasTeX import dimen, glue, count, TeXFragment
 
 class LTleft(GlueCommand): value = glue('1fil')
@@ -16,6 +16,11 @@ class setlongtables(Command): pass
 
 class longtable(tabular):
 	args = '[ position:str ] colspec:nox'
+
+	# JAM: See comments in the superclass applyBorders
+	# If this is left to True, then we wind up with a pointless
+	# <tr><td></td></tr> at the end of longtables
+	_preserve_trailing_border_row = False
 
 	class caption(tabular.caption):
 		def digest(self, tokens):
@@ -87,7 +92,7 @@ class longtable(tabular):
 	def processRows(self):
 		# Strip header and footer chunks from the table
 		delims = [x for x in self if isinstance(x, type(self).EndRow)]
-		delims = [x for x in delims if not isinstance(x, type(self).kill)] 
+		delims = [x for x in delims if not isinstance(x, type(self).kill)]
 		header = footer = None
 		for current in delims:
 			cache = []

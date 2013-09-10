@@ -478,6 +478,8 @@ class Array(Environment):
 				cols.append(numcols)
 			self.numCols = max(cols)
 
+	_preserve_trailing_border_row = True # JAM: Hack for longtable, see test_longtable:testSimple
+
 	def applyBorders(self):
 		"""
 		Apply borders from \\(h|c|v)line and colspecs
@@ -502,9 +504,9 @@ class Array(Environment):
 					if i == lastrow and lastrow:
 						if prev.endToken is None:
 							prev.endToken = self.ownerDocument.createElement( 'hline' )
-						else:
+						elif self._preserve_trailing_border_row:
 							continue # don't drop this row, need it for trailing hline
-				emptyrows.insert(0, i)
+				emptyrows.append(i)
 			else:
 				row.applyBorders()
 				if self.colspec:
@@ -526,7 +528,7 @@ class Array(Environment):
 				prev = row
 
 		# Pop empty rows
-		for i in emptyrows:
+		for i in reversed(emptyrows):
 			self.pop(i)
 
 	@classmethod

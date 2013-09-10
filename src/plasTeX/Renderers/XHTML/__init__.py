@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-import sys, os, re, codecs, plasTeX
+import warnings
+import re
+import codecs
 from plasTeX.Renderers.PageTemplate import Renderer as _Renderer
 
 class XHTML(_Renderer):
@@ -12,6 +14,9 @@ class XHTML(_Renderer):
 
 	def cleanup(self, document, files, postProcess=None):
 		res = _Renderer.cleanup(self, document, files, postProcess=postProcess)
+
+		# TODO: Convert all of these to named registered utilities
+
 		self.doJavaHelpFiles(document, version='1')
 		self.doJavaHelpFiles(document, version='2')
 		self.doEclipseHelpFiles(document)
@@ -35,6 +40,9 @@ class XHTML(_Renderer):
 
 	def doCHMFiles(self, document, encoding='ISO-8859-1'):
 		""" Generate files needed to for CHM help files """
+		warnings.warn("CHM Disabled, doesn't work (template out of sync)")
+		return # FIXME JAM: Disabled, doesn't work (template out of sync)
+
 		latexdoc = document.getElementsByTagName('document')[0]
 
 		# Create table of contents
@@ -68,6 +76,8 @@ class XHTML(_Renderer):
 
 	def doEclipseHelpFiles(self, document, encoding='ASCII'):
 		""" Generate files needed to use HTML as Eclipse Help """
+		warnings.warn("Eclipse Help disabled, doesn't work (template out of sync, has NTI dep)")
+		return # FIXME: JAM Disabled
 		latexdoc = document.getElementsByTagName('document')[0]
 
 		# Create table of contents
@@ -97,6 +107,8 @@ class XHTML(_Renderer):
 
 	def doJavaHelpFiles(self, document, encoding='ISO-8859-1', version='2'):
 		""" Generate files needed to use HTML as Java Help """
+		warnings.warn("Java Help disabled, doesn't work (template out of sync)")
+		return # FIXME JAM: Disabled, doesn't work (template out of sync)
 		latexdoc = document.getElementsByTagName('document')[0]
 		version = str(version)
 

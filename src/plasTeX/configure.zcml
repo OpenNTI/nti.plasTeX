@@ -8,13 +8,12 @@
 	<!--
 	For items used in rendering, we MUST be sure to use
 	the PlastexTraverser
-
+	-->
 	<adapter for='plasTeX.DOM.NamedNodeMap'
-			 factory='.traversing.PlastexTraverser' />
+			 factory='.Renderers.PageTemplate.traversing.PlastexTraverser' />
 
 	<adapter for='plasTeX.DOM.Node'
-			 factory='.traversing.PlastexTraverser' />
-	-->
+			 factory='.Renderers.PageTemplate.traversing.PlastexTraverser' />
 	<!--
 	<utility component=".relatedlinksetter.TOCRelatedAdder"
 			 name="TOCRelatedAdder" />

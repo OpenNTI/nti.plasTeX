@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os, sys, codecs, string, glob
 import plasTeX
 from plasTeX.TeX import TeX
@@ -12,10 +10,11 @@ log = getLogger()
 
 __version__ = '0.9.3'
 
-def main(argv):
+def main():
 	""" Main program routine """
 	print >>sys.stderr, 'plasTeX version %s' % __version__
 
+	argv = sys.argv
 	xml_conf_context = xmlconfig.file('configure.zcml', package=plasTeX)
 	# Parse the command line options
 	try:
@@ -105,9 +104,3 @@ def info(type, value, tb):
 #sys.excepthook = info
 
 #sys.setrecursionlimit(10000)
-
-#main(sys.argv)
-try:
-	main(sys.argv)
-except KeyboardInterrupt:
-	pass
