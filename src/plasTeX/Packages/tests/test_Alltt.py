@@ -1,9 +1,16 @@
 #!/usr/bin/env python
 
-import unittest, re, os, tempfile, shutil
+import unittest
+import os
+import tempfile
+import shutil
 from plasTeX.TeX import TeX
 from unittest import TestCase
 from bs4 import BeautifulSoup as Soup
+
+from hamcrest import assert_that
+from hamcrest import has_property
+from hamcrest import contains
 
 class TestAlltt(TestCase):
 
@@ -41,7 +48,7 @@ class TestAlltt(TestCase):
 
 		# Run plastex on the document
 		log = os.popen('plastex -d %s %s 2>&1' % (tmpdir, filename)).read()
-		assert '[ index.html ]' in log, 'No file was generated - %s' % log
+
 
 		# Get output file
 		output = open(os.path.join(tmpdir, 'index.html')).read()
@@ -53,14 +60,14 @@ class TestAlltt(TestCase):
 		return Soup(output).findAll('pre')[-1]
 
 	def testSimple(self):
-		text = '''\\begin{alltt}\n	 line 1\n	line 2\n   line 3\n\\end{alltt}'''
-		lines = ['', '	 line 1', '	  line 2', '   line 3', '']
+		text = '''\\begin{alltt}\n\t line 1\n\tline 2\n   line 3\n\\end{alltt}'''
+		lines = ['', '\t line 1', '\tline 2', '   line 3', '']
 
 		# Test text content of node
 		out = self.runDocument(text).getElementsByTagName('alltt')[0]
 
 		plines = out.textContent.split('\n')
-		assert lines == plines, 'Content doesn\'t match - %s - %s' % (lines, plines)
+		assert_that( plines, contains(*lines) )
 
 		# Test text content of rendering
 		out = self.runPreformat(text)
@@ -70,18 +77,19 @@ class TestAlltt(TestCase):
 
 
 	def testCommands(self):
-		text = '''\\begin{alltt}\n	 line 1\n	\\textbf{line} 2\n	 \\textit{line 3}\n\\end{alltt}'''
-		lines = ['', '	 line 1', '	  line 2', '   line 3', '']
+		text = '''\\begin{alltt}\n\t line 1\n\t \\textbf{line} 2\n\t \\textit{line 3}\n\\end{alltt}'''
+		lines = ['', '\t line 1', '\t line 2', '\t line 3', '']
 
 		# Test text content of node
-		out = self.runDocument(text).getElementsByTagName('alltt')[0]
+		doc = self.runDocument(text)
+		out = doc.getElementsByTagName('alltt')[0]
 
 		plines = out.textContent.split('\n')
 		__traceback_info__ = text, lines, out, plines
-		assert lines == plines, 'Content doesn\'t match - %s - %s' % (lines, plines)
+		assert_that( plines, contains(*lines) )
 
 		bf = out.getElementsByTagName('textbf')[0]
-		assert bf.textContent == 'line', 'Bold text should be "line", but it is "%s"' % bf.textContent
+		assert_that( bf, has_property( 'textContent', 'line' ), 'Bold text should be "line", but it is "%s"' % bf.textContent)
 
 		it = out.getElementsByTagName('textit')[0]
 		assert it.textContent == 'line 3', 'Italic text should be "line 3", but it is "%s"' % it.textContent
