@@ -807,7 +807,7 @@ class TeXDocument(Document):
 			self.context = kwargs['context']
 
 		if 'config' not in kwargs:
-			self.config = Config.config
+			self.config = Config.newConfig()
 		else:
 			self.config = kwargs['config']
 

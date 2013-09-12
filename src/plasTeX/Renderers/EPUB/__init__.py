@@ -1,7 +1,21 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+
+
+$Id$
+"""
+
+from __future__ import print_function, absolute_import, division
+__docformat__ = "restructuredtext en"
+
+logger = __import__('logging').getLogger(__name__)
+
+
 import plasTeX
 from plasTeX.TeX import TeX
-from plasTeX.Config import config
-from plasTeX.ConfigManager import *
+from plasTeX.Config import newConfig
+#from plasTeX.ConfigManager import *
 from plasTeX.Renderers.XHTML import Renderer as XHTMLRenderer
 # JAM: NOTE: simpletal has been removed, see PageTemplate for details.
 # A few methods need to be ported to Chameleon/z3c.pt to make this work
@@ -14,7 +28,7 @@ import os
 import sgmllib
 import zipfile
 #
-import templates
+from . import templates
 
 NCX_DOCTYPE = '''<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN"
 		"http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">'''
@@ -266,7 +280,7 @@ class Epub(object):
 	def __init__(self, name):
 		self.name = name
 		self.filename = '%s.tex' % name
-		self.config = config
+		self.config = newConfig()
 		self.config['general']['renderer'] = 'Epub'
 		self.config['general']['theme'] = 'default'
 
