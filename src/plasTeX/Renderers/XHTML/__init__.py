@@ -74,10 +74,12 @@ class XHTML(_Renderer):
 			f.write(help)
 			f.close()
 
+	_XXX_ECLIPSE_DISABLED = True
 	def doEclipseHelpFiles(self, document, encoding='ASCII'):
 		""" Generate files needed to use HTML as Eclipse Help """
-		warnings.warn("Eclipse Help disabled, doesn't work (template out of sync, has NTI dep)")
-		return # FIXME: JAM Disabled
+		if self._XXX_ECLIPSE_DISABLED:
+			warnings.warn("Eclipse Help disabled, doesn't work (template out of sync, has NTI dep) %s" % type(self))
+			return # FIXME: JAM Disabled
 		latexdoc = document.getElementsByTagName('document')[0]
 
 		# Create table of contents

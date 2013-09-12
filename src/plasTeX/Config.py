@@ -13,6 +13,95 @@ from .ConfigManager import CompoundOption
 from .ConfigManager import IntegerOption
 from .ConfigManager import FloatOption
 
+# Callbacks. These must be top-level to be picklable
+# and the must be picklable for the imager cache to work
+
+class _LinkSetter(object):
+
+	def __init__( self, links ):
+		self.links = links
+
+	def __call__( self, data ):
+		""" Set links in the configuration """
+		links = self.links
+		def _getstring(data):
+			""" Return a string which may or may not be quoted """
+			data = list(data.lstrip())
+
+			if not data:
+				return ''
+
+			s = []
+			for quote in '\'"':
+				if data[0] == quote:
+					data.pop(0)
+					while data:
+						if data[0] == quote:
+							data.pop(0)
+							break
+						s.append(data.pop(0))
+					return ''.join(s), ''.join(data)
+
+			while data:
+				if data[0] != ' ':
+					s.append(data.pop(0))
+					continue
+				break
+			return ''.join(s), ''.join(data)
+
+
+		data = data[1:-1].strip()
+		key, data = _getstring(data)
+		url, data = _getstring(data)
+		title, data = _getstring(data)
+		if not title:
+			title = url
+			url = ''
+		if title:
+			links['%s-title' % key] = StringOption(default=title)
+		if url:
+			links['%s-url' % key] = StringOption(default=url)
+
+class _SetCounters(object):
+
+	def __init__( self, counters ):
+		self.counters = counters
+
+	def __call__(self, data):
+		""" Set counters in the configuration """
+		counters = self.counters
+		value = [x for x in data[1:-1].split() if x]
+		if len(value) == 2:
+			counters[value[0]] = IntegerOption(default=int(value[1]))
+
+class _SetFilename(object):
+	def __init__( self, files ):
+		self.files = files
+
+	def __call__(self, data):
+		""" If there is only one filename specified, turn off splitting """
+		files = self.files
+		data = data.strip()
+		if ' ' in data:
+			return data
+		if '[' in data:
+			return data
+		files['split-level'] = -10
+		return data
+
+class _ReadConfig(object):
+
+	def __init__( self, config ):
+		self.config = config
+
+	def __call__(self, path):
+		""" Read a configuration file """
+		config = self.config
+		if not os.path.isfile(path):
+			print( "WARNING: Could not load config file '%s'" % file, file=sys.stderr )
+			return
+		config.read(path)
+
 def newConfig(read_files=True):
 	c = config = ConfigManager()
 
@@ -51,13 +140,6 @@ def newConfig(read_files=True):
 		default = False,
 	)
 
-	def readconfig(path):
-		""" Read a configuration file """
-		if not os.path.isfile(file):
-			print( "WARNING: Could not load config file '%s'" % file, file=sys.stderr )
-			return
-		config.read(file)
-
 	general['config'] = StringOption(
 		"""
 		Load additional configuration file
@@ -71,7 +153,7 @@ def newConfig(read_files=True):
 
 		""",
 		options = '--config -c',
-		callback = readconfig,
+		callback = _ReadConfig(config)
 	)
 
 	general['paux-dirs'] = MultiOption(
@@ -88,51 +170,13 @@ def newConfig(read_files=True):
 
 	links = c.add_section('links')
 
-	def getstring(data):
-		""" Return a string which may or may not be quoted """
-		data = list(data.lstrip())
 
-		if not data:
-			return ''
-
-		s = []
-		for quote in '\'"':
-			if data[0] == quote:
-				data.pop(0)
-				while data:
-					if data[0] == quote:
-						data.pop(0)
-						break
-					s.append(data.pop(0))
-				return ''.join(s), ''.join(data)
-
-		while data:
-			if data[0] != ' ':
-				s.append(data.pop(0))
-				continue
-			break
-		return ''.join(s), ''.join(data)
-
-
-	def setlinks(data):
-		""" Set links in the configuration """
-		data = data[1:-1].strip()
-		key, data = getstring(data)
-		url, data = getstring(data)
-		title, data = getstring(data)
-		if not title:
-			title = url
-			url = ''
-		if title:
-			links['%s-title' % key] = StringOption(default=title)
-		if url:
-			links['%s-url' % key] = StringOption(default=url)
 
 	links[';links'] = CompoundOption(
 		""" Set links for use in navigation """,
 		options = '--link',
 		category = 'document',
-		callback = setlinks,
+		callback = _LinkSetter(links),
 	)
 
 	#
@@ -141,17 +185,12 @@ def newConfig(read_files=True):
 
 	counters = c.add_section('counters')
 
-	def setcounter(data):
-		""" Set counters in the configuration """
-		value = [x for x in data[1:-1].split() if x]
-		if len(value) == 2:
-			counters[value[0]] = IntegerOption(default=int(value[1]))
 
 	counters[';counters'] = CompoundOption(
 		""" Set initial counter values """,
 		options = '--counter',
 		category = 'document',
-		callback = setcounter,
+		callback = _SetCounters(counters),
 	)
 
 	#
@@ -189,22 +228,12 @@ def newConfig(read_files=True):
 		category = 'files',
 	)
 
-	def setFilename(data):
-		""" If there is only one filename specified, turn off splitting """
-		data = data.strip()
-		if ' ' in data:
-			return data
-		if '[' in data:
-			return data
-		files['split-level'] = -10
-		return data
-
 	files['filename'] = StringOption(
 		""" Template for output filenames """,
 		options = '--filename',
 		default = 'index [$id, sect$num(4)]',
 		category = 'files',
-		callback = setFilename,
+		callback = _SetFilename(files)
 	)
 
 	files['bad-chars'] = StringOption(
