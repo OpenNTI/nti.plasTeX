@@ -1703,10 +1703,15 @@ class CharacterData(unicode, Node):
 		return unicode.__getitem__(self, i)
 
 	def __str__(self):
-		return self
+		# Python says this must return a string object. On py27,
+		# because we are unicode, this can result in an infinite
+		# loop as the interpreter tries to turn the result of this
+		# method into a str. (this is seen under pypy). Therefore, we must
+		# return the encoded form
+		return self.encode('utf8')
 
 	def __unicode__(self):
-		return self
+		return self # We are an instance of unicode, so this is ok
 
 class Text(CharacterData):
 	"""

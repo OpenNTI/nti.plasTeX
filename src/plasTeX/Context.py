@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function, absolute_import, division
+
 import new, os, ConfigParser, re, time, codecs
 import plasTeX
 from ._util import ismacro, macroName
@@ -18,7 +20,6 @@ log = getLogger(__name__)
 status = getLogger(__name__ + '.status')
 stacklog = getLogger(__name__ + '.context.stack')
 macrolog = getLogger(__name__ + '.context.macros')
-
 
 class ContextItem(dict):
 	"""
@@ -140,6 +141,10 @@ class LanguageParser(object):
 		if self.term:
 			self.language[self.term] += data
 
+# FIXME: JAM: Most uses of "str(name)" to create
+# named counters should probably become "unicode(name)"?
+# As it is, our unicode objects are being copied into bytestrings
+# Of course, this changes under Py3
 
 class Context(object):
 	"""
@@ -486,7 +491,6 @@ class Context(object):
 		"""
 		label = label.strip()
 		if not label:
-			print "!!!No label"
 			return
 
 		# Resolve ref if label already exists

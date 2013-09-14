@@ -12,6 +12,8 @@ from hamcrest import assert_that
 from hamcrest import has_property
 from hamcrest import contains
 
+import subprocess
+
 class TestAlltt(TestCase):
 
 	def runDocument(self, content):
@@ -47,9 +49,8 @@ class TestAlltt(TestCase):
 		open(filename, 'w').write(document)
 
 		# Run plastex on the document
-		log = os.popen('plastex -d %s %s 2>&1' % (tmpdir, filename)).read()
-
-
+		log = subprocess.check_call( ['plastex', '-d', tmpdir, filename], bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.STDOUT ).communicate()[0]
+		__traceback_info__ = log
 		# Get output file
 		output = open(os.path.join(tmpdir, 'index.html')).read()
 

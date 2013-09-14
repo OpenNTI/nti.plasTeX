@@ -15,10 +15,6 @@ entry_points = {
 	]
 }
 
-templates = ['*.html','*.htm','*.xml','*.zpt','*.zpts']
-images = ['*.gif','*.png','*.jpg','*.jpeg','*.js','*.htc']
-styles = ['*.css']
-
 TESTS_REQUIRE = [
 	'beautifulsoup4 >= 4.3.1',
 	'blessings >= 1.5.1',  # A thin, practical wrapper around terminal coloring, styling, and positioning. Pulled in by nose-progressive(?)
@@ -51,13 +47,13 @@ INSTALL_REQUIRES = [
 	'zope.component >= 4.1.0',
 	'zope.configuration >= 4.0.2',
 	'zope.contentprovider >= 4.0.0a1',
-	'zope.contenttype >= 4.0.1',  # A utility module for content-type handling.
+	#'zope.contenttype >= 4.0.1',  # A utility module for content-type handling.
 	'zope.dottedname',
 	'zope.dublincore >= 4.0.0',
 	'zope.error >= 4.1.0',
 	'zope.event >= 4.0.2',
-	'zope.exceptions >= 4.0.6',
-	'zope.filerepresentation >= 4.0.2',
+	#'zope.exceptions >= 4.0.6',
+	#'zope.filerepresentation >= 4.0.2',
 #	'zope.file >= 0.6.2' if HAVE_ZCONT else '',  # zope.container dep
 	'zope.formlib >= 4.3.0a1',  # Req'd by zope.mimetype among others,
 	'zope.hookable >= 4.0.1',  # explicitly list this to ensure we get the fast C version. Used by ZCA.
@@ -71,8 +67,8 @@ INSTALL_REQUIRES = [
 #	'zope.ptresource >= 4.0.0a1',
 #	'zope.publisher >= 4.0.0a4',
 	'zope.proxy >= 4.1.3',  # 4.1.x support py3k, uses newer APIs. Not binary compat with older extensions, must rebuild. (In partic, req zope.security >= 3.9)
-	'zope.schema >= 4.3.2',
-	'zope.security[zcml,untrustedpython] >= 4.0.0',  # >= 4.0.0b1 gets PyPy support!
+	#'zope.schema >= 4.3.2',
+	#'zope.security[zcml,untrustedpython] >= 4.0.0',  # >= 4.0.0b1 gets PyPy support!
 	# parser and renderers for the classic Zope "structured text" markup dialect (STX).
 	# STX is a plain text markup in which document structure is signalled primarily by identation.
 	# Pulled in by ...?
@@ -82,7 +78,7 @@ INSTALL_REQUIRES = [
 	'zope.traversing >= 4.0.0a3',
 	# Plug to make zope.schema's vocabulary registry ZCA
 	# based and thus actually useful
-	'zope.vocabularyregistry >= 1.0.0',
+	#'zope.vocabularyregistry >= 1.0.0',
 ]
 
 setup(name="nti.plasTeX",
@@ -98,24 +94,11 @@ setup(name="nti.plasTeX",
 	  #namespace_packages=['nti', ],
 	  zip_safe=False,
 	  entry_points=entry_points,
-      package_data = {
-         'plasTeX': ['*.xml'],
-         'plasTeX.Base.LaTeX': ['*.xml','*.txt'],
-         'plasTeX.Renderers.DocBook': templates,
-         'plasTeX.Renderers.DocBook.Themes.default': templates,
-         'plasTeX.Renderers.DocBook.Themes.book': templates,
-         'plasTeX.Renderers.DocBook.Themes.article': templates,
-         'plasTeX.Renderers.XHTML': templates,
-         'plasTeX.Renderers.XHTML.Themes.default': templates,
-         'plasTeX.Renderers.XHTML.Themes.default.icons': images,
-         'plasTeX.Renderers.XHTML.Themes.default.styles': styles,
-         'plasTeX.Renderers.XHTML.Themes.python': templates+styles,
-         'plasTeX.Renderers.XHTML.Themes.python.icons': images,
-         'plasTeX.Renderers.XHTML.Themes.plain': templates,
-         'plasTeX.Renderers.S5': templates,
-         'plasTeX.Renderers.S5.Themes.default': templates,
-         'plasTeX.Renderers.S5.Themes.default.ui.default': templates+styles+images,
-      },
+	  setup_requires = [
+		   # Without this, we don't get data files in sdist,
+		   # which in turn means tox can't work
+		  'setuptools-git'
+	  ],
 	  extras_require={
 		  'test': TESTS_REQUIRE,
 		  'tools': [
