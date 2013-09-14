@@ -451,18 +451,15 @@ class Imager(object):
 		# The key is the LaTeX source and the value is the image instance.
 		self._cache = {}
 		usednames = {}
-		self._filecache = os.path.abspath(os.path.join('.cache',
-										  self.__class__.__name__+'.images'))
-		if self.config['images']['cache'] and os.path.isfile(self._filecache):
-			try:
-				self._cache = pickle.load(open(self._filecache, 'r'))
-				for key, value in self._cache.items():
-					if not os.path.isfile(value.filename):
-						del self._cache[key]
-						continue
-					usednames[value.filename] = None
-			except ImportError:
-				os.remove(self._filecache)
+		# JAM: FIXME: This writes into some arbitrary directory that may or
+		# may not be related to the document we are processing. It at least
+		# needs to take document name/path into consideration (see below on
+		# graphicspath)
+		self._filecache = os.path.abspath(
+			os.path.join('.cache', self.__class__.__name__ + '.images'))
+
+		if self.config['images']['cache']:
+			usednames = self._read_cache()
 
 		# List of images in the order that they appear in the LaTeX file
 		self.images = ordereddict()
@@ -472,8 +469,8 @@ class Imager(object):
 
 		# Filename generator
 		self.newFilename = Filenames(self.config['images'].get('filenames', raw=True),
-						   vars={'jobname':document.userdata.get('jobname','')},
-						   extension=self.fileExtension, invalid=usednames)
+									 vars={'jobname':document.userdata.get('jobname','')},
+									 extension=self.fileExtension, invalid=usednames)
 
 		# Start the document with a preamble
 		self.source = StringIO()
@@ -586,13 +583,39 @@ class Imager(object):
 
 		self.convert(output)
 
+		if self.config['images']['cache']:
+			self._write_cache()
+
+	def _write_cache(self):
 		for value in self._cache.values():
 			if value.checksum is None and os.path.isfile(value.path):
-				 value.checksum = md5(open(value.path,'r').read()).digest()
+				with open(value.path, 'rb') as f:
+					value.checksum = md5(f.read()).digest()
 
 		if not os.path.isdir(os.path.dirname(self._filecache)):
 			os.makedirs(os.path.dirname(self._filecache))
-		pickle.dump(self._cache, open(self._filecache,'w'))
+
+		with open(self._filecache, 'wb') as f:
+			pickle.dump( self._cache, f, pickle.HIGHEST_PROTOCOL )
+
+	def _read_cache(self, validate_files=True):
+		if not os.path.isfile(self._filecache):
+			return {}
+
+		usednames = {}
+		try:
+			with open(self._filecache, 'rb') as f:
+				self._cache = pickle.load(f)
+
+			for key, value in self._cache.items():
+				if validate_files and not os.path.isfile(value.filename):
+					del self._cache[key]
+					continue
+				usednames[value.filename] = None
+		except ImportError:
+			os.remove(self._filecache)
+
+		return usednames
 
 	def compileLatex(self, source):
 		"""
