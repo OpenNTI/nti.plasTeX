@@ -365,8 +365,8 @@ class PageTemplate(BaseRenderer):
 			if cls is BaseRenderer or cls is object or cls is dict:
 				continue
 			# FIXME: Note that this doesn't work with zipped modules
-			cwd = os.path.dirname(sys.modules[cls.__module__].__file__)
-			log.info('Importing class templates from %s', cwd)
+			cwd = os.path.abspath(os.path.dirname(sys.modules[cls.__module__].__file__))
+			log.info('Importing class templates from %s at %s', cls, cwd)
 			self.importDirectory(cwd)
 
 			# Store theme location

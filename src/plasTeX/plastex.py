@@ -3,14 +3,33 @@ from __future__ import print_function, unicode_literals, absolute_import, divisi
 
 
 import os, sys, codecs, string, glob
+
+if __name__ == '__main__':
+	# Try really hard to force absolute paths
+	# for import (it's probably too late by now)
+	# This matters because of the way we:
+	# - dynamically import the renderer
+	# - look for resources (templates) in the __file__ of the renderer
+	# - chdir to the output directory
+	# If we have relative imports, then when we chdir, the
+	# correct modules or data won't be found, depending on the order
+	# in which we do things
+	if sys.path[0] == '':
+		del sys.path[0]
+	sys.path.insert( 0, os.path.abspath( os.path.dirname( os.path.dirname(__file__ ) ) ) )
+	print( os.path.abspath(os.getcwd() ))
+
 import plasTeX
 from plasTeX.TeX import TeX
+import plasTeX.Renderers
 from plasTeX.Config import newConfig
 
 from plasTeX.Logging import getLogger
 from zope.configuration import xmlconfig
+from zope.dottedname import resolve as dottedname
 
 log = getLogger()
+
 
 __version__ = '0.9.3'
 
@@ -46,10 +65,10 @@ def main():
 		document.userdata['title'] = config['document']['title']
 	jobname = document.userdata['jobname'] = tex.jobname
 	cwd = document.userdata['working-dir'] = os.getcwd()
+	rname = config['general']['renderer']
 
 	# Load aux files for cross-document references
 	pauxname = '%s.paux' % jobname
-	rname = config['general']['renderer']
 	for dirname in [cwd] + config['general']['paux-dirs']:
 		for fname in glob.glob(os.path.join(dirname, '*.paux')):
 			if os.path.basename(fname) == pauxname:
@@ -72,12 +91,6 @@ def main():
 		log.info('Directing output files to directory: %s.', outdir)
 		os.chdir(outdir)
 
-	# Load renderer
-	try:
-		exec('from plasTeX.Renderers.%s import Renderer' % rname)
-	except ImportError, msg:
-		log.error('Could not import renderer "%s"	Make sure that it is installed correctly, and can be imported by Python.', rname)
-		sys.exit(1)
 
 	# Write expanded source file
 	#sourcefile = '%s.source' % jobname
@@ -86,9 +99,28 @@ def main():
 	# Write XML dump
 	if config['general']['xml']:
 		outfile = '%s.xml' % jobname
-		codecs.open(outfile,'w',encoding='utf-8').write(document.toXML())
+		with codecs.open(outfile,'w',encoding='utf-8') as f:
+			f.write(document.toXML())
+
+	# Load the renderer. If we do this after we chdir,
+	# and there is a sys.path problem, then we may wind up
+	# not being able to import the renderer. OTOH, if we do
+	# it before the chdir, the renderer might not find its data files,
+	# resulting in a bad render.
+	# At least doing it after is an obvious failure
+	try:
+		Renderer = dottedname.resolve( 'plasTeX.Renderers.%s.Renderer' % rname )
+	except ImportError:
+		print('Could not import renderer "%s"	Make sure that it is installed correctly, and can be imported by Python.' % rname,
+			  file=sys.stderr)
+		import traceback
+		traceback.print_exc()
+		sys.exit(1)
 
 	# Apply renderer
 	Renderer().render(document)
 
 	print("")
+
+if __name__ == '__main__':
+	main()

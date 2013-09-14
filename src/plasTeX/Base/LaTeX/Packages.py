@@ -10,8 +10,9 @@ from plasTeX import Command, Environment, DimenCommand, Token
 from plasTeX.Logging import getLogger
 
 # Put the plasTeX packages into the path
+# JAM: FIXME: This is a little scary
 from plasTeX import Packages
-sys.path.append(os.path.dirname(Packages.__file__))
+sys.path.append(os.path.abspath(os.path.dirname(Packages.__file__)))
 del Packages
 
 log = getLogger(__name__)

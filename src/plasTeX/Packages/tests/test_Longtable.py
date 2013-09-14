@@ -10,6 +10,7 @@ from hamcrest import assert_that
 from hamcrest import has_length
 from hamcrest import is_
 #from hamcrest import same_instance
+import sys
 
 class TestLongtables(TestCase):
 
@@ -42,18 +43,23 @@ class TestLongtables(TestCase):
 		# Create document file
 		document = r'\documentclass{article}\usepackage{longtable}\begin{document}%s\end{document}' % content
 		tmpdir = tempfile.mkdtemp()
-		filename = os.path.join(tmpdir, 'longtable.tex')
-		open(filename, 'w').write(document)
+		oldpwd = os.path.abspath(os.getcwd())
+		try:
+			os.chdir(tmpdir)
+			filename = os.path.join(tmpdir, 'longtable.tex')
+			open(filename, 'w').write(document)
 
-		# Run plastex on the document
-		subprocess.check_call( ['plastex', '-d', tmpdir, filename], bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
-		# Get output file
-		output = open(os.path.join(tmpdir, 'index.html')).read()
+			# Run plastex on the document
+			output = subprocess.Popen( [sys.executable, '-m', 'plasTeX.plastex',
+									'-d', tmpdir, filename], bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.STDOUT ).communicate()[0]
 
-		# Clean up
-		shutil.rmtree(tmpdir)
-		os.remove('longtable.paux')
-
+			# Get output file
+			output = open(os.path.join(tmpdir, 'index.html')).read()
+			print output
+		finally:
+			# Clean up
+			shutil.rmtree(tmpdir)
+			os.chdir(oldpwd)
 		return Soup(output).find('table', 'tabular')
 
 	def testSimple(self):

@@ -383,13 +383,14 @@ def _create_imager(config, document, defaultImager, imageTypes, imageUnits, imag
 # JAM: Make access to the current renderer thread-safe.
 # In the usual case, when rendering a document, we'll make
 # sure to set the renderer on the document object.
-Node.renderer = property(lambda self: getattr( self, '@renderer', getattr( self.ownerDocument, 'renderer', None) ),
-						 lambda self, nv: setattr( self, '@renderer', nv ) if nv else delattr( self, "@renderer" ),
-						 lambda self: delattr(self, '@renderer') if hasattr( self, '@renderer' ) else None	)
+# On PyPy, we MUST use a proper identifier
+Node.renderer = property(lambda self: getattr( self, '__renderer', getattr( self.ownerDocument, 'renderer', None) ),
+						 lambda self, nv: setattr( self, '__renderer', nv ) if nv is not None else delattr( self, "__renderer" ),
+						 lambda self: delattr(self, '__renderer') if hasattr( self, '__renderer' ) else None	)
 
-Document.renderer = property(lambda self: getattr( self, '@renderer', None),
-							 lambda self, nv: setattr( self, '@renderer', nv ) if nv else delattr( self, "@renderer" ),
-							 lambda self: delattr(self, '@renderer') if hasattr( self, '@renderer' ) else None	)
+Document.renderer = property(lambda self: getattr( self, '__renderer', None),
+							 lambda self, nv: setattr( self, '__renderer', nv ) if nv is not None else delattr( self, "__renderer" ),
+							 lambda self: delattr(self, '__renderer') if hasattr( self, '__renderer' ) else None	)
 class Renderer(dict):
 	"""
 	Base class for all renderers

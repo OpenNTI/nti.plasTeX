@@ -13,6 +13,7 @@ from hamcrest import has_property
 from hamcrest import contains
 
 import subprocess
+import sys
 
 class TestAlltt(TestCase):
 
@@ -45,19 +46,24 @@ class TestAlltt(TestCase):
 		# Create document file
 		document = r'\documentclass{article}\usepackage{alltt}\begin{document}%s\end{document}' % content
 		tmpdir = tempfile.mkdtemp()
-		filename = os.path.join(tmpdir, 'longtable.tex')
-		open(filename, 'w').write(document)
+		oldpwd = os.getcwd()
+		try:
+			os.chdir(tmpdir)
+			filename = os.path.join(tmpdir, 'longtable.tex')
+			with open(filename, 'w') as f:
+				f.write(document)
 
-		# Run plastex on the document
-		log = subprocess.check_call( ['plastex', '-d', tmpdir, filename], bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.STDOUT ).communicate()[0]
-		__traceback_info__ = log
-		# Get output file
-		output = open(os.path.join(tmpdir, 'index.html')).read()
-
-		# Clean up
-		shutil.rmtree(tmpdir)
-		os.remove('longtable.paux')
-
+			# Run plastex on the document
+			log = subprocess.Popen( [sys.executable, '-c', 'import plasTeX.plastex; plasTeX.plastex.main()',
+									 '--xml', '-d', tmpdir, filename], bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.STDOUT ).communicate()[0]
+			__traceback_info__ = tmpdir, filename, log
+			# Get output file
+			with open(os.path.join(tmpdir, 'index.html')) as f:
+				output = f.read()
+		finally:
+			# Clean up
+			shutil.rmtree(tmpdir)
+			os.chdir(oldpwd)
 		return Soup(output).findAll('pre')[-1]
 
 	def testSimple(self):

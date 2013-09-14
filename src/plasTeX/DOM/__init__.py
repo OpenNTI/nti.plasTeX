@@ -607,12 +607,12 @@ class Node(object):
 	DOCUMENT_POSITION_CONTAINED_BY = 0x10
 	DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20
 
-	NODE_SLOTS = ['parentNode','contextDepth','ownerDocument',
-				  '_dom_childNodes','_dom_userdata']
-	ELEMENT_SLOTS = NODE_SLOTS + ['_dom_attributes','nodeName']
-	TEXT_SLOTS = ['parentNode','contextDepth','ownerDocument','isMarkup']
+	NODE_SLOTS = ('parentNode','contextDepth','ownerDocument',
+				  '_dom_childNodes','_dom_userdata')
+	ELEMENT_SLOTS = NODE_SLOTS + ('_dom_attributes','nodeName')
+	TEXT_SLOTS = ('parentNode','contextDepth','ownerDocument','isMarkup')
 
-	__slots__ = []
+	__slots__ = ()
 
 	isElementContentWhitespace = False
 
@@ -1922,7 +1922,7 @@ class DocumentType(Node):
 	http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#ID-412266927
 	"""
 	nodeType = Node.DOCUMENT_TYPE_NODE
-	__slots__ = Node.NODE_SLOTS
+	__slots__ = Node.NODE_SLOTS + ('__dict__',)
 
 	name = None
 	entities = None
@@ -2022,7 +2022,7 @@ class Document(Node):
 
 	nodeName = '#document'
 	nodeType = Node.DOCUMENT_NODE
-	__slots__ = Node.NODE_SLOTS
+	__slots__ = Node.NODE_SLOTS + ('__dict__','__renderer')
 
 	doctype = None
 	implementation = None
