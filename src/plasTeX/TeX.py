@@ -16,8 +16,16 @@ Example:
 
 """
 
-import string, os, traceback, sys, plasTeX, codecs, subprocess, types
-from Tokenizer import Tokenizer, Token, EscapeSequence, Other
+from __future__ import print_function, absolute_import, division # TODO: Unicode_literals
+
+import string
+import os
+import sys
+import plasTeX
+import codecs
+import subprocess
+
+from .Tokenizer import Tokenizer, Token, EscapeSequence, Other
 from plasTeX import TeXDocument
 from plasTeX.Base.TeX.Primitives import MathShift
 from plasTeX import ParameterCommand, Macro
@@ -574,9 +582,6 @@ class TeX(object):
 					cases[-1].pop()
 				cases.append([])
 				continue
-
-		if debug:
-			print 'CASES', cases
 
 		if not elsefound:
 			cases.append([])
@@ -1336,30 +1341,23 @@ class TeX(object):
 			pass
 		else:
 			TEXINPUTS = os.environ.get("TEXINPUTS",'')
-			os.environ["TEXINPUTS"] = "%s%s%s%s" % (srcDir, os.path.pathsep, TEXINPUTS, os.path.pathsep)
+			TEXINPUTS = "%s%s%s%s" % (srcDir, os.path.pathsep, TEXINPUTS, os.path.pathsep)
+
+		program = self.ownerDocument.config['general']['kpsewhich']
+
+		kwargs = {}
+		if TEXINPUTS:
+			envrn = os.environ.copy()
+			envrn['TEXINPUTS'] = TEXINPUTS
+			kwargs['env'] = envrn
+
 
 		try:
-
-			program = self.ownerDocument.config['general']['kpsewhich']
-
-			kwargs = {'stdout':subprocess.PIPE}
-			if sys.platform.lower().startswith('win'):
-				kwargs['shell'] = True
-
-			output = subprocess.Popen([program, name], **kwargs).communicate()[0].strip()
-
-			if output:
-				return output
-
-		except:
-			pass
-
-		finally:
-			# Undo any mods to $TEXINPUTS.
-			if TEXINPUTS:
-				os.environ["TEXINPUTS"] = TEXINPUTS
-
-		raise OSError, 'Could not find any file named: %s' % name
+			output = subprocess.check_output( [program, name], **kwargs )
+			return output.strip() # remove trailing newline
+		except subprocess.CalledProcessError:
+			# TODO: Better exception
+			raise OSError('Could not find any file named: %s' % name )
 
 #
 # Parsing helper methods for parsing numbers, spaces, dimens, etc.
@@ -1710,4 +1708,3 @@ class TeX(object):
 #		""" Return the basename of the main input file """
 #		print self.inputs
 #		return os.path.basename(os.path.splitext(self.inputs[0][0].filename)[0])
-

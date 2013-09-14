@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import unittest, re, os, tempfile, shutil
+import subprocess
 from plasTeX.TeX import TeX
 from unittest import TestCase
 from bs4 import BeautifulSoup as Soup
@@ -45,7 +46,7 @@ class TestLongtables(TestCase):
 		open(filename, 'w').write(document)
 
 		# Run plastex on the document
-		log = os.popen('plastex -d %s %s 2>&1' % (tmpdir, filename)).read()
+		subprocess.check_call( ['plastex', '-d', tmpdir, filename], bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
 		# Get output file
 		output = open(os.path.join(tmpdir, 'index.html')).read()
 

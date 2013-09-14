@@ -30,6 +30,7 @@ TESTS_REQUIRE = [
 	'pyhamcrest >= 1.7.2',
 	# 'z3c.coverage >= 2.0.0', # For HTML coverage reports that are prettier than plain 'coverage' TODO: Do we need this?
 	#'zope.testing >= 4.1.2',
+	'nti.nose_traceback_info',
 ]
 
 INSTALL_REQUIRES = [
@@ -139,5 +140,8 @@ setup(name="nti.plasTeX",
 			'Babel >= 1.3',
 			'lingua >= 1.5',
 			]
-		}
+		},
+		dependency_links=[
+			'git+https://github.com/NextThought/nti.nose_traceback_info.git#egg=nti.nose_traceback_info'
+		],
 )
