@@ -46,7 +46,7 @@ class TestAlltt(TestCase):
 		# Create document file
 		document = r'\documentclass{article}\usepackage{alltt}\begin{document}%s\end{document}' % content
 		tmpdir = tempfile.mkdtemp()
-		oldpwd = os.getcwd()
+		oldpwd = os.path.abspath(os.getcwd())
 		try:
 			os.chdir(tmpdir)
 			filename = os.path.join(tmpdir, 'longtable.tex')
@@ -54,8 +54,8 @@ class TestAlltt(TestCase):
 				f.write(document)
 
 			# Run plastex on the document
-			log = subprocess.Popen( [sys.executable, '-c', 'import plasTeX.plastex; plasTeX.plastex.main()',
-									 '--xml', '-d', tmpdir, filename], bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.STDOUT ).communicate()[0]
+			log = subprocess.Popen( [sys.executable, '-m', 'plasTeX.plastex',
+									 '-d', tmpdir, filename], bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.STDOUT ).communicate()[0]
 			__traceback_info__ = tmpdir, filename, log
 			# Get output file
 			with open(os.path.join(tmpdir, 'index.html')) as f:

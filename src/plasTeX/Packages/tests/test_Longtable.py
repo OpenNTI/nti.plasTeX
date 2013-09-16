@@ -51,11 +51,10 @@ class TestLongtables(TestCase):
 
 			# Run plastex on the document
 			output = subprocess.Popen( [sys.executable, '-m', 'plasTeX.plastex',
-									'-d', tmpdir, filename], bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.STDOUT ).communicate()[0]
+										'-d', tmpdir, filename], bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.STDOUT ).communicate()[0]
 
 			# Get output file
 			output = open(os.path.join(tmpdir, 'index.html')).read()
-			print output
 		finally:
 			# Clean up
 			shutil.rmtree(tmpdir)

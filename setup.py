@@ -30,7 +30,7 @@ TESTS_REQUIRE = [
 ]
 
 INSTALL_REQUIRES = [
-	'Chameleon >= 2.12',  # (preferred) template rendering. pulled in by pyramid, but ensure latest version
+	'Chameleon',  # (preferred) template rendering. pulled in by pyramid, but ensure latest version
 
 	# PIL is currently (as of 2012-07) at version 1.1.7 (from 2009), which
 	# is the version that Pillow forked from in 2010 as version 1.0. So
@@ -125,6 +125,7 @@ setup(name="nti.plasTeX",
 			]
 		},
 		dependency_links=[
-			'git+https://github.com/NextThought/nti.nose_traceback_info.git#egg=nti.nose_traceback_info'
+			'git+https://github.com/NextThought/nti.nose_traceback_info.git#egg=nti.nose_traceback_info',
+			'git+https://github.com/NextThought/chameleon.git#egg=Chameleon'
 		],
 )

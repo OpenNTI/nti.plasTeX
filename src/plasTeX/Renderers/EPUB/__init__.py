@@ -19,8 +19,9 @@ from plasTeX.Config import newConfig
 from plasTeX.Renderers.XHTML import Renderer as XHTMLRenderer
 # JAM: NOTE: simpletal has been removed, see PageTemplate for details.
 # A few methods need to be ported to Chameleon/z3c.pt to make this work
-# again
-from plasTeX.Renderers.PageTemplate.simpletal import simpleTAL, simpleTALES
+# again. They are commented out for now, so this
+# module remains importable and doesn't mess up test reporting
+#from plasTeX.Renderers.PageTemplate.simpletal import simpleTAL, simpleTALES
 #
 import codecs
 import datetime
