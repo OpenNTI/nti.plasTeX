@@ -50,9 +50,17 @@ class TestLongtables(TestCase):
 			open(filename, 'w').write(document)
 
 			# Run plastex on the document
-			output = subprocess.Popen( [sys.executable, '-m', 'plasTeX.plastex',
-										'-d', tmpdir, filename], bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.STDOUT ).communicate()[0]
-
+			# Must be careful to get the right python path so we work
+			# in tox virtualenvs as well as buildouts
+			path = os.path.pathsep.join( sys.path )
+			env = dict(os.environ)
+			env['PYTHONPATH'] = path
+			log = subprocess.Popen( [sys.executable, '-m', 'plasTeX.plastex',
+									 '-d', tmpdir, filename],
+									 env=env,
+									 bufsize=-1,
+									 stdout=subprocess.PIPE,
+									 stderr=subprocess.STDOUT ).communicate()[0]
 			# Get output file
 			output = open(os.path.join(tmpdir, 'index.html')).read()
 		finally:

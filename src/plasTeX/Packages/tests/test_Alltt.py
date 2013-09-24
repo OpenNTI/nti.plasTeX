@@ -54,8 +54,17 @@ class TestAlltt(TestCase):
 				f.write(document)
 
 			# Run plastex on the document
+			# Must be careful to get the right python path so we work
+			# in tox virtualenvs as well as buildouts
+			path = os.path.pathsep.join( sys.path )
+			env = dict(os.environ)
+			env['PYTHONPATH'] = path
 			log = subprocess.Popen( [sys.executable, '-m', 'plasTeX.plastex',
-									 '-d', tmpdir, filename], bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.STDOUT ).communicate()[0]
+									 '-d', tmpdir, filename],
+									 env=env,
+									 bufsize=-1,
+									 stdout=subprocess.PIPE,
+									 stderr=subprocess.STDOUT ).communicate()[0]
 			__traceback_info__ = tmpdir, filename, log
 			# Get output file
 			with open(os.path.join(tmpdir, 'index.html')) as f:

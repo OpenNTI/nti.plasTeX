@@ -1,4 +1,5 @@
 build
+.noseids
 *.pyc
 .coverage
 .tox
