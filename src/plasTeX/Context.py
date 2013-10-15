@@ -451,6 +451,15 @@ class Context(object):
 				paths.append( package.template_directory )
 				document.userdata['package_template_paths'] = os.pathsep.join( paths )
 
+			# And likewise for TEXINPUTS. Note that we do not
+			# change the current environment, these are for passing to
+			# subprocesses we control
+			if getattr(package, 'texinputs_directory', None):
+				document = tex.ownerDocument
+				paths = document.userdata.get('texinputs_paths', '').split(os.pathsep)
+				paths.append( package.texinputs_directory )
+				document.userdata['texinputs_paths'] = os.pathsep.join( paths )
+
 			self.packages[module_name] = options
 
 			return True

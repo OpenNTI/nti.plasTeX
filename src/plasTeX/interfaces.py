@@ -41,6 +41,13 @@ class IPythonPackage(interface.Interface):
 	of the macros implemented by this package.
 	""")
 
+	texinputs_directory = interface.Attribute(
+		"""Optional attribute giving a path to a directory
+	containing style files (.sty) needed to make pure LaTeX
+	commands happy about this package.
+	""")
+
+
 class IOptionAwarePythonPackage(IPythonPackage):
 	"""
 	A python implementation of a latex package that wants to handle

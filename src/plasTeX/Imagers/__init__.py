@@ -661,6 +661,16 @@ class Imager(object):
 			kwargs['bufsize'] = -1 # System default, fully buffererd
 			kwargs['stdout'] = subprocess.PIPE
 
+
+		new_env = os.environ.copy()
+		kwargs['env'] = new_env
+		# Now arrange the right TEXINPUTS based on the current setting
+		# and settings provided by IPythonPackage objects
+		env_entries = new_env.get('TEXINPUTS', '').split(os.pathsep)
+		env_entries.extend( self.ownerDocument.userdata['texinputs_paths'].split(os.pathsep) )
+		new_env['TEXINPUTS'] = os.pathsep.join( env_entries )
+
+
 		try:
 			subprocess.check_call( args,
 								   cwd=tempdir,
