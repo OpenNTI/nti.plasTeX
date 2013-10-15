@@ -10,7 +10,12 @@ from plasTeX.Logging import getLogger
 from plasTeX.Tokenizer import Tokenizer, Token, DEFAULT_CATEGORIES, VERBATIM_CATEGORIES
 
 import cPickle as pickle
+
 import zope.dottedname.resolve
+from zope import component
+from zope import interface
+from .interfaces import IDocumentContext
+from .interfaces import IPythonPackage
 
 # Only export the Context singleton
 __all__ = ['Context']
@@ -146,6 +151,7 @@ class LanguageParser(object):
 # As it is, our unicode objects are being copied into bytestrings
 # Of course, this changes under Py3
 
+@interface.implementer(IDocumentContext)
 class Context(object):
 	"""
 	Object to handle macro contexts within a TeX document
@@ -357,7 +363,7 @@ class Context(object):
 			for section in ini.sections():
 				try: baseclass = self[section]
 				except KeyError:
-					log.warning('Could not find macro %s' % section)
+					log.warning('Could not find macro %s', section)
 					continue
 				for name in ini.options(section):
 					value = ini.get(section,name)
@@ -395,45 +401,58 @@ class Context(object):
 		boolean indicating whether or not the package loaded successfully
 
 		"""
-		module = os.path.splitext(package_file)[0]
+		module_name = os.path.splitext(package_file)[0]
 
 		# See if it has already been loaded
-		if self.packages.has_key(module):
+		if self.packages.has_key(module_name):
 			return True
 
-		packagesini = os.path.join(os.path.dirname(plasTeX.Packages.__file__),
-								   os.path.basename(module) + '.ini')
+		needs_legacy_ini_file = False
+		global_packagesini = os.path.join(os.path.dirname(plasTeX.Packages.__file__),
+										  os.path.basename(module_name) + '.ini')
 
-		try:
-			# Try to import a Python package by that name
-			#m = __import__(module, globals(), locals())
-			# JAM: We want to allow for dottednames
-			m = zope.dottedname.resolve.resolve( module )
-			status.debug('Loaded package %s (%s)', package_file, m.__file__)
-			if hasattr(m, 'ProcessOptions'):
-				m.ProcessOptions(options or {}, tex.ownerDocument)
-			self.importMacros(vars(m))
-			moduleini = os.path.splitext(m.__file__)[0] + '.ini'
-			self.loadINIPackage([packagesini, moduleini])
-			self.packages[module] = options
-			#status.info(' ) ')
+		# First, can we find an adapter?
+		package = component.queryAdapter( self, IPythonPackage, name=module_name )
+		# Otherwise, is there a utility?
+		if package is None:
+			package = component.queryUtility( IPythonPackage, name=module_name )
+		# Finally, the fallback lookup based off of sys.path
+		if package is None:
+			needs_legacy_ini_file = True
+			try:
+				# Try to import a Python package by that name
+				#m = __import__(module, globals(), locals())
+				# JAM: We want to allow for dottednames
+				package = zope.dottedname.resolve.resolve( module_name )
+			except ImportError as e:
+				# No Python module
+				if 'No module' in str(e):
+					#pass
+					# Failed to load Python package
+					log.debug('No Python version of %s was found', package_file, exc_info=True)
+				# Error while importing
+				else:
+					raise
+
+		if package is not None:
+			status.debug('Loaded package %s (%s)', package_file, getattr( package, '.__file__', package) )
+			if hasattr(package, 'ProcessOptions'):
+				package.ProcessOptions(options or {}, tex.ownerDocument)
+			self.importMacros(vars(package))
+			if needs_legacy_ini_file:
+				moduleini = os.path.splitext(package.__file__)[0] + '.ini'
+				self.loadINIPackage([global_packagesini, moduleini])
+			self.packages[module_name] = options
+
 			return True
 
-		except ImportError as e:
-			# No Python module
-			if 'No module' in str(e):
-				#pass
-				# Failed to load Python package
-				log.debug('No Python version of %s was found', package_file, exc_info=True)
-			# Error while importing
-			else:
-				raise
+
 
 		result = tex.loadPackage(package_file, options)
 		try:
 			moduleini = os.path.join(os.path.dirname(tex.kpsewhich(package_file)),
-									 os.path.basename(module) + '.ini')
-			self.loadINIPackage([packagesini, moduleini])
+									 os.path.basename(module_name) + '.ini')
+			self.loadINIPackage([global_packagesini, moduleini])
 		except OSError:
 			pass
 		return result

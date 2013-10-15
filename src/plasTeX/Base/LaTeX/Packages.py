@@ -74,8 +74,6 @@ class usepackage(PackageLoader):
 			a = self.parse(tex)
 			for package_file in a['names']:
 				self.load(tex, package_file, a['options'])
-		except:
-			from IPython.core.debugger import Tracer; Tracer()() ## DEBUG ##
 		finally:
 			self.ownerDocument.context.catcode('&', catcode)
 
