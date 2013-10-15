@@ -35,6 +35,12 @@ class IPythonPackage(interface.Interface):
 	search methods are considered secondary to the component lookup.
 	"""
 
+	template_directory = interface.Attribute(
+		"""Optional attribute giving a path to a directory
+	containing template files that can be used in the rendering
+	of the macros implemented by this package.
+	""")
+
 class IOptionAwarePythonPackage(IPythonPackage):
 	"""
 	A python implementation of a latex package that wants to handle

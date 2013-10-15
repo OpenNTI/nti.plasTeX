@@ -361,25 +361,32 @@ class PageTemplate(BaseRenderer):
 		sup.reverse()
 
 		theme_search_paths = []
+		seen = set()
+		def _import( path, kind='', extra='' ):
+			path = os.path.abspath( path )
+			if path in seen:
+				return
+			seen.add( path )
+			log.info('Importing %s templates from %s (%s)', kind, path, extra )
+			self.importDirectory( path )
+			# Store theme location
+			theme_search_paths.append( os.path.join( path, 'Themes' ) )
+
+
 		for cls in sup:
 			if cls is BaseRenderer or cls is object or cls is dict:
 				continue
 			# FIXME: Note that this doesn't work with zipped modules
-			cwd = os.path.abspath(os.path.dirname(sys.modules[cls.__module__].__file__))
-			log.info('Importing class templates from %s at %s', cls, cwd)
-			self.importDirectory(cwd)
-
-			# Store theme location
-			theme_search_paths.append( os.path.join( cwd, 'Themes' ) )
-
+			cwd = os.path.dirname(sys.modules[cls.__module__].__file__)
+			_import( cwd, kind='class', extra=cls )
 
 			# Load templates configured by the environment variable
 			templates = os.environ.get('%sTEMPLATES' % cls.__name__,'')
 			for path in [x.strip() for x in templates.split(os.pathsep) if x.strip()]:
-				log.info('Importing envrn templates from %s', path)
-				self.importDirectory(path)
-				theme_search_paths.append( os.path.join( path, 'Themes' ) )
+				_import( path, kind='envrn')
 
+		for path in [x.strip() for x in document.userdata.get('package_template_paths', '').split(os.pathsep) if x.strip()]:
+			_import( path, kind='packg' )
 
 		def _find_theme( name ):
 			if not name: return None
@@ -492,6 +499,7 @@ class PageTemplate(BaseRenderer):
 
 				# Multi-pt files
 				if ext.lower() in enames:
+					logger.debug( 'Parsing multi-pt file %s', f )
 					self.parseTemplates(f, {'engine': enames[ext.lower()]})
 
 			# Now compile macros in individual files.  These have

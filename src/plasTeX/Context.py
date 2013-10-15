@@ -442,6 +442,15 @@ class Context(object):
 			if needs_legacy_ini_file:
 				moduleini = os.path.splitext(package.__file__)[0] + '.ini'
 				self.loadINIPackage([global_packagesini, moduleini])
+
+			# Now extend the list of template paths if necessary
+			# See Renderers.PageTemplate
+			if getattr(package, 'template_directory', None):
+				document = tex.ownerDocument
+				paths = document.userdata.get('package_template_paths', '').split(os.pathsep)
+				paths.append( package.template_directory )
+				document.userdata['package_template_paths'] = os.pathsep.join( paths )
+
 			self.packages[module_name] = options
 
 			return True
