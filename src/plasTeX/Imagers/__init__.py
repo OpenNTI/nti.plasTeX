@@ -667,7 +667,7 @@ class Imager(object):
 		# Now arrange the right TEXINPUTS based on the current setting
 		# and settings provided by IPythonPackage objects
 		env_entries = new_env.get('TEXINPUTS', '').split(os.pathsep)
-		env_entries.extend( self.ownerDocument.userdata['texinputs_paths'].split(os.pathsep) )
+		env_entries.extend( self.ownerDocument.userdata.get('texinputs_paths','').split(os.pathsep) )
 		new_env['TEXINPUTS'] = os.pathsep.join( env_entries )
 
 
