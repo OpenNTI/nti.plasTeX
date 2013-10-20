@@ -63,7 +63,7 @@ from z3c.pt.pagetemplate import PageTemplate as Z3CPageTemplate
 from chameleon.zpt.template import PageTemplate as ChameleonPageTemplate
 from chameleon.zpt.program import MacroProgram as BaseMacroProgram
 from chameleon.astutil import Builtin
-
+from collections import OrderedDict
 import ast
 
 class MacroProgram(BaseMacroProgram):
@@ -88,11 +88,27 @@ class _NTIPageTemplate(Z3CPageTemplate):
 			trim_attribute_space=self.trim_attribute_space,
 			)
 		return program
+
+	@property
+	def builtins(self):
+		d = super(_NTIPageTemplate,self).builtins
+		#d['__loader'] = self._loader # For the load expression type, currently not exposed
+		# https://github.com/malthe/chameleon/issues/154
+		# We try to get iteration order fixed here:
+		result = OrderedDict()
+		for k in sorted(d.keys()):
+			result[k] = d[k]
+		return result
+
 # Allow all of the chameleon expression types, like import...
 _NTIPageTemplate.expression_types = ChameleonPageTemplate.expression_types.copy()
 # ...except where they are overridded explicitly
 _NTIPageTemplate.expression_types.update(Z3CPageTemplate.expression_types)
 _NTIPageTemplate.expression_types['stripped'] = _NTIPageTemplate.expression_types['path']
+
+# NOTE: Depending on import order, this may or may not disable access
+# to z3c.macro, which only places itself in the BaseTemplate types,
+# expecting to be inherited
 
 import chameleon.utils
 import chameleon.template
