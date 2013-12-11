@@ -188,7 +188,7 @@ class Macro(Element):
 					return self.attributes['title']
 				except KeyError:
 					pass
-			raise AttributeError, 'could not find attribute "title"'
+			raise AttributeError('could not find attribute "title"', self, type(self))
 		def fset(self, value):
 			setattr(self, '@title', value)
 		return locals()
