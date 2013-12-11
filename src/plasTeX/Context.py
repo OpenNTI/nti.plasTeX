@@ -502,7 +502,7 @@ class Context(object):
 			self.persistentLabels[label] = self.labels[label] = node
 			node.id = label
 
-		#print "Labeling %s with %s refs %s" % (self.currentlabel, label, self.currentlabel.ref)
+		#print( "Labeling %s with '%s' refs %s" % (self.currentlabel, label, self.currentlabel.ref) )
 
 		# Resolve any outstanding references to this object
 		if self.refs.has_key(label) and self.labels.has_key(label):

@@ -545,8 +545,10 @@ class Macro(Element):
 
 		"""
 		if self.counter:
-			try: secnumdepth = self.config['document']['sec-num-depth']
-			except: secnumdepth = 10
+			try:
+				secnumdepth = self.config['document']['sec-num-depth']
+			except:
+				secnumdepth = 10
 			if secnumdepth >= self.level or self.level > self.ENDSECTIONS_LEVEL:
 				self.ref = self.ownerDocument.createElement('the'+self.counter).expand(tex)
 				self.captionName = self.ownerDocument.createElement(self.counter+'name').expand(tex)
@@ -562,13 +564,17 @@ class Macro(Element):
 		"""
 		tself = type(self)
 
-		# Check for cached version first
-		if vars(tself).has_key('@arguments'):
-			return vars(tself)['@arguments']
+		# Check for cached version first.
+		# JAM: Note that we store them as a tuple so they aren't
+		# mutated.
+		try:
+			return tuple(getattr(tself,'@arguments'))
+		except AttributeError:
+			pass
 
 		# If the argument string is empty, short circuit
 		if not tself.args:
-			setattr(tself, '@arguments', [])
+			setattr(tself, '@arguments', ())
 			return getattr(tself, '@arguments')
 
 		# Split the arguments into their primary components
@@ -586,9 +592,8 @@ class Macro(Element):
 			# Modifier argument
 			if item in '*+-':
 				if argdict:
-					raise ValueError, \
-						'Improperly placed "%s" in argument string "%s"' % \
-						(item, tself.args)
+					raise ValueError(
+						'Improperly placed "%s" in argument string "%s"' % 	(item, tself.args))
 				argdict.clear()
 				macroargs.append(Argument('*modifier*', index, {'spec':item}))
 				index += 1
@@ -633,9 +638,10 @@ class Macro(Element):
 				argdict.clear()
 
 			else:
-				raise ValueError, 'Could not parse argument string "%s", reached unexpected "%s"' % (tself.args, item)
+				raise ValueError('Could not parse argument string "%s", reached unexpected "%s"' % (tself.args, item))
 
 		# Cache the result
+		macroargs = tuple(macroargs)
 		setattr(tself, '@arguments', macroargs)
 
 		return macroargs

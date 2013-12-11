@@ -9,7 +9,8 @@ from hamcrest import assert_that
 from hamcrest import has_property
 from hamcrest import is_not
 from hamcrest import has_length
-
+from hamcrest import has_item
+from hamcrest import all_of
 
 class TestLabels(TestCase):
 
@@ -34,7 +35,12 @@ class TestLabels(TestCase):
 		section = output[0]
 		section_star = output[1]
 
-		__traceback_info__ = (section, section.__dict__, section_star, section_star.__dict__)
+		__traceback_info__ = (section, section.__dict__, section_star, section_star.__dict__,
+							  dict(type(section).__dict__))
+		# Sometimes this test fails...could it be due to test order? Is someone
+		# mucking with the (cached on type(self)) arguments array?
+		assert_that( section, has_property( 'arguments', has_item( all_of( has_property( 'index', 0),
+																		   has_property( 'name', '*modifier*')))))
 
 		assert_that( section, has_property( 'source', '\\section{hi} text \n\n'))
 		assert_that( section, has_property( 'id', 'two' ) )
