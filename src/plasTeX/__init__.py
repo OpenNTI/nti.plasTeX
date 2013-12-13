@@ -568,8 +568,8 @@ class Macro(Element):
 		# JAM: Note that we store them as a tuple so they aren't
 		# mutated.
 		try:
-			return tuple(getattr(tself,'@arguments'))
-		except AttributeError:
+			return tuple(tself.__dict__['@arguments'])
+		except KeyError:
 			pass
 
 		# If the argument string is empty, short circuit
