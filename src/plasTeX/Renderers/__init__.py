@@ -478,11 +478,19 @@ class Renderer(dict):
 			log.warning('There are no keys in the renderer.	 ' +
 						'All objects will use the default rendering method.')
 
-		# Mix in required methods and members
 		document.renderer = self # JAM: Make thread safe. See above
 
-		# FIXME: Not thread safe.
-		# XXX JAM
+		# XXX JAM FIXME: Not thread safe because this manipulates
+		# the Node class system wide
+		# We can get very close to being thread safe by instead
+		# operating on a zope proxy object that extends self.renderableClass
+		# and takes care to wrap self.childNodes, but this
+		# ultimately fails because some things like SectionUtils
+		# are already mixed-in to the node and depend on things defined
+		# by renderableClass (filename)...thus they can only be used
+		# during the rendering process anyway, but they don't get to
+		# work on the proxy object. Obviously that's a design flaw
+		# to rectify.
 		mixin(Node, self.renderableClass)
 		try:
 

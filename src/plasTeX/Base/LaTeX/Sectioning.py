@@ -194,7 +194,9 @@ class SectionUtils(object):
 	@cachedproperty
 	def links(self):
 		"""
-		Return a dictionary containing a lot of navigation information
+		Return a dictionary containing a lot of navigation information.
+
+		JAM: FIXME: This only works at render time due to the use of 'filename'
 
 		See http://fantasai.tripod.com/qref/Appendix/LinkTypes/ltdef.html
 

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 import sys, re
-from plasTeX.Logging import getLogger
+
+from zope import interface
+from .interfaces import INode
+from .interfaces import INamedNodeMap
 
 class DOMString(unicode):
 	"""
@@ -236,6 +239,7 @@ class DOMImplementation(object):
 	def getFeature(self, feature, version):
 		raise NotSupportedErr
 
+@interface.implementer(INamedNodeMap)
 class NamedNodeMap(dict):
 	"""
 	DOM Named Node Map
@@ -553,6 +557,7 @@ def xmlstr(obj):
 	else:
 		return xmlstr(unicode(obj))
 
+@interface.implementer(INode)
 class Node(object):
 	"""
 	Node
@@ -608,9 +613,9 @@ class Node(object):
 	DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20
 
 	NODE_SLOTS = ('parentNode','contextDepth','ownerDocument',
-				  '_dom_childNodes','_dom_userdata')
+				  '_dom_childNodes','_dom_userdata', '__annotations__')
 	ELEMENT_SLOTS = NODE_SLOTS + ('_dom_attributes','nodeName')
-	TEXT_SLOTS = ('parentNode','contextDepth','ownerDocument','isMarkup')
+	TEXT_SLOTS = NODE_SLOTS + ('is_markup',)
 
 	__slots__ = ()
 
@@ -1218,7 +1223,7 @@ class Node(object):
 	def __getitem__(self, i):
 		if self.hasChildNodes():
 			return self.childNodes[i]
-		raise IndexError, 'object has no childNodes'
+		raise IndexError('object has no childNodes')
 
 	@property
 	def allChildNodes(self):

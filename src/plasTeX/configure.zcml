@@ -9,10 +9,10 @@
 	For items used in rendering, we MUST be sure to use
 	the PlastexTraverser
 	-->
-	<adapter for='plasTeX.DOM.NamedNodeMap'
+	<adapter for='plasTeX.DOM.interfaces.INamedNodeMap'
 			 factory='.Renderers.PageTemplate.traversing.PlastexTraverser' />
 
-	<adapter for='plasTeX.DOM.Node'
+	<adapter for='plasTeX.DOM.interfaces.INode'
 			 factory='.Renderers.PageTemplate.traversing.PlastexTraverser' />
 	<!--
 	<utility component=".relatedlinksetter.TOCRelatedAdder"
