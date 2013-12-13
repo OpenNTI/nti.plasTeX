@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+from __future__ import print_function, unicode_literals, absolute_import, division
+__docformat__ = "restructuredtext en"
 
-import codecs, os, shutil, string
+
+import codecs
+import os
 
 from zope.dottedname.resolve import resolve as resolve_import
 
@@ -13,17 +17,18 @@ from plasTeX.Imagers import Imager as DefaultImager, VectorImager as DefaultVect
 log = getLogger(__name__)
 status = getLogger(__name__ + '.status')
 
-#import logging
-#logging.getLogger('simpleTAL').setLevel(logging.WARNING)
-#logging.getLogger('simpleTALES').setLevel(logging.WARNING)
 
 __all__ = ['Renderer','Renderable']
 
 def baseclasses(cls):
-	output = [cls]
-	for item in cls.__bases__:
-		output.extend(baseclasses(item))
-	return [x for x in output if x is not object]
+	return [x for x in cls.mro() if x is not object]
+	# XXX: What's the difference between this and mro()?
+	#  mro() is only defined on new-style classes;
+	#  this could result in multiple copies of the same class
+	#output = [cls]
+	#for item in cls.__bases__:
+	#	output.extend(baseclasses(item))
+	#return [x for x in output if x is not object]
 
 def mixin(base, mix, overwrite=False):
 	"""
@@ -78,7 +83,8 @@ def _as_unicode(child, val):
 	# If a plain string is returned, we have no idea what
 	# the encoding is, but we'll make a guess.
 	if type(val) is not unicode:
-		log.warning('The renderer for %s returned a non-unicode string.	 Using the default input encoding.' % type(child).__name__)
+		log.warning('The renderer for %s returned a non-unicode string.	 Using the default input encoding.',
+					type(child).__name__)
 		val = unicode(val, child.config['files']['input-encoding'])
 	return val
 
@@ -161,8 +167,6 @@ def render_children(r, childNodes):
 							 errors=r.encodingErrors) as f:
 				f.write(val)
 
-			#status.info(' ] ')
-
 			continue
 
 
@@ -187,21 +191,21 @@ def renderable_as_unicode( self ):
 
 	# If we don't have childNodes, then we're done
 	if not self.hasChildNodes():
-		return u''
+		return ''
 
 	# At the very top level, only render the DOCUMENT_LEVEL node
 	if self.nodeType == Node.DOCUMENT_NODE:
-		childNodes = [x for x in self.childNodes
-						if x.level == Node.DOCUMENT_LEVEL]
+		childNodes = (x for x in self.childNodes
+					  if x.level == Node.DOCUMENT_LEVEL)
 	else:
 		childNodes = self.childNodes
 
 	# Render all child nodes
 	s = _render_children( r, childNodes )
 
-	return r.outputType(u''.join(s))
+	return r.outputType(''.join(s))
 
-class Renderable(object):
+class RenderableMixin(object):
 	"""
 	Base class for all renderable nodes
 
@@ -283,7 +287,8 @@ class Renderable(object):
 		r = self.renderer
 		try:
 			return r.files[self]
-		except KeyError: pass
+		except KeyError:
+			pass
 
 		filename = None
 		override = None
@@ -319,6 +324,7 @@ class Renderable(object):
 			# Populate vars of filename generator
 			# and call the generator to get the filename.
 			# FIXME: Eww, not thread safe. Not really even re-entrant.
+			# Closely coupled to the implementation of `id`
 			ns = r.newFilename.vars
 			if hasattr(self, 'id') and getattr(self, '@hasgenid', None) is None:
 				ns['id'] = self.id
@@ -327,12 +333,12 @@ class Renderable(object):
 					ns['title'] = self.title.textContent
 				elif isinstance(self.title, basestring):
 					ns['title'] = self.title
-			#import pdb; pdb.set_trace()
+
 			r.files[self] = filename = r.newFilename()
 
-#		print type(self), filename
-
 		return filename
+
+Renderable = RenderableMixin # BWC
 
 def _create_imager(config, document, defaultImager, imageTypes, imageUnits, imageAttrs, kind='imager'):
 	imager = None
@@ -359,7 +365,7 @@ def _create_imager(config, document, defaultImager, imageTypes, imageUnits, imag
 
 		# Make sure that this imager works on this machine
 		if imager.verify():
-			log.info('Using the imager "%s".' % name)
+			log.info('Using the imager "%s".', name)
 			break
 
 		imager = None
@@ -407,7 +413,7 @@ class Renderer(dict):
 
 	"""
 
-	renderableClass = Renderable
+	renderableClass = RenderableMixin
 	renderMethod = None
 	textDefault = unicode
 	default = unicode
@@ -420,7 +426,10 @@ class Renderer(dict):
 	encodingErrors = 'replace'
 
 	def __init__(self, data=None):
-		dict.__init__(self, data) if data else dict.__init__(self)
+		if data:
+			dict.__init__(self, data)
+		else:
+			dict.__init__(self)
 
 		# Names of generated files
 		self.files = {}
@@ -472,7 +481,8 @@ class Renderer(dict):
 		# Mix in required methods and members
 		document.renderer = self # JAM: Make thread safe. See above
 
-		# FIXME: Not thread safe. XXX JAM
+		# FIXME: Not thread safe.
+		# XXX JAM
 		mixin(Node, self.renderableClass)
 		try:
 
@@ -585,7 +595,7 @@ class Renderer(dict):
 				return self[key]
 
 		# Other nodes supplied default
-		log.warning('Using default renderer for %s' % ', '.join(keys))
+		log.warning('Using default renderer for %s', ', '.join(keys))
 		for key in keys:
 			self[key] = default
 		return default
