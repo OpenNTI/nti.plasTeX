@@ -22,8 +22,8 @@ status = getLogger('status')
 imagelog = getLogger('imager')
 
 try:
-	import Image as PILImage
-	import ImageChops as PILImageChops
+	from PIL import Image as PILImage
+	from PIL import ImageChops as PILImageChops
 except ImportError:
 	PILImage = PILImageChops = None
 
