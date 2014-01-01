@@ -36,7 +36,7 @@ INSTALL_REQUIRES = [
 	# is the version that Pillow forked from in 2010 as version 1.0. So
 	# Pillow is currently way ahead of PIL. Pillow 2 is Python 3 compatible (and partly pypy)
 	# includes transparent png support, and is much cleaned up, otherwise api compatible with pillow 1/PIL 1
-	'Pillow >= 2.2.2',
+	'Pillow',
 
 	'z3c.pt >= 3.0.0a1',  # Better ZPT support than plastex, add-in to Chameleon
 	'z3c.ptcompat >= 2.0.0a1',  # Make zope.pagetemplate also use the Chameleon-based ZPT
