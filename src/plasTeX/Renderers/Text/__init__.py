@@ -1,3 +1,4 @@
+from __future__ import division
 #!/usr/bin/env python
 
 from plasTeX.Renderers import Renderer as BaseRenderer

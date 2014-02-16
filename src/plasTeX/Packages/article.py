@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-
-from report import *
+from __future__ import absolute_import, print_function
+from .report import *
 
 def ProcessOptions(options, document):
-	import report
+	from . import report
 	report.ProcessOptions(options, document)
 	document.context['thesection'].format = '${section}'
 	document.context['theindex'].counter = 'section'
@@ -20,4 +20,4 @@ class appendix(Command):
 
 	def invoke(self, tex):
 		self.ownerDocument.context.counters['section'].setcounter(0)
-		self.ownerDocument.context['thesection'] = type(self).thesection 
+		self.ownerDocument.context['thesection'] = type(self).thesection

@@ -11,7 +11,7 @@ class ContextGenerated(TestCase):
 		c = Context()
 		c.newcommand('foo')
 		c.newcommand('bar', 0, r'\it\bf')
-		keys = c.keys()
+		keys = list(c.keys())
 		keys.sort()
 		assert keys == ['bar','foo'], keys
 
@@ -76,7 +76,7 @@ class NewCommands(TestCase):
 	def testSimpleNewCommand(self):
 		s = TeX()
 		s.input(r'\newcommand\mycommand{\it}\mycommand')
-		for key, value in self.macros.items():
+		for key, value in list(self.macros.items()):
 			s.ownerDocument.context[key] = value
 		output = [x for x in s]
 		result = type(output[1])
@@ -86,7 +86,7 @@ class NewCommands(TestCase):
 	def testNewCommandWithArgs(self):
 		s = TeX()
 		s.input(r'\newcommand{\mycommand}[2]{#1:#2}\mycommand{foo}{bar}')
-		for key, value in self.macros.items():
+		for key, value in list(self.macros.items()):
 			s.ownerDocument.context[key] = value
 		output = [x for x in s]
 		assert s.ownerDocument.context['mycommand'].definition == list('#1:#2')
@@ -96,7 +96,7 @@ class NewCommands(TestCase):
 	def testNewCommandWithOptional(self):
 		s = TeX()
 		s.input(r'\newcommand{\mycommand}[2][opt]{#1:#2}\mycommand{bar}\mycommand[foo]{bar}')
-		for key, value in self.macros.items():
+		for key, value in list(self.macros.items()):
 			s.ownerDocument.context[key] = value
 		output = [x for x in s]
 		assert s.ownerDocument.context['mycommand'].definition == list('#1:#2')
@@ -107,7 +107,7 @@ class NewCommands(TestCase):
 	def testSimpleNewEnvironment(self):
 		s = TeX()
 		s.input(r'\newenvironment{myenv}{\it}{}\begin{myenv}hi\end{myenv}')
-		for key, value in self.macros.items():
+		for key, value in list(self.macros.items()):
 			s.ownerDocument.context[key] = value
 		output = [x for x in s]
 		assert type(output[2]) == s.ownerDocument.context['it']
@@ -116,7 +116,7 @@ class NewCommands(TestCase):
 	def testSimpleNewEnvironmentWithArgs(self):
 		s = TeX()
 		s.input(r'\newenvironment{myenv}[2]{#1:#2}{}\begin{myenv}{foo}{bar}hi\end{myenv}')
-		for key, value in self.macros.items():
+		for key, value in list(self.macros.items()):
 			s.ownerDocument.context[key] = value
 		output = [x for x in s]
 		definition = s.ownerDocument.context['myenv'].definition
@@ -129,7 +129,7 @@ class NewCommands(TestCase):
 	def testSimpleNewEnvironmentWithOptional(self):
 		s = TeX()
 		s.input(r'\newenvironment{myenv}[2][opt]{#1:#2}{;}\begin{myenv}{foo}hi\end{myenv}\begin{myenv}[one]{blah}bye\end{myenv}')
-		for key, value in self.macros.items():
+		for key, value in list(self.macros.items()):
 			s.ownerDocument.context[key] = value
 		output = [x for x in s]
 		definition = s.ownerDocument.context['myenv'].definition
@@ -143,7 +143,7 @@ class NewCommands(TestCase):
 	def testNewEnvironment(self):
 		s = TeX()
 		s.input(r'\newenvironment{myenv}{\begin{description}}{\end{description}}before:\begin{myenv}hi\end{myenv}:after')
-		for key, value in self.macros.items():
+		for key, value in list(self.macros.items()):
 			s.ownerDocument.context[key] = value
 		output = [x for x in s]
 		definition = s.ownerDocument.context['myenv'].definition

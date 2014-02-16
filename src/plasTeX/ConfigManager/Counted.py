@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 #!/usr/bin/env python
 
-from Generic import GenericArgument
-from Boolean import BooleanOption
+from .Generic import GenericArgument
+from .Boolean import BooleanOption
 from plasTeX.ConfigManager import InvalidOptionError, COMMANDLINE
 
 class CountedOption(BooleanOption):

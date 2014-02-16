@@ -1,9 +1,10 @@
+from __future__ import absolute_import
 #!/usr/bin/env python
 
 import os
-from Generic import *
+from .Generic import *
 from plasTeX.ConfigManager import TooManyValues
-from String import StringOption
+from .String import StringOption
 from UserList import UserList
 
 
@@ -87,7 +88,7 @@ class MultiOption(MultiParser, GenericOption, UserList):
 	  if self.data and self.source & COMMANDLINE:
 		 return self.data
 
-	  if self.environ and os.environ.has_key(str(self.environ)):
+	  if self.environ and str(self.environ) in os.environ:
 		 self.source = ENVIRONMENT
 		 self.file = None
 		 return self.cast(os.environ[str(self.environ)])
@@ -135,7 +136,7 @@ class MultiOption(MultiParser, GenericOption, UserList):
 	  name = self.name
 	  if self.actual: name = self.actual
 	  if len(self.data) > range[1]:
-		 raise TooManyValues, "Expecting at most %s values for option '%s'." % (range[1], name)
+		 raise TooManyValues("Expecting at most %s values for option '%s'." % (range[1], name))
 	  return self
  
    def validate(self, arg):

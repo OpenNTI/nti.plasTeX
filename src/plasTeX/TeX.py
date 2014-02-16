@@ -180,7 +180,7 @@ class TeX(object):
 
 		try:
 			path = self.kpsewhich(file)
-		except OSError, msg:
+		except OSError as msg:
 			log.warning(msg)
 			return False
 
@@ -202,7 +202,7 @@ class TeX(object):
 				if tok is flag:
 					break
 
-		except (OSError, IOError, TypeError), msg:
+		except (OSError, IOError, TypeError) as msg:
 			if msg:
 				msg = ' ( %s )' % msg
 			# Failed to load LaTeX style file
@@ -334,7 +334,7 @@ class TeX(object):
 #						log.info('expanding %s %s', token.macroName, ''.join([x.source for x in tokens]))
 						pushTokens(tokens)
 					continue
-				except Exception, msg:
+				except Exception as msg:
 					if str(msg).strip():
 						msg = ' (%s)' % str(msg).strip()
 					log.error('Error while expanding "%s"%s%s',
@@ -422,7 +422,7 @@ class TeX(object):
 					item.parentNode = output
 					item.digest(tokens)
 				output.append(item)
-		except Exception, msg:
+		except Exception as msg:
 			if str(msg).strip():
 			   msg = ' (%s)' % str(msg).strip()
 			log.error('An error occurred while building the document object%s%s', self.lineInfo, msg)
@@ -750,9 +750,9 @@ class TeX(object):
 
 			# This isn't a correct value
 			else:
-				raise ValueError, 'Unrecognized specifier "%s"' % spec
+				raise ValueError('Unrecognized specifier "%s"' % spec)
 
-		except Exception, msg:
+		except Exception as msg:
 			log.error('Error while reading argument "%s" of %s%s (%s)' % \
 						  (name, parentNode.nodeName, self.lineInfo, msg))
 			raise
@@ -968,7 +968,7 @@ class TeX(object):
 			pass
 
 		# Could not find specified type
-		elif not argtypes.has_key(dtype):
+		elif dtype not in argtypes:
 			log.warning('Could not find datatype "%s"' % dtype)
 			pass
 
@@ -1699,7 +1699,7 @@ class TeX(object):
 			for item in self:
 				if item is dummy:
 					break
-		except OSError, msg:
+		except OSError as msg:
 			log.warning(msg)
 		self.ownerDocument.context.warnOnUnrecognized = warn
 

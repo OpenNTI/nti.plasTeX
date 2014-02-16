@@ -1,10 +1,10 @@
+from __future__ import absolute_import
 #!/usr/bin/env python
 
 import string
-from DOM import Node, Text
-from StringIO import StringIO as UnicodeStringIO
-try: from cStringIO import StringIO
-except: from StringIO import StringIO
+from .DOM import Node, Text
+from io import StringIO as UnicodeStringIO
+from io import BytesIO
 
 # Default TeX categories
 DEFAULT_CATEGORIES = [
@@ -19,7 +19,7 @@ DEFAULT_CATEGORIES = [
    '_',	  # 8  - Subscript
    '\x00',# 9  - Ignored character
    ' \t\r\f', # 10 - Space
-   string.letters + '@', # - Letter
+   string.ascii_letters + '@', # 11 - Letter
    '',	  # 12 - Other character - This isn't explicitly defined.  If it
 		  #						   isn't any of the other categories, then
 		  #						   it's an "other" character.
@@ -29,7 +29,7 @@ DEFAULT_CATEGORIES = [
 ]
 
 VERBATIM_CATEGORIES = [''] * 16
-VERBATIM_CATEGORIES[11] = string.letters
+VERBATIM_CATEGORIES[11] = string.ascii_letters
 
 class Token(Text):
 	""" Base class for all TeX tokens """
@@ -204,12 +204,12 @@ class Tokenizer(object):
 		if isinstance(source, unicode):
 			source = UnicodeStringIO(source)
 			self.filename = '<string>'
-		elif isinstance(source, basestring):
-			source = StringIO(source)
+		elif isinstance(source, bytes):
+			source = BytesIO(source)
 			self.filename = '<string>'
 		elif isinstance(source, (tuple,list)):
 			self.pushTokens(source)
-			source = StringIO('')
+			source = BytesIO(b'')
 			self.filename = '<tokens>'
 		else:
 			self.filename = source.name
@@ -369,7 +369,7 @@ class Tokenizer(object):
 			token = next()
 
 			if token.nodeType == ELEMENT_NODE:
-				raise ValueError, 'Expanded tokens should never make it here'
+				raise ValueError('Expanded tokens should never make it here')
 
 			code = token.catcode
 

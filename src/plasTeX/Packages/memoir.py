@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 #!/usr/bin/env python
 
-from book import *
+from .book import *
 
 class titleref(Command):
 	args = 'label:idref'

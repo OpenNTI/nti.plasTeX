@@ -53,7 +53,7 @@ class NodeTest(TestCase):
 
 		# Check attributes
 		if node.attributes:
-			for key, value in node.attributes.items():
+			for key, value in list(node.attributes.items()):
 				if isinstance(value, Node):
 					assert value.parentNode is node, \
 						   'parentNode is incorrect (%s)' % value.parentNode
@@ -66,7 +66,7 @@ class NodeTest(TestCase):
 						self._checkPositions(item)
 
 				elif isinstance(value, dict):
-					for item in value.values():
+					for item in list(value.values()):
 						assert getattr(item, 'parentNode', node) is node, \
 							   'parentNode is incorrect (%s)' % item.parentNode
 						self._checkPositions(item)

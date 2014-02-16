@@ -6,6 +6,13 @@ from zope import interface
 from .interfaces import INode
 from .interfaces import INamedNodeMap
 
+try:
+	unicode
+	long
+except NameError: # py33
+	unicode = str
+	long = int
+
 class DOMString(unicode):
 	"""
 	DOM String
@@ -322,7 +329,7 @@ class NamedNodeMap(dict):
 			value = self[name]
 			del self[name]
 		except KeyError:
-			raise NotFoundErr, 'Could not find name "%s"' % name
+			raise NotFoundErr('Could not find name "%s"' % name)
 		return value
 
 	def item(self, index):
@@ -336,7 +343,7 @@ class NamedNodeMap(dict):
 		the requested value, or None if it doesn't exist
 
 		"""
-		items = self.items()
+		items = list(self.items())
 		items.sort()
 		try: return items[num][1]
 		except IndexError: return None
@@ -568,7 +575,7 @@ class Node(object):
 # LaTeX Node extensions
 #
 	# LaTeX document hierarchy
-	DOCUMENT_LEVEL = -sys.maxint
+	DOCUMENT_LEVEL = -sys.maxsize
 	VOLUME_LEVEL = -2
 	PART_LEVEL = -1
 	CHAPTER_LEVEL = 0
@@ -743,7 +750,7 @@ class Node(object):
 
 		# Render content
 		if self.hasChildNodes():
-			if not(self.attributes and self.attributes.has_key('self')):
+			if not(self.attributes and 'self' in self.attributes):
 				for value in self.childNodes:
 					if hasattr(value, 'toXML'):
 						value = value.toXML()
@@ -763,7 +770,7 @@ class Node(object):
 			pass
 		# Allow the `self` key of attributes to act as the `childNodes`
 		a = self.attributes
-		if a and a.has_key('self'):
+		if a and 'self' in a:
 			nodes = a['self']
 			if nodes is None:
 				nodes = []
@@ -778,7 +785,7 @@ class Node(object):
 		if hasattr(self, '_dom_childNodes'):
 			return True
 		a = self.attributes
-		return a and a.has_key('self')
+		return a and 'self' in a
 
 	@property
 	def firstChild(self):
@@ -896,7 +903,7 @@ class Node(object):
 
 		"""
 		try: return self.childNodes.pop(index)
-		except: raise IndexError, 'object has no childNodes'
+		except: raise IndexError('object has no childNodes')
 
 	def append(self, newChild, setParent=True):
 		"""
@@ -1557,7 +1564,7 @@ class Element(Node):
 		boolean indicating whether or not the attribute exists
 
 		"""
-		return self.attributes.has_key(name)
+		return name in self.attributes
 
 	def hasAttributeNS(self, namespaceURI, localName):
 		"""
@@ -1865,7 +1872,7 @@ class DOMConfiguration(dict):
 	@property
 	def parameterNames(self):
 		""" Return list of all possible parameter names """
-		return self.keys()
+		return list(self.keys())
 
 	def setParameter(self, name, value):
 		"""
@@ -1876,7 +1883,7 @@ class DOMConfiguration(dict):
 		value -- value of parameter
 
 		"""
-		if self.has_key(name):
+		if name in self:
 			raise NotFoundErr
 		self[name] = value
 
@@ -2027,7 +2034,7 @@ class Document(Node):
 
 	nodeName = '#document'
 	nodeType = Node.DOCUMENT_NODE
-	__slots__ = Node.NODE_SLOTS + ('__dict__','__renderer')
+	__slots__ = tuple(set(Node.NODE_SLOTS + ('__dict__','__renderer')) - {'parentNode','ownerDocument'})
 
 	doctype = None
 	implementation = None

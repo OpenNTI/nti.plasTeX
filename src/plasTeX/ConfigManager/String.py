@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 #!/usr/bin/env python
 
 from UserString import UserString
-from Generic import GenericOption, DEFAULTS, GenericParser, GenericArgument
+from .Generic import GenericOption, DEFAULTS, GenericParser, GenericArgument
 
 
 class StringParser(GenericParser): pass

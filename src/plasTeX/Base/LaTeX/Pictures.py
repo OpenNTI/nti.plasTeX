@@ -19,12 +19,6 @@ class picture(Environment):
 	blockType = True
 	captionable = True
 
-#	def digest(self, tex):
-#		result = Environment.digest(self, tex)
-#		import pdb
-#		pdb.set_trace()
-#		return result
-
 	def paragraphs(self):
 		pass
 
@@ -62,7 +56,7 @@ class picture(Environment):
 		args = '* diam'
 
 	class oval(Command):
-		args = '[ radius:str ] ( dimen:str ) [ part:str ]' 
+		args = '[ radius:str ] ( dimen:str ) [ part:str ]'
 
 	class frame(Command):
 		args = 'object'
@@ -78,4 +72,3 @@ class picture(Environment):
 
 	class linethickness(Command):
 		args = 'len:dimen'
-	

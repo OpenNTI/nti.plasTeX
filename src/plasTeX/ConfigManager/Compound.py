@@ -1,8 +1,9 @@
+from __future__ import absolute_import
 #!/usr/bin/env python
 
 import re
-from Generic import GenericArgument
-from String import StringOption
+from .Generic import GenericArgument
+from .String import StringOption
 from plasTeX.ConfigManager import GetoptError
 
 
@@ -32,7 +33,7 @@ class CompoundParser:
 	  begin = args[0].strip()[0]
 	  try:
 		  end = groups[args[0].strip()[0]]
-	  except KeyError, info:
+	  except KeyError as info:
 		  name = self.name
 		  if self.actual: name = self.actual
 		  raise UnknownCompoundGroup(

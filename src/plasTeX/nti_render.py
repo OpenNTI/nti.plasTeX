@@ -4,21 +4,22 @@
 $Id$
 """
 from __future__ import print_function, unicode_literals
+from __future__ import absolute_import
 
 import os
 import sys
 import time
 import string
-import logging
+from . import logging
 import argparse
 import datetime
 import functools
 import subprocess
 from pkg_resources import resource_filename
 
-import plasTeX
-from plasTeX.TeX import TeX
-from plasTeX.Logging import getLogger
+from . import plasTeX
+from .plasTeX.TeX import TeX
+from .plasTeX.Logging import getLogger
 
 log = getLogger(__name__)
 logger = log
@@ -135,7 +136,7 @@ def main():
 
 	# setup default config options we want
 	document.config['files']['split-level'] = 1
-	document.config['document']['toc-depth'] = sys.maxint  # Arbitrary number greater than the actual depth possible
+	document.config['document']['toc-depth'] = sys.maxsize  # Arbitrary number greater than the actual depth possible
 	document.config['document']['toc-non-files'] = True
 	# By outputting in ASCII, we are still valid UTF-8, but we use
 	# XML entities for high characters. This is more likely to survive

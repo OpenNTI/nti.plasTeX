@@ -79,7 +79,7 @@ def _format(self, file):
 	if 'lastline' in self.attributes['arguments']:
 		last_line_number = int(self.attributes['arguments']['lastline'])
 	else:
-		last_line_number = sys.maxint
+		last_line_number = sys.maxsize
 
 	# Read the file, all the while respecting the "firstline" and
 	# "lastline" arguments given in the document.
@@ -101,6 +101,6 @@ def _format(self, file):
 		from pygments import lexers, formatters
 		try: 
 			lexer = lexers.get_lexer_by_name(self.ownerDocument.context.current_language.lower())
-		except Exception, msg: 
+		except Exception as msg: 
 			lexer = lexers.TextLexer()
 		self.xhtml_listing = pygments.highlight(self.plain_listing, lexer, formatters.HtmlFormatter(linenos=linenos))

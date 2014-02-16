@@ -5,7 +5,7 @@ C.4 Sectioning and Table of Contents (p174)
 
 """
 
-from plasTeX import Command, Environment, TeXFragment
+from plasTeX import Command
 from plasTeX.Logging import getLogger
 
 log = getLogger()
@@ -14,20 +14,7 @@ log = getLogger()
 # C.4.1 Sectioning Commands
 #
 
-class cachedproperty(object):
-	""" Property whose value is only calculated once and cached """
-	def __init__(self, func):
-		self._func = func
-	def __get__(self, obj, type=None):
-		if obj is None:
-			return self
-		try:
-			return getattr(obj, '@%s' % self._func.func_name)
-		except AttributeError:
-			result = self._func(obj)
-			setattr(obj, '@%s' % self._func.func_name, result)
-			return result
-
+from zope.cachedescriptors.property import Lazy as cachedproperty
 
 class TableOfContents(object):
 	"""
@@ -290,13 +277,13 @@ class SectionUtils(object):
 
 		# Get navigation info from the linkTypes
 		navinfo = self.ownerDocument.userdata.get('links', {})
-		for key, value in navinfo.items():
+		for key, value in list(navinfo.items()):
 			nav[key] = value
 
 		# Get user-defined links
 		links = {}
-		if self.config.has_key('links'):
-			for key in self.config['links'].keys():
+		if 'links' in self.config:
+			for key in list(self.config['links'].keys()):
 				if '-' not in key:
 					continue
 				newkey, type = key.strip().split('-',1)
@@ -305,7 +292,7 @@ class SectionUtils(object):
 				links[newkey][type] = self.config['links'][key]
 
 		# Set links in nav object
-		for key, value in links.items():
+		for key, value in list(links.items()):
 			if key not in nav or nav[key] is None:
 				nav[key] = value
 

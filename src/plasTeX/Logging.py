@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import absolute_import
 import textwrap, types
 from logging import CRITICAL, DEBUG, Logger as _Logger, StreamHandler as _StreamHandler, Formatter
 from logging import addLevelName, setLoggerClass
@@ -166,5 +166,5 @@ def getLogger(name=None):
 
 def disableLogging():
 	""" Disable all logging """
-	for logger in _loggers.values():
+	for logger in list(_loggers.values()):
 		logger.setLevel(CRITICAL)

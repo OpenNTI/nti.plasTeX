@@ -4,15 +4,17 @@
 C.11.5 Index and Glossary (p211)
 
 """
+from __future__ import division
+from __future__ import absolute_import
 
 import string, os
 from plasTeX.Tokenizer import Token, EscapeSequence
 from plasTeX import Command, Environment
 from plasTeX.Logging import getLogger
-from Sectioning import SectionUtils
+from .Sectioning import SectionUtils
 
 try:
-	from pyuca import Collator
+	from .pyuca import Collator
 	collator = Collator(os.path.join(os.path.dirname(__file__), 'allkeys.txt')).sort_key
 except ImportError:
 	collator = lambda x: x.lower()

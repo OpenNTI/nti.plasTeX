@@ -4,8 +4,10 @@
 This package is dynamically generated.	It loads data from the ent.xml file.
 
 """
-
-import re, new, os, Accents, Characters
+from __future__ import absolute_import
+import re, new
+from . import Characters
+from . import Accents
 from xml.parsers import expat
 from plasTeX import Command
 
@@ -51,7 +53,7 @@ class EntityParser(object):
 			self.inseq = True
 		else:
 			self.inseq = False
-		
+
 	def char_data(self, data):
 		if self.unicode is None:
 			self.inseq = False
@@ -65,20 +67,20 @@ class EntityParser(object):
 		if m:
 			name = str(m.group(1)).replace('\\','\\\\')
 			if name not in self.defined:
-				g[name+'_'] = new.classobj(name+'_', (Command,), 
-										  {'unicode':unichr(self.unicode), 
+				g[name+'_'] = new.classobj(name+'_', (Command,),
+										  {'unicode':unichr(self.unicode),
 										   'macroName':name})
 				self.defined[name] = True
-	
+
 		# Wingdings
 		m = re.match(r'^\\ding\{(\d+)\}$', data)
 		if m:
 			int(m.group(1))
 			Characters.ding.values[int(m.group(1))] = unichr(self.unicode)
-	
+
 		# Accented characters
-		m = re.match(r'^(\\(%s)\{([^\}])\})' % 
-					  '|'.join(self.accentmap.keys()), data)
+		m = re.match(r'^(\\(%s)\{([^\}])\})' %
+					  '|'.join(list(self.accentmap.keys())), data)
 		if m and m.group(1) not in self.defined:
 			accent = self.accentmap[m.group(2)]
 			accent.chars[m.group(3)] = unichr(self.unicode)

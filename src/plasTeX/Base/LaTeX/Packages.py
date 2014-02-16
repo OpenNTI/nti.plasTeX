@@ -11,6 +11,9 @@ from plasTeX.Logging import getLogger
 
 # Put the plasTeX packages into the path
 # JAM: FIXME: This is a little scary
+# JAM (later): This is also broken when absolute
+# imports are used, as is required under py3. The code in Context.py
+# works either way, but we should probably stop doing this
 from plasTeX import Packages
 sys.path.append(os.path.abspath(os.path.dirname(Packages.__file__)))
 del Packages
@@ -161,7 +164,7 @@ class title(Command):
 	args = '[ toc ] self'
 	def invoke(self, tex):
 		Command.invoke(self, tex)
-		if not self.ownerDocument.userdata.has_key('title'):
+		if 'title' not in self.ownerDocument.userdata:
 			self.ownerDocument.userdata['title'] = self
 
 class author(Command):

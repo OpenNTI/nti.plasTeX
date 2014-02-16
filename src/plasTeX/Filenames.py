@@ -193,7 +193,7 @@ class _FilenameGenerator(object):
 		# Return static filenames
 		for item in static:
 			currentns = self.vars.copy()
-			for key, value in currentns.items():
+			for key, value in list(currentns.items()):
 				if self.charsub:
 					for char in self.charsub[0]:
 						value = value.replace(char, self.charsub[1])
@@ -235,7 +235,7 @@ class _FilenameGenerator(object):
 			passes += 1
 			for item in wildcard:
 				currentns = self.vars.copy()
-				for key, value in currentns.items():
+				for key, value in list(currentns.items()):
 					if self.charsub:
 						for char in self.charsub[0]:
 							value = value.replace(char, self.charsub[1])

@@ -24,7 +24,7 @@ class CJKchar(Command):
 		enc = encodings[a['encoding'].strip()]
 		if not enc:
 			log.warning('Unknown encoding: %s' % a['encoding'])
-			raise AttributeError, 'unicode'
+			raise AttributeError('unicode')
 		return unicode(chr(a['char1'])+chr(a['char2']), enc)
 
 class Unicode(Command):

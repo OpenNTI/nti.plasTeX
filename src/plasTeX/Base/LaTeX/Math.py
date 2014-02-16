@@ -4,8 +4,9 @@
 C.7 Mathematical Formulas (p187)
 
 """
+from __future__ import absolute_import
 
-from Arrays import Array
+from .Arrays import Array
 from plasTeX import Command, Environment, sourceChildren
 from plasTeX import DimenCommand, GlueCommand
 from plasTeX.Logging import getLogger

@@ -233,7 +233,7 @@ class ifnum(IfCommand):
 		elif relation == '=':
 			tex.processIfContent(a == b)
 			return []
-		raise ValueError, '"%s" is not a valid relation' % relation
+		raise ValueError('"%s" is not a valid relation' % relation)
 
 class ifdim(IfCommand):
 	""" Compare two dimensions """
@@ -252,7 +252,7 @@ class ifdim(IfCommand):
 		elif relation == '=':
 			tex.processIfContent(a == b)
 			return []
-		raise ValueError, '"%s" is not a valid relation' % relation
+		raise ValueError('"%s" is not a valid relation' % relation)
 
 class ifodd(IfCommand):
 	""" Test for odd integer """
@@ -436,7 +436,7 @@ class input(Command):
 			tex.input(codecs.open(path, 'r', encoding, 'replace'))
 			status.info(' ) ')
 
-		except (OSError, IOError), msg:
+		except (OSError, IOError) as msg:
 			log.warning(msg)
 			status.info(' ) ')
 

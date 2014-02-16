@@ -44,7 +44,7 @@ def test_file_cache():
 		new_imager._read_cache(validate_files=False)
 
 		# Image objects in values() may not be equal
-		assert_that( new_imager._cache.keys(), is_( imager._cache.keys() ) )
+		assert_that( list(new_imager._cache.keys()), is_( list(imager._cache.keys()) ) )
 
 		new_imager._read_cache(validate_files=True)
 		assert_that( new_imager._cache, is_empty() )

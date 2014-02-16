@@ -4,4 +4,4 @@ build
 .coverage
 .tox
 dist
-setuptools_git-1.0-py2.7.egg
+*.egg

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
-import sys, unittest, re, os, tempfile, shutil, glob, difflib, subprocess
-from unittest import TestCase
+import sys, os, tempfile, shutil, difflib, subprocess
 
 def which(name, path=None, exts=('',)):
 	"""
@@ -42,6 +42,7 @@ class _ComparisonBenched(object):
 	""" Compile LaTeX file and compare to benchmark file """
 
 	def __call__(self, filename):
+		__traceback_info__ = filename
 		if not filename:
 			return
 
@@ -94,7 +95,7 @@ class _ComparisonBenched(object):
 
 		# Read output file
 		__traceback_info__ = p.log, outdir, outfile
-		print p.log
+		print(p.log)
 		output = open(outfile)
 
 		# Get name of output file / benchmark file
@@ -134,4 +135,6 @@ def testSuite():
 		for f in files:
 			if os.path.splitext(f)[-1] != '.tex':
 				continue
+
+			__traceback_info__ = root, f
 			yield _ComparisonBenched(), os.path.abspath(os.path.join(root, f))

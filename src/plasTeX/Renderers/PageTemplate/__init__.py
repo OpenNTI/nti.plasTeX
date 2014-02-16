@@ -8,6 +8,7 @@ templates as the templating engine.	 It also makes it possible to add
 support for your own templating engines.
 
 """
+from __future__ import print_function
 
 import sys
 import os
@@ -441,7 +442,7 @@ class PageTemplate(BaseRenderer):
 
 				if document.config['general']['copy-theme-extras']:
 					extensions = ['.ini'] # Don't copy the theme_conf.ini file
-					for e in self.engines.values():
+					for e in list(self.engines.values()):
 						extensions += e.ext + [x + 's' for x in e.ext]
 
 					# Copy all theme extras
@@ -489,12 +490,12 @@ class PageTemplate(BaseRenderer):
 		self.aliases = {}
 
 		enames = {}
-		for key, value in self.engines.items():
+		for key, value in list(self.engines.items()):
 			for i in value.ext:
 				enames[i+'s'] = key[0]
 
 		singleenames = {}
-		for key, value in self.engines.items():
+		for key, value in list(self.engines.items()):
 			for i in value.ext:
 				singleenames[i] = key[0]
 
@@ -529,7 +530,7 @@ class PageTemplate(BaseRenderer):
 
 				options = {'name':basename}
 
-				for value in self.engines.values():
+				for value in list(self.engines.values()):
 					if ext in value.ext:
 						options['engine'] = singleenames[ext.lower()]
 						self.parseTemplates(f, options)
@@ -538,7 +539,7 @@ class PageTemplate(BaseRenderer):
 
 		if self.aliases:
 		   log.warning('The following aliases were unresolved: %s',
-					    ', '.join(self.aliases.keys()))
+					    ', '.join(list(self.aliases.keys())))
 
 	def setTemplate(self, template, options, filename=None):
 		"""
@@ -571,7 +572,7 @@ class PageTemplate(BaseRenderer):
 				log.warning('Both an alias and a template were specified for: %s', ', '.join(names))
 
 		# Resolve remaining aliases
-		for key, value in self.aliases.items():
+		for key, value in list(self.aliases.items()):
 			if value in self:
 				self[key] = self[value]
 			self.aliases.pop(key)
@@ -672,8 +673,8 @@ class PageTemplate(BaseRenderer):
 		if template:
 			try:
 				self.setTemplate(''.join(template), options, filename=filename)
-			except ValueError, msg:
-				print 'ERROR: %s in template %s in file %s' % (msg, ''.join(template), filename)
+			except ValueError as msg:
+				print('ERROR: %s in template %s in file %s' % (msg, ''.join(template), filename))
 
 		elif name and not template:
 			self.setTemplate('', options, filename=filename)

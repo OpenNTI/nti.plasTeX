@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-
-import gspdfpng, os, sys
+from __future__ import absolute_import
+import os, sys
+from . import gspdfpng
 
 gs = 'gs'
 if sys.platform.startswith('win'):

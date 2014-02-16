@@ -1,19 +1,21 @@
+from __future__ import division
+from __future__ import absolute_import
 #!/usr/bin/env python
 
 __version__ = '9.3'
 
 import string
 import re
-from plasTeX.DOM import Element, Node, DocumentFragment, Document
-from plasTeX.Tokenizer import Token, BeginGroup, EndGroup
-from plasTeX import Logging
+from .DOM import Element, Node, DocumentFragment, Document
+from .Tokenizer import Token, BeginGroup, EndGroup
+from . import Logging
 
-from plasTeX import Context
-from plasTeX import Config
+from . import Context
+from . import Config
 
 ### BBB exports
-from plasTeX.DOM import Text
-from plasTeX.Tokenizer import Other
+from .DOM import Text
+from .Tokenizer import Other
 
 log = Logging.getLogger(__name__)
 status = Logging.getLogger(__name__ + '.status')
@@ -219,7 +221,7 @@ class Macro(Element):
 				return getattr(self, '@tocEntry')
 			except AttributeError:
 				try:
-					if self.attributes.has_key('toc'):
+					if 'toc' in self.attributes:
 						toc = self.attributes['toc']
 						if toc is None:
 							toc = self.title
@@ -247,7 +249,7 @@ class Macro(Element):
 						fullTocEntry = self.tocEntry
 					setattr(self, '@fullTocEntry', fullTocEntry)
 					return fullTocEntry
-			except Exception, msg:
+			except Exception as msg:
 				return self.title
 		def fset(self, value):
 			setattr(self, '@fullTocEntry', value)
@@ -410,7 +412,7 @@ class Macro(Element):
 		s = '%s%s%s' % (escape, name, argSource)
 
 		# If self.childNodes is not empty, print out the contents
-		if self.attributes and self.attributes.has_key('self'):
+		if self.attributes and 'self' in self.attributes:
 			pass
 		else:
 			if self.hasChildNodes():
@@ -547,11 +549,12 @@ class Macro(Element):
 		if self.counter:
 			try:
 				secnumdepth = self.config['document']['sec-num-depth']
-			except:
+			except KeyError:
 				secnumdepth = 10
+
 			if secnumdepth >= self.level or self.level > self.ENDSECTIONS_LEVEL:
-				self.ref = self.ownerDocument.createElement('the'+self.counter).expand(tex)
-				self.captionName = self.ownerDocument.createElement(self.counter+'name').expand(tex)
+				self.ref = self.ownerDocument.createElement('the' + self.counter).expand(tex)
+				self.captionName = self.ownerDocument.createElement(self.counter + 'name').expand(tex)
 
 	@property
 	def arguments(self):
@@ -621,7 +624,7 @@ class Macro(Element):
 				if parts:
 					# We already have a type, so check for subtypes
 					# for list items
-					if argdict.has_key('type'):
+					if 'type' in argdict:
 						argdict['subtype'] = parts.pop(0)
 					else:
 						# Split type and possible delimiter
@@ -1076,8 +1079,7 @@ class Definition(Macro):
 						params.append(param)
 
 					else:
-						raise ValueError, \
-							  'Invalid arg string: %s' % ''.join(self.args)
+						raise ValueError('Invalid arg string: %s' % ''.join(self.args))
 					break
 
 			# In a parameter, so get everything up to a token that matches `a`
@@ -1174,7 +1176,7 @@ class dimen(float):
 			elif units == 'em':
 				v *= 11 * 65536
 			else:
-				raise ValueError, 'Unrecognized units: %s' % units
+				raise ValueError('Unrecognized units: %s' % units)
 		return float.__new__(cls, v)
 
 	@property
@@ -1256,7 +1258,7 @@ class dimen(float):
 			return sign * (abs(self)-4e9)
 		if abs(self) >= 2e9:
 			return sign * (abs(self)-2e9)
-		raise ValueError, 'This is not a fil(ll) dimension'
+		raise ValueError('This is not a fil(ll) dimension')
 	fil = filll = fill
 
 	def __repr__(self):
@@ -1538,5 +1540,4 @@ class TheCounter(Command):
 		# just hank it out.	 This is especially useful in document classes
 		# such as book and report which do this in the \thefigure format macro.
 		t = re.sub(r'\b0[^\dA-Za-z]+', r'', t)
-
 		return tex.textTokens(t)

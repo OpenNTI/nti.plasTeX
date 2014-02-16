@@ -39,14 +39,14 @@ def mixin(base, mix, overwrite=False):
 	mix -- the mixin class
 
 	"""
-	if not vars(base).has_key('_mixed_'):
+	if '_mixed_' not in vars(base):
 		base._mixed_ = {}
 	mixed = base._mixed_
 	for cls in baseclasses(mix):
-		for item, value in vars(cls).items():
+		for item, value in list(vars(cls).items()):
 			if item in ['__dict__','__module__','__doc__','__weakref__']:
 				continue
-			if overwrite or not vars(base).has_key(item):
+			if overwrite or item not in vars(base):
 				old = vars(base).get(item, None)
 				setattr(base, item, value)
 				mixed[item] = (mix, old)
@@ -63,14 +63,14 @@ def unmix(base, mix=None):
 
 	"""
 	if mix is None:
-		for key, value in base._mixed_.items():
+		for key, value in list(base._mixed_.items()):
 			if value[1] is not None:
 				setattr(base, key, value[1])
 			else:
 				delattr(base, key)
 		del base._mixed_
 	else:
-		for key, value in base._mixed_.items():
+		for key, value in list(base._mixed_.items()):
 			if value[0] is mix:
 				if value[1] is not None:
 					setattr(base, key, value[1])
@@ -521,7 +521,7 @@ class Renderer(dict):
 			self.vectorImager.close()
 
 			# Run any cleanup activities
-			self.cleanup(document, self.files.values(), postProcess=postProcess)
+			self.cleanup(document, list(self.files.values()), postProcess=postProcess)
 
 			# Write out auxilliary information
 			pauxname = os.path.join(document.userdata.get('working-dir','.'),
@@ -599,7 +599,7 @@ class Renderer(dict):
 
 		"""
 		for key in keys:
-			if self.has_key(key):
+			if key in self:
 				return self[key]
 
 		# Other nodes supplied default
