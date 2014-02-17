@@ -64,22 +64,23 @@ class _ComparisonBenched(object):
 		root = os.path.dirname(os.path.dirname(src))
 
 		# Run preprocessing commands
-		for line in open(src):
-			if line.startswith('%*'):
-				command = line[2:].strip()
-				p = Process(cwd=outdir, *command.split())
-				if p.returncode:
-					raise OSError( 'Preprocessing command exited abnormally with return code %s: %s' % (command, p.log) )
-			elif line.startswith('%#'):
-				filename = line[2:].strip()
-				shutil.copyfile(os.path.join(root,'extras',filename),
-								os.path.join(outdir,filename))
-			elif line.startswith('%'):
-				continue
-			elif not line.strip():
-				continue
-			else:
-				break
+		with open(src, 'r') as f:
+			for line in f:
+				if line.startswith('%*'):
+					command = line[2:].strip()
+					p = Process(cwd=outdir, *command.split())
+					if p.returncode:
+						raise OSError( 'Preprocessing command exited abnormally with return code %s: %s' % (command, p.log) )
+				elif line.startswith('%#'):
+					filename = line[2:].strip()
+					shutil.copyfile(os.path.join(root,'extras',filename),
+									os.path.join(outdir,filename))
+				elif line.startswith('%'):
+					continue
+				elif not line.strip():
+					continue
+				else:
+					break
 
 		# Run plastex
 		outfile = os.path.join(outdir, os.path.splitext(os.path.basename(src))[0] + '.html')
@@ -95,21 +96,27 @@ class _ComparisonBenched(object):
 
 		# Read output file
 		__traceback_info__ = p.log, outdir, outfile
-		print(p.log)
+
 		output = open(outfile)
 
 		# Get name of output file / benchmark file
 		benchfile = os.path.join(root,'benchmarks',os.path.basename(outfile))
 		if os.path.isfile(benchfile):
-			bench = open(benchfile).readlines()
-			output = output.readlines()
+			with open(benchfile, 'r') as f:
+				bench = f.readlines()
+			outputlines = output.readlines()
+			output.close()
+			output = outputlines
 		else:
 			try:
 				os.makedirs(os.path.join(root,'new'))
 			except:
 				pass
 			newfile = os.path.join(root,'new',os.path.basename(outfile))
-			open(newfile,'w').write(output.read())
+			with open(newfile,'w') as f:
+				f.write(output.read())
+				output.close()
+
 			shutil.rmtree(outdir, ignore_errors=True)
 			raise OSError( 'No benchmark file: %s' % benchfile )
 
@@ -122,7 +129,8 @@ class _ComparisonBenched(object):
 			except:
 				pass
 			newfile = os.path.join(root,'new',os.path.basename(outfile))
-			open(newfile,'w').writelines(output)
+			with open(newfile,'w') as f:
+				f.writelines(output)
 			assert not(diff), 'Differences were found: %s' % diff
 
 

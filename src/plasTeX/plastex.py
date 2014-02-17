@@ -33,11 +33,14 @@ log = getLogger()
 
 __version__ = '0.9.3'
 
-def main():
+def main(argv=None):
 	""" Main program routine """
-	print( 'plasTeX version %s' % __version__, file=sys.stderr )
 
-	argv = sys.argv
+	as_main = False
+	if argv is None:
+		as_main = True
+		print( 'plasTeX version %s' % __version__, file=sys.stderr )
+		argv = sys.argv
 	xml_conf_context = xmlconfig.file('configure.zcml', package=plasTeX)
 	# Parse the command line options
 	config = newConfig()
@@ -120,7 +123,8 @@ def main():
 	# Apply renderer
 	Renderer().render(document)
 
-	print("")
+	if as_main:
+		print("")
 
 if __name__ == '__main__':
 	main()

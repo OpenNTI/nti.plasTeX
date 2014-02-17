@@ -15,14 +15,13 @@ entry_points = {
 }
 
 TESTS_REQUIRE = [
-	'beautifulsoup4 >= 4.3.1',
-	'fudge >= 1.0.3',
-	'nose >= 1.3.0',
+	'beautifulsoup4',
+	'fudge',
+	'nose',
 	# nose-progressive breaks under py33
 	#'nose-progressive >= 1.5',
-	'pyhamcrest >= 1.7.2',
-	#'zope.testing >= 4.1.2',
-	'nti.nose_traceback_info',
+	'pyhamcrest',
+	'nti.nose_traceback_info'
 ]
 
 INSTALL_REQUIRES = [
@@ -74,7 +73,6 @@ setup(name="nti.plasTeX",
 	  packages=find_packages('src'),
 	  package_dir={'': 'src'},
 	  include_package_data=True,
-	  #namespace_packages=['nti', ],
 	  zip_safe=False,
 	  entry_points=entry_points,
 	  setup_requires = [
@@ -87,8 +85,6 @@ setup(name="nti.plasTeX",
 		  'tools': [
 			'repoze.sphinx.autointerface >= 0.7.1',
 			'sphinx >= 1.2b1',  # Narrative docs
-			'Babel >= 1.3',
-			'lingua >= 1.5',
 			]
 		},
 		dependency_links=[

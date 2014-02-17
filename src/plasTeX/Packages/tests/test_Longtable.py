@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-
+from __future__ import absolute_import, unicode_literals
 import unittest, re, os, tempfile, shutil
-import subprocess
+
 from plasTeX.TeX import TeX
 from unittest import TestCase
 from bs4 import BeautifulSoup as Soup
@@ -10,7 +10,9 @@ from hamcrest import assert_that
 from hamcrest import has_length
 from hamcrest import is_
 #from hamcrest import same_instance
-import sys
+
+
+from . import _run_plastex
 
 class TestLongtables(TestCase):
 
@@ -26,7 +28,7 @@ class TestLongtables(TestCase):
 		"""
 		tex = TeX()
 		tex.disableLogging()
-		tex.input(r'''\document{article}\usepackage{longtable}\begin{document}%s\end{document}''' % content)
+		tex.input('\\document{article}\\usepackage{longtable}\\begin{document}%s\\end{document}' % content)
 		return tex.parse()
 
 	def runTable(self, content):
@@ -41,28 +43,24 @@ class TestLongtables(TestCase):
 
 		"""
 		# Create document file
-		document = r'\documentclass{article}\usepackage{longtable}\begin{document}%s\end{document}' % content
+		document = '\\documentclass{article}\\usepackage{longtable}\\begin{document}%s\\end{document}' % content
 		tmpdir = tempfile.mkdtemp()
 		oldpwd = os.path.abspath(os.getcwd())
 		try:
 			os.chdir(tmpdir)
 			filename = os.path.join(tmpdir, 'longtable.tex')
-			open(filename, 'w').write(document)
+			with open(filename, 'wb') as f:
+				f.write(document.encode('utf-8'))
 
-			# Run plastex on the document
-			# Must be careful to get the right python path so we work
-			# in tox virtualenvs as well as buildouts
-			path = os.path.pathsep.join( sys.path )
-			env = dict(os.environ)
-			env['PYTHONPATH'] = path
-			log = subprocess.Popen( [sys.executable, '-m', 'plasTeX.plastex',
-									 '-d', tmpdir, filename],
-									 env=env,
-									 bufsize=-1,
-									 stdout=subprocess.PIPE,
-									 stderr=subprocess.STDOUT ).communicate()[0]
+			log = _run_plastex(tmpdir, filename)
+
 			# Get output file
-			output = open(os.path.join(tmpdir, 'index.html')).read()
+			index_file = os.path.join(tmpdir, 'index.html')
+			if not os.path.exists(index_file):
+				raise ValueError(log)
+
+			with open(index_file, 'rb') as f:
+				output = f.read()
 		finally:
 			# Clean up
 			shutil.rmtree(tmpdir)

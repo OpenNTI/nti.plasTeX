@@ -112,7 +112,8 @@ class LanguageParser(object):
 			self.parser.StartElementHandler = self.startElement
 			self.parser.EndElementHandler = self.endElement
 			self.parser.CharacterDataHandler = self.charData
-			self.parser.Parse(codecs.open(file, 'r', encoding).read().encode('UTF-8'))
+			with codecs.open(file, 'r', encoding) as f:
+				self.parser.Parse(f.read().encode('UTF-8'))
 		self.mergeLanguages()
 		return self.data
 
@@ -246,7 +247,8 @@ class Context(object):
 		"""
 		if os.path.exists(filename):
 			try:
-				d = pickle.load(open(filename,'rb'))
+				with open(filename,'rb') as f:
+					d = pickle.load(f)
 				if rtype not in d:
 					d[rtype] = {}
 			except Exception:
@@ -259,7 +261,8 @@ class Context(object):
 			data[key] = value.persist()
 
 		try:
-			pickle.dump(d, open(filename,'wb'))
+			with open(filename,'wb') as f:
+				pickle.dump(d, f)
 		except Exception:
 			log.exception('Could not save auxiliary information.')
 
@@ -281,7 +284,8 @@ class Context(object):
 			return
 
 		try:
-			d = pickle.load(open(filename,'rb'))
+			with open(filename,'rb') as f:
+				d = pickle.load(f)
 			try:
 				data = d[rtype]
 			except KeyError:

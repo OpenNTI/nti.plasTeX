@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import absolute_import, unicode_literals
 import unittest
 import os
 import tempfile
@@ -12,8 +12,7 @@ from hamcrest import assert_that
 from hamcrest import has_property
 from hamcrest import contains
 
-import subprocess
-import sys
+from . import _run_plastex
 
 class TestAlltt(TestCase):
 
@@ -29,7 +28,7 @@ class TestAlltt(TestCase):
 		"""
 		tex = TeX()
 		tex.disableLogging()
-		tex.input(r'''\document{article}\usepackage{alltt}\begin{document}%s\end{document}''' % content)
+		tex.input('\\document{article}\\usepackage{alltt}\\begin{document}%s\\end{document}''' % content)
 		return tex.parse()
 
 	def runPreformat(self, content):
@@ -44,27 +43,17 @@ class TestAlltt(TestCase):
 
 		"""
 		# Create document file
-		document = r'\documentclass{article}\usepackage{alltt}\begin{document}%s\end{document}' % content
+		document = '\\documentclass{article}\\usepackage{alltt}\\begin{document}%s\\end{document}' % content
 		tmpdir = tempfile.mkdtemp()
 		oldpwd = os.path.abspath(os.getcwd())
 		try:
 			os.chdir(tmpdir)
 			filename = os.path.join(tmpdir, 'longtable.tex')
 			with open(filename, 'w') as f:
-				f.write(document)
+				f.write(document.encode('utf-8'))
 
 			# Run plastex on the document
-			# Must be careful to get the right python path so we work
-			# in tox virtualenvs as well as buildouts
-			path = os.path.pathsep.join( sys.path )
-			env = dict(os.environ)
-			env['PYTHONPATH'] = path
-			log = subprocess.Popen( [sys.executable, '-m', 'plasTeX.plastex',
-									 '-d', tmpdir, filename],
-									 env=env,
-									 bufsize=-1,
-									 stdout=subprocess.PIPE,
-									 stderr=subprocess.STDOUT ).communicate()[0]
+			log = _run_plastex(tmpdir, filename)
 			__traceback_info__ = tmpdir, filename, log
 			# Get output file
 			with open(os.path.join(tmpdir, 'index.html')) as f:

@@ -671,9 +671,10 @@ class PageTemplate(BaseRenderer):
 					template.append(line)
 				elif not(template) and 'name' in options:
 					template.append('')
-
+			f.close()
 		else:
-			template = open(filename, 'r').readlines()
+			with open(filename, 'r') as f:
+				template = f.readlines()
 
 		# Purge any awaiting templates
 		if template:
