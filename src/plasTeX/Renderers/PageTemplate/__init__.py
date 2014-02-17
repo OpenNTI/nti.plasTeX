@@ -21,11 +21,17 @@ import logging
 log = logging.getLogger(__name__)
 logger = log
 
-import ConfigParser
+from six.moves import configparser as ConfigParser
+try:
+	unicode
+except NameError: # py3
+	unicode = str
 
 # Support for Python string templates
 def stringtemplate(s, encoding='utf8',filename=None):
-	template = string.Template(unicode(s, encoding))
+	if isinstance(s, bytes):
+		s = unicode(s, encoding)
+	template = string.Template(s)
 	def renderstring(obj):
 		tvars = {'here':obj, 'self':obj, 'container':obj.parentNode,
 				 'config':obj.ownerDocument.config, 'template':template,

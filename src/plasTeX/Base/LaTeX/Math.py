@@ -11,6 +11,8 @@ from plasTeX import Command, Environment, sourceChildren
 from plasTeX import DimenCommand, GlueCommand
 from plasTeX.Logging import getLogger
 
+from future.builtins import chr as unichr
+
 #
 # C.7.1
 #

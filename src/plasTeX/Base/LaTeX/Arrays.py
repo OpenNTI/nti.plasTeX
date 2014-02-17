@@ -5,7 +5,7 @@ C.10.2 The array and tabular Environments
 
 """
 
-import new, sys
+import sys
 from plasTeX import Macro, Environment, Command, DimenCommand
 from plasTeX import sourceChildren, sourceArguments
 from plasTeX.Base.TeX.Text import bgroup
@@ -39,7 +39,7 @@ class ColumnType(Macro):
 		after -- tokens to insert after this column
 
 		"""
-		newclass = new.classobj(name, (cls,),
+		newclass = type(name, (cls,),
 								{'columnAttributes': attributes,
 								 'args': args,
 								 'before': before,
@@ -220,7 +220,7 @@ class Array(Environment):
 			# Absorb tokens until the end of the row
 			self.endToken = self.digestUntil(tokens, Array.EndRow)
 			if self.endToken is not None:
-				tokens.next()
+				tokens.next() # XXX: Should probably be next(tokens)---error on py3
 				self.endToken.digest(tokens)
 
 		@property
@@ -287,7 +287,7 @@ class Array(Environment):
 			self.endToken = self.digestUntil(tokens, (Array.CellDelimiter,
 													  Array.EndRow))
 			if isinstance(self.endToken, Array.CellDelimiter):
-				tokens.next()
+				tokens.next() # XXX: Should probably be next(tokens)---error on py3
 				self.endToken.digest(tokens)
 			else:
 				self.endToken = None

@@ -1,8 +1,14 @@
-from __future__ import division
 #!/usr/bin/env python
+from __future__ import division
+
 
 from plasTeX.Renderers import Renderer as BaseRenderer
 import textwrap, re, string
+try:
+	unicode
+except NameError: # py3
+	unicode = str
+
 
 class TextRenderer(BaseRenderer):
 	""" Renderer for plain text documents """

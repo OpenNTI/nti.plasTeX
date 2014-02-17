@@ -130,7 +130,7 @@ class Filenames(object):
 	def next(self):
 		for name in self.newFilename:
 			return name
-
+	__next__ = next
 	def _get_forceExtension( self ):
 		return self.__dict__.get( 'forceExtension', False )
 	def _set_forceExtension( self, val ):

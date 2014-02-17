@@ -1,5 +1,5 @@
-from __future__ import division
 #!/usr/bin/env python
+from __future__ import division, unicode_literals
 
 import os
 
@@ -7,15 +7,16 @@ import tempfile
 import shutil
 import re
 import string
-import cPickle as pickle
+
 import codecs
 from hashlib import md5
 from plasTeX.Logging import getLogger
-from StringIO import StringIO
+from io import StringIO
 from plasTeX.Filenames import Filenames
 from plasTeX.dictutils import ordereddict
 import subprocess
 
+from six.moves import cPickle as pickle
 
 log = getLogger()
 depthlog = getLogger('render.images.depth')
@@ -961,7 +962,7 @@ class VectorImager(Imager):
 		self.source.write('\\def\\plasTeXregister{}\n')
 
 
-class WorkingFile(file):
+class WorkingFile(object):
 	"""
 	File used for processing in a temporary directory
 
@@ -974,12 +975,15 @@ class WorkingFile(file):
 		if 'tempdir' in kwargs:
 			self.tempdir = kwargs['tempdir']
 			del kwargs['tempdir']
-		file.__init__(self, *args, **kwargs)
+		self._file = open(*args, **kwargs)
+
+	def __getattr__(self, name):
+		return getattr(self._file, name)
 
 	def close(self):
 		if self.tempdir and os.path.isdir(self.tempdir):
 			shutil.rmtree(self.tempdir, True)
-		file.close(self)
+		self._file.close()
 
 	def __del__(self):
 		self.close()

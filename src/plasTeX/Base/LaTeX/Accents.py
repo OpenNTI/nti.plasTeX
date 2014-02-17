@@ -1,13 +1,15 @@
 #!/usr/bin/env python
-
 """
 C.3.4 Accents and Special Symbols (p173)
 
 """
 
-from plasTeX import Command, Environment
-from plasTeX.Logging import getLogger
+from __future__ import absolute_import
+
+from plasTeX import Command
 from plasTeX.DOM import Node, Text
+
+from future.builtins import chr as unichr
 
 #
 # Table 3.1: Accents
@@ -21,12 +23,12 @@ class Accent(Command):
 	def unicode(self):
 		return type(self).chars.get(self.textContent.strip(), None)
 
-	@property	 
+	@property
 	def textContent(self):
 		"""
-		We need a customized textContent that doesn't look up 
+		We need a customized textContent that doesn't look up
 		textContent recursively.
-		
+
 		"""
 		output = []
 		for item in self:
@@ -39,7 +41,7 @@ class Accent(Command):
 		if self.ownerDocument is not None:
 			return self.ownerDocument.createTextNode(u''.join(output))
 		else:
-			return Text(u''.join(output))		 
+			return Text(u''.join(output))
 
 
 class Grave(Accent):
@@ -386,7 +388,7 @@ class r(Accent):
 class Symbol(Command):
 	pass
 
-#class oe(Symbol): pass 
+#class oe(Symbol): pass
 #class OE(Symbol): pass
 #class ae(Symbol): pass
 #class AE(Symbol): pass

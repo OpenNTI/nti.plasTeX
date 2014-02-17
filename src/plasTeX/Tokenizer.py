@@ -1,10 +1,13 @@
-from __future__ import absolute_import
 #!/usr/bin/env python
+from __future__ import absolute_import, unicode_literals
 
 import string
 from .DOM import Node, Text
 from io import StringIO as UnicodeStringIO
 from io import BytesIO
+from io import TextIOWrapper
+
+from six import text_type
 
 # Default TeX categories
 DEFAULT_CATEGORIES = [
@@ -60,14 +63,54 @@ class Token(Text):
 	def __repr__(self):
 		return self.source
 
-	def __cmp__(self, other):
+	def __eq__(self, other):
+		# JAM: Eww, code smell. checking isinstance here is probably bad, but
+		# it's what the old code used to do
+		if isinstance(other, Token):
+			return self is other or (self.catcode == other.catcode and super(Token,self).__eq__(other))
+
+		# Not comparing to token, just do a string match
+		return super(Token,self).__eq__(text_type(other))
+
+	def __ne__(self, other):
+		try:
+			return self.catcode != other.catcode or super(Token,self).__ne__(other)
+		except AttributeError:
+			return NotImplemented
+
+	def __hash__(self):
+		return super(Token,self).__hash__()
+		# BWC: hash the same as the string
+		# + hash(self.catcode)
+
+#	def __lt__(self, other):
+#		return self.__py27_off_cmp__(other) < 0
+#	def __gt__(self, other):
+#		return self.__py27_off_cmp__(other) > 0
+
+	def __py27_off_cmp__(self, other):
 		# Token comparison -- character and code must match
 		if isinstance(other, Token):
 			if self.catcode == other.catcode:
-				return cmp(unicode(self), unicode(other))
+				return cmp(text_type(self), text_type(other))
 			return cmp(self.catcode, other.catcode)
 		# Not comparing to token, just do a string match
-		return cmp(unicode(self), unicode(other))
+		return cmp(text_type(self), text_type(other))
+
+	if str is bytes:
+		# python 2
+		# We have to do unicode/str conversion as a copy
+		# because we compare with plain strings and even other
+		# token types using text comparison and it has to match
+		# even if catcodes don't
+		def __str__(self):
+			return self.encode('utf-8')
+		def __unicode__(self):
+			return self.encode('utf-8').decode('utf-8')
+	else:
+		def __str__(self):
+			return self.encode('utf-8').decode('utf-8')
+		__unicode__ = __str__
 
 	@property
 	def source(self):
@@ -201,15 +244,24 @@ class Tokenizer(object):
 		self.state = Tokenizer.STATE_N
 		self._charBuffer = []
 		self._tokBuffer = []
-		if isinstance(source, unicode):
+		if isinstance(source, text_type):
+			# JAM: Iterchars wants to be able to seek backwards. But
+			# seeking isn't actually supported in text streams (due to
+			# the byte/unicode difference and character encoding
+			# issues). If you try to seek(-1, 1), on a StringIO
+			# object, you get "Can't do nonzero cur-relative seeks" in
+			# python 3 (at least). To make things consistent and work whether
+			# we have bytes or text, we always read in text (characters)
+			# and we 'seek' by using our internal buffer
+			# So iterchars can know it is working with text
 			source = UnicodeStringIO(source)
 			self.filename = '<string>'
 		elif isinstance(source, bytes):
-			source = BytesIO(source)
+			source = TextIOWrapper(BytesIO(source), encoding='utf-8')
 			self.filename = '<string>'
 		elif isinstance(source, (tuple,list)):
 			self.pushTokens(source)
-			source = BytesIO(b'')
+			source = UnicodeStringIO(u'')
 			self.filename = '<tokens>'
 		else:
 			self.filename = source.name
@@ -248,7 +300,6 @@ class Tokenizer(object):
 		buffer = self._charBuffer
 		classes = self.tokenClasses
 		read = self.read
-		seek = self.seek
 		whichCode = self.context.whichCode
 		CC_SUPER = Token.CC_SUPER
 		CC_IGNORED = Token.CC_IGNORED
@@ -275,17 +326,19 @@ class Tokenizer(object):
 			if code == CC_SUPER:
 
 				# Handle characters like ^^M, ^^@, etc.
-				char = read(1)
-
-				if char == token:
-					char = read(1)
-					num = ord(char)
-					if num >= 64: token = chr(num-64)
-					else: token = chr(num+64)
-					code = whichCode(token)
-
+				next_char = read(1)
+				if next_char != token:
+					# put this back on the buffer so we read it again
+					self.pushChar(next_char)
 				else:
-					seek(-1,1)
+					# token is '^', next_char is '^'
+					next_char = read(1)
+					num = ord(next_char)
+					if num >= 64: # '@' in ascii ('A' is 65), so this is a control escape
+						token = chr(num - 64)
+					else:
+						token = chr(num + 64)
+					code = whichCode(token)
 
 			# Just go to the next character if you see one of these...
 			if code == CC_IGNORED or code == CC_INVALID:
@@ -342,7 +395,6 @@ class Tokenizer(object):
 		EscapeSequence = EscapeSequence
 		buffer = self._tokBuffer
 		charIter = self.iterchars()
-		next = charIter.next
 		context = self.context
 		pushChar = self.pushChar
 		STATE_N = self.STATE_N
@@ -366,7 +418,7 @@ class Tokenizer(object):
 				yield buffer.pop(0)
 
 			# Get the next character
-			token = next()
+			token = next(charIter)
 
 			if token.nodeType == ELEMENT_NODE:
 				raise ValueError('Expanded tokens should never make it here')
@@ -443,7 +495,7 @@ class Tokenizer(object):
 # HACK: I couldn't get the parse() thing to work so I'm just not
 #		going to parse whitespace after EscapeSequences that end in
 #		non-letter characters as a half-assed solution.
-						if token[-1] in string.letters:
+						if token[-1] in string.ascii_letters:
 							# Absorb following whitespace
 							self.state = STATE_S
 

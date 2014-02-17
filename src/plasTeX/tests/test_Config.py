@@ -20,7 +20,7 @@ from hamcrest import is_
 from hamcrest import has_key
 from hamcrest import has_entry
 
-import cPickle as pickle
+from six.moves import cPickle as pickle
 
 from plasTeX.Config import newConfig
 

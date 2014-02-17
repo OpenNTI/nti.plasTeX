@@ -2,17 +2,26 @@
 
 import unittest
 from unittest import TestCase
-from plasTeX.DOM import *
+from plasTeX.DOM import Node
+from plasTeX.DOM import CharacterData
+from plasTeX.DOM import Document
+from plasTeX.DOM import Text
+
+from hamcrest import assert_that
+from hamcrest import is_
+from hamcrest import same_instance
+from hamcrest import is_not
+
 
 class NodeTest(TestCase):
 
 	def _checkPositions(self, node):
-		""" Check the postions of all contained nodes """ 
+		""" Check the postions of all contained nodes """
 		if isinstance(node, CharacterData):
 			return
-			
-		if not(isinstance(node, Node)):
-			return 
+
+		if not isinstance(node, Node):
+			return
 
 		maxidx = len(node) - 1
 
@@ -94,8 +103,8 @@ class NodeTest(TestCase):
 #		node = Node()
 #		node.attributes['one'] = one
 #		one.attributes['two'] = two
-#		two.attributes['three'] = three 
-#		two.attributes['four'] = four 
+#		two.attributes['three'] = three
+#		two.attributes['four'] = four
 #		self._checkPositions(node)
 
 	def testFirstChild(self):
@@ -103,7 +112,7 @@ class NodeTest(TestCase):
 		node = doc.createElement('node')
 		one = doc.createElement('one')
 		two = doc.createElement('two')
-		assert node.firstChild is None, '"%s" != None' % node.firstChild 
+		assert node.firstChild is None, '"%s" != None' % node.firstChild
 		node.append(one)
 		assert node.firstChild is one, '"%s" != "%s"' % (node.firstChild, one)
 		node.insert(0, two)
@@ -115,7 +124,7 @@ class NodeTest(TestCase):
 		node = doc.createElement('node')
 		one = doc.createElement('one')
 		two = doc.createElement('two')
-		assert node.lastChild is None, '"%s" != None' % node.lastChild 
+		assert node.lastChild is None, '"%s" != None' % node.lastChild
 		node.append(one)
 		assert node.lastChild is one, '"%s" != "%s"' % (node.lastChild, one)
 		node.append(two)
@@ -185,7 +194,7 @@ class NodeTest(TestCase):
 		assert a.ownerDocument is doc, '"%s" != "%s"' % (a.ownerDocument, doc)
 		assert b.ownerDocument is doc, '"%s" != "%s"' % (b.ownerDocument, doc)
 		self._checkPositions(node)
-		
+
 
 	def testCompareDocumentPosition(self):
 		doc = Document()
@@ -356,7 +365,7 @@ class NodeTest(TestCase):
 		assert node[2] is four, '"%s" != "%s"' % (node[2], four)
 		assert node[3] is two, '"%s" != "%s"' % (node[3], two)
 		self._checkPositions(node)
-		
+
 	def testSetItem(self):
 		doc = Document()
 		node = doc.createElement('node')
@@ -452,9 +461,9 @@ class NodeTest(TestCase):
 		res = one.cloneNode(1)
 		assert type(res) is type(one), '"%s" != "%s"' % (type(res), type(one))
 		assert type(res[0]) is type(one[0])
-		assert one == res
-		assert one is not res
-		assert one[0] is not res[0]
+		assert_that( res, is_(one))
+		assert_that( res, is_not(same_instance(one)))
+		assert_that( res[0], is_not( same_instance(one[0]) ))
 
 	def testNormalize(self):
 		doc = Document()
@@ -470,7 +479,7 @@ class NodeTest(TestCase):
 
 	def testIsSupported(self):
 		pass
-   
+
 	def testHasAttributes(self):
 		doc = Document()
 		node = doc.createElement('node')
@@ -534,4 +543,3 @@ class NodeTest(TestCase):
 
 if __name__ == '__main__':
 	unittest.main()
-

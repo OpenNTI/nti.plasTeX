@@ -26,7 +26,11 @@ from plasTeX.Renderers.XHTML import Renderer as XHTMLRenderer
 import codecs
 import datetime
 import os
-import sgmllib
+try:
+	from sgmllib import SGMLParser
+except ImportError: #py3
+	# JAM: gone with no replacement?
+	SGMLParser = object
 import zipfile
 #
 from . import templates
@@ -40,13 +44,13 @@ def split_name(name):
 	stem = os.path.splitext(raw_name)[0]#raw_name[:raw_name.rfind('.')]
 	return {'stem':os.path.basename(stem), 'fullname':raw_name}
 
-class NameParser(sgmllib.SGMLParser):
+class NameParser(SGMLParser):
 	''' We don't have access to lxml necessarily, so we roll our own parser
 		using the SGMLParser as the parent class. This is only used to get the
 		image and css filenames inside the xhtml content.
 		'''
 	def __init__(self, fname, encoding='utf-8'):
-		sgmllib.SGMLParser.__init__(self)
+		super(SGMLParser,self).__init__()
 		if os.path.isfile(fname):
 			f = codecs.open(fname, 'rb', encoding=encoding)
 			self.contents = f.read()

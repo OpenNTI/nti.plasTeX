@@ -8,96 +8,106 @@ from plasTeX.ConfigManager import GetoptError
 
 
 class UnknownCompoundGroup(GetoptError):
-	""" Exception for an unknown grouping character used for a compound """	 
-	def __init__(self, msg=''):
-		GetoptError.__init__(self, msg, '')
+
+    """ Exception for an unknown grouping character used for a compound """
+
+    def __init__(self, msg=''):
+        GetoptError.__init__(self, msg, '')
 
 
 class CompoundParser:
-   """
-   Compound configuration option
 
-   Compound options are options grouped by a pair of grouping characters
-   (e.g. '()', '[]', '{}', '<>').  The content between the grouping
-   characters can be anything including other command line arguments.
-   All content between the grouping characters will be unparsed.
+    """
+    Compound configuration option
 
-   """
+    Compound options are options grouped by a pair of grouping characters
+    (e.g. '()', '[]', '{}', '<>').  The content between the grouping
+    characters can be anything including other command line arguments.
+    All content between the grouping characters will be unparsed.
 
-   def getArgument(self, args):
-	  """ Parse a compound argument """
+    """
 
-	  groups = {'<':'>', '(':')', '[':']', '{':'}'}
+    def getArgument(self, args):
+        """ Parse a compound argument """
 
-	  # Determine grouping characters
-	  begin = args[0].strip()[0]
-	  try:
-		  end = groups[args[0].strip()[0]]
-	  except KeyError as info:
-		  name = self.name
-		  if self.actual: name = self.actual
-		  raise UnknownCompoundGroup(
-				"Unknown compound grouping character '%s' in option '%s'" % (info, name))
+        groups = {'<': '>', '(': ')', '[': ']', '{': '}'}
 
-	  new_args = []
-	  while args and args[0].strip()[-1] != end:
-		  new_args.append(args.pop(0).strip())
-	  new_args.append(args.pop(0).strip())
+        # Determine grouping characters
+        begin = args[0].strip()[0]
+        try:
+            end = groups[args[0].strip()[0]]
+        except KeyError as info:
+            name = self.name
+            if self.actual:
+                name = self.actual
+            raise UnknownCompoundGroup(
+                "Unknown compound grouping character '%s' in option '%s'" % (info, name))
 
-	  # Strip delimiters
-	  new_args[0] = new_args[0][1:]
-	  new_args[-1] = new_args[-1][:-1]
+        new_args = []
+        while args and args[0].strip()[-1] != end:
+            new_args.append(args.pop(0).strip())
+        new_args.append(args.pop(0).strip())
 
-	  output = []
-	  for item in new_args:
-		  item = item.strip()
-		  if not item:
-			  continue
-		  if ' ' in item:
-			  item = "'%s'" % item
-		  output.append(item)
-	  
-	  value = '%s %s %s' % (begin, ' '.join(output), end)
+        # Strip delimiters
+        new_args[0] = new_args[0][1:]
+        new_args[-1] = new_args[-1][:-1]
 
-	  return value, args
+        output = []
+        for item in new_args:
+            item = item.strip()
+            if not item:
+                continue
+            if ' ' in item:
+                item = "'%s'" % item
+            output.append(item)
+
+        value = '%s %s %s' % (begin, ' '.join(output), end)
+
+        return value, args
 
 
 class CompoundOption(CompoundParser, StringOption):
-   """
-   Compound configuration option
 
-   Compound options are options grouped by a pair of grouping characters
-   (e.g. '()', '[]', '{}', '<>').  The content between the grouping
-   characters can be anything including other command line arguments.
-   All content between the grouping characters will be unparsed.
+    """
+    Compound configuration option
 
-   """
-   REGEX = re.compile(r'^(\s*(?:\(|\[|\{|\<)\s*)(.*)(\s*(?:\)|\]|\}|\]>)\s*)$')
-   synopsis = "[ ... ]"
+    Compound options are options grouped by a pair of grouping characters
+    (e.g. '()', '[]', '{}', '<>').  The content between the grouping
+    characters can be anything including other command line arguments.
+    All content between the grouping characters will be unparsed.
 
-   def cast(self, data):
-	  if data is None: return
-	  return '%s %s %s' % (self.REGEX.sub(r'\1', str(data).strip()).strip(),
-						   self.REGEX.sub(r'\2', str(data).strip()),
-						   self.REGEX.sub(r'\3', str(data).strip()).strip())
+    """
+    REGEX = re.compile(
+        r'^(\s*(?:\(|\[|\{|\<)\s*)(.*)(\s*(?:\)|\]|\}|\]>)\s*)$')
+    synopsis = "[ ... ]"
 
-   def __len__(self):
-	  if self.data is None:
-		  return 0
-	  else:
-		  return len(self.data)
+    def cast(self, data):
+        if data is None:
+            return
+        return '%s %s %s' % (self.REGEX.sub(r'\1', str(data).strip()).strip(),
+                             self.REGEX.sub(
+                                 r'\2', str(data).strip()),
+                             self.REGEX.sub(r'\3', str(data).strip()).strip())
 
-   def __iadd__(self, other):
-	  if callable(self.callback):
-		 other = self.callback(self.cast(other))
+    def __len__(self):
+        if self.data is None:
+            return 0
+        else:
+            return len(self.data)
 
-	  if self.data is None:
-		 self.data = self.cast(other)
-	  else:
-		 other = self.REGEX.sub(r'\2', self.cast(other)).strip()
-		 self.data = self.REGEX.sub(r'\1\2 %s \3' % other, self.data)
+    def __iadd__(self, other):
+        if callable(self.callback):
+            other = self.callback(self.cast(other))
 
-	  return self
+        if self.data is None:
+            self.data = self.cast(other)
+        else:
+            other = self.REGEX.sub(r'\2', self.cast(other)).strip()
+            self.data = self.REGEX.sub(r'\1\2 %s \3' % other, self.data)
+
+        return self
+
 
 class CompoundArgument(GenericArgument, CompoundOption):
-   """ Compound command-line argument """
+
+    """ Compound command-line argument """

@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 """
-These macros are actually taken from the T1 font encoding package, but 
+These macros are actually taken from the T1 font encoding package, but
 I figure that it wouldn't hurt to put them all in by default.
 
 """
 
 from plasTeX import Command
+
+from future.builtins import chr as unichr
 
 class ding(Command):
 	args = 'self'

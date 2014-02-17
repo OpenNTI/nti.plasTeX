@@ -17,6 +17,11 @@ from plasTeX.Imagers import Imager as DefaultImager, VectorImager as DefaultVect
 log = getLogger(__name__)
 status = getLogger(__name__ + '.status')
 
+from six import string_types
+try:
+	unicode
+except NameError:
+	unicode = str # py3
 
 __all__ = ['Renderer','Renderable']
 
@@ -226,7 +231,7 @@ class RenderableMixin(object):
 		return renderable_as_unicode( self )
 
 	def __str__(self):
-		return unicode(self)
+		return self.__unicode__()
 
 	@property
 	def image(self):
@@ -331,7 +336,7 @@ class RenderableMixin(object):
 			if hasattr(self, 'title'):
 				if hasattr(self.title, 'textContent'):
 					ns['title'] = self.title.textContent
-				elif isinstance(self.title, basestring):
+				elif isinstance(self.title, string_types):
 					ns['title'] = self.title
 
 			r.files[self] = filename = r.newFilename()
@@ -645,7 +650,7 @@ class StaticNode(object):
 	def __unicode__(self):
 		return self._node_data[1]
 	def __str__(self):
-		return unicode(self)
+		return self.__unicode__()
 
 
 class URL(unicode):

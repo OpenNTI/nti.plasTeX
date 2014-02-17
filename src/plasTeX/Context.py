@@ -3,26 +3,22 @@
 from __future__ import print_function, absolute_import, division
 
 import os, re, time, codecs
-try:
-	import ConfigParser
-except ImportError: # py33
-	import configparser as ConfigParser
+
 import plasTeX
 from ._util import ismacro, macroName
 
 from plasTeX.Logging import getLogger
 from plasTeX.Tokenizer import Tokenizer, Token, DEFAULT_CATEGORIES, VERBATIM_CATEGORIES
 
-try:
-	import cPickle as pickle
-except ImportError:
-	import pickle
-
 import zope.dottedname.resolve
 from zope import component
 from zope import interface
 from .interfaces import IDocumentContext
 from .interfaces import IPythonPackage
+
+from six.moves import configparser as ConfigParser
+from six.moves import cPickle as pickle
+from six import string_types
 
 # Only export the Context singleton
 __all__ = ['Context']
@@ -65,7 +61,7 @@ class ContextItem(dict):
 		except KeyError: return default
 
 	def has_key(self, key):
-		if dict.has_key(self, key):
+		if dict.__contains__(self, key):
 			return True
 		if self.parent is not None:
 			return key in self.parent
@@ -107,7 +103,7 @@ class LanguageParser(object):
 
 	def parse(self, files, encoding='UTF-8'):
 		from xml.parsers import expat
-		if isinstance(files, basestring):
+		if isinstance(files, string_types):
 			files = [files]
 		for file in files:
 			if not os.path.isfile(file):
@@ -432,11 +428,13 @@ class Context(object):
 				# JAM: We want to allow for dottednames
 				try:
 					package = zope.dottedname.resolve.resolve( module_name )
-				except ValueError:
+				except (ValueError,SystemError):
 					# JAM: plastex tries to put its raw Packages directory
 					# on sys.path. This is broken as soon as any of those packages
 					# try to import each other in an absolute fashion, as is required
-					# in python 3. You get "'Attempted relative import in non-package'"
+					# in python 3. You get "'Attempted relative import in non-package'" in
+					# Py2 as a ValueError, and in py3 you get " Parent module '' not loaded, cannot perform relative import"
+					# as a SystemError
 					if '.' not in module_name:
 						package = zope.dottedname.resolve.resolve( 'plasTeX.Packages.' + module_name )
 			except ImportError as e:
@@ -744,7 +742,7 @@ class Context(object):
 			instance before being added.
 
 		"""
-		if isinstance(value, basestring):
+		if isinstance(value, string_types):
 			newvalue = plasTeX.Command()
 			newvalue.unicode = value
 			value = newvalue
@@ -768,7 +766,7 @@ class Context(object):
 			instance before being added.
 
 		"""
-		if isinstance(value, basestring):
+		if isinstance(value, string_types):
 			newvalue = plasTeX.Command()
 			newvalue.unicode = value
 			value = newvalue
@@ -1023,10 +1021,10 @@ class Context(object):
 			nargs = 0
 		assert isinstance(nargs, int), 'nargs must be an integer'
 
-		if isinstance(definition, basestring):
+		if isinstance(definition, string_types):
 			definition = [x for x in Tokenizer(definition, self)]
 
-		if isinstance(opt, basestring):
+		if isinstance(opt, string_types):
 			opt = [x for x in Tokenizer(opt, self)]
 
 		macrolog.debug('creating newcommand %s', name)
@@ -1070,12 +1068,12 @@ class Context(object):
 				'definition must be a list or tuple'
 			assert len(definition) == 2, 'definition must have 2 elements'
 
-			if isinstance(definition[0], basestring):
+			if isinstance(definition[0], string_types):
 				definition[0] = [x for x in Tokenizer(definition[0], self)]
-			if isinstance(definition[1], basestring):
+			if isinstance(definition[1], string_types):
 				definition[1] = [x for x in Tokenizer(definition[1], self)]
 
-		if isinstance(opt, basestring):
+		if isinstance(opt, string_types):
 			opt = [x for x in Tokenizer(opt, self)]
 
 		macrolog.debug('creating newenvironment %s', name)
@@ -1115,7 +1113,7 @@ class Context(object):
 #				return
 #			macrolog.debug('redefining definition "%s"', name)
 
-		if isinstance(definition, basestring):
+		if isinstance(definition, string_types):
 			definition = [x for x in Tokenizer(definition, self)]
 
 		macrolog.debug('creating def %s', name)

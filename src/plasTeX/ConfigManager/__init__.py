@@ -14,15 +14,19 @@ See examples at the bottom of this file.  Try typing __init__.py
 followed by a bunch of imaginary command line options and arguments.
 
 """
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import, print_function, unicode_literals
 
-import sys, string, re, urllib, os
+import sys, string, re, os
 from plasTeX.dictutils import ordereddict
 try:
 	from UserDict import UserDict
 except ImportError: # py33
 	from collections import UserDict
+
 from textwrap import wrap
+
+from six import string_types
+from six import text_type
 
 __all__ = ['ConfigManager','BooleanOption','IntegerOption','CompoundOption',
 		   'MultiOption','GenericOption','FloatOption','StringOption',
@@ -192,7 +196,7 @@ class MissingSectionHeaderError(ParsingError):
 class ConfigSection(UserDict, object):
 	""" Section of a configuration object """
 
-	def __init__(self, name, data={}):
+	def __init__(self, name, data=None):
 		"""
 		Initialize the section
 
@@ -201,17 +205,18 @@ class ConfigSection(UserDict, object):
 		data -- dictionary containing the initial set of options
 
 		"""
-		UserDict.__init__(self, data)
+		UserDict.__init__(self, data or {})
 		self.name = name
 		self.parent = None
 
 	def copy(self):
 		""" Make a deep copy of self """
 		newcopy = self.__class__(self.name)
-		for key, value in list(vars(self).items()):
-			if key == 'data': continue
+		for key, value in vars(self).items():
+			if key == 'data':
+				continue
 			setattr(newcopy, key, value)
-		for key, value in list(self.data.items()):
+		for key, value in self.data.items():
 			newcopy.data[key] = value.copy()
 		return newcopy
 
@@ -225,7 +230,19 @@ class ConfigSection(UserDict, object):
 
 	def __getitem__(self, key):
 		""" Return the value of the option, not the option itself """
+		# JAM: XXX: FIXME: This is inconsistent with iterating
+		# across values() or items()
 		return self.get(key)
+
+	def values(self):
+		"""
+		Return an iterator across the options, not the values.
+		"""
+		# JAM: XXX: FIXME: This is inconsistent with __getitem__.
+		# If we do not override it, in python 3 the ValuesView
+		# return from values uses __getitem__, which breaks
+		# code that wanted to iterate across options...
+		return self.data.values()
 
 	def set(self, option, value, source=BUILTIN):
 		"""
@@ -243,8 +260,11 @@ class ConfigSection(UserDict, object):
 		Returns: None
 
 		"""
-		typemap = {basestring:StringOption, int:IntegerOption,
-				   float:FloatOption, list:MultiOption, tuple:MultiOption}
+		typemap = {string_types: StringOption,
+				   int: IntegerOption,
+				   float: FloatOption,
+				   list: MultiOption,
+				   tuple: MultiOption}
 
 		if option in self.data:
 			if self.data[option].source <= source:
@@ -263,7 +283,7 @@ class ConfigSection(UserDict, object):
 			if isinstance(value, key):
 				# Handle booleans this way until support for
 				# true booleans shows up in Python.
-				if isinstance(value,basestring)	 and \
+				if isinstance(value,string_types)	 and \
 					str(value).lower().strip() in ['on','off','true','false','yes','no']:
 					opttype = BooleanOption
 				self.data[option] = opttype(name=option, source=source)
@@ -489,8 +509,9 @@ class ConfigManager(UserDict, object):
 	def copy(self):
 		""" Make a deep copy of self """
 		newcopy = self.__class__()
-		for key, value in list(vars(self).items()):
-			if key == 'data': continue
+		for key, value in vars(self).items():
+			if key == 'data':
+				continue
 			setattr(newcopy, key, value)
 		for key, value in list(self.data.items()):
 			newcopy.data[key] = value.copy()
@@ -653,7 +674,7 @@ class ConfigManager(UserDict, object):
 			try:
 				if filename.startswith('~'):
 					filename = os.path.expanduser(filename)
-				fp = urllib.urlopen(filename)
+				fp = open(filename, 'rb')
 			except (OSError, IOError):
 				continue
 			self.__read(fp, filename)
@@ -827,6 +848,7 @@ class ConfigManager(UserDict, object):
 			line = fp.readline()
 			if not line:
 				break
+			line = line.decode('utf-8')
 			lineno = lineno + 1
 			# comment or blank line?
 			if line.strip() == '' or line[0] in '#;':
@@ -972,8 +994,8 @@ class ConfigManager(UserDict, object):
 
 		longopts = []
 		shortopts = []
-		for section in list(self.values()):
-			for option in list(section.data.values()):
+		for section in self.values():
+			for option in section.data.values():
 				for opt in option.getPossibleOptions():
 					opt = opt.replace('!','')
 
@@ -1000,7 +1022,7 @@ class ConfigManager(UserDict, object):
 
 		return shortopts, longopts
 
-	def getopt(self, args=None, merge=1):
+	def getopt(self, args=None, merge=True):
 		"""
 		Parse the command line
 
@@ -1016,7 +1038,8 @@ class ConfigManager(UserDict, object):
 		   element is a list of unparsed arguments
 
 		"""
-		if args is None: args = sys.argv[1:]
+		if args is None:
+			args = sys.argv[1:]
 
 		shortopts, longopts = self.get_options_from_config()
 
@@ -1054,7 +1077,8 @@ class ConfigManager(UserDict, object):
 						self.unrecognized.append(opts[-1])
 
 			# No option found.	We're done.
-			else: break
+			else:
+				break
 
 		# Merge command line options with configuration
 		if merge:
@@ -1068,9 +1092,10 @@ class ConfigManager(UserDict, object):
 		Make sure that all mandatory options have been set
 
 		"""
-		for section in list(self.values()):
-			for option in list(section.values()):
-				if not option.mandatory: continue
+		for section in self.values():
+			for option in section.values():
+				if not option.mandatory:
+					continue
 				if option.getValue() in [None,[]]:
 					names = ', '.join(option.getPossibleOptions())
 					if not names:

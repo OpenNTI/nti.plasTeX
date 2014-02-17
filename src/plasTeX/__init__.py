@@ -1,6 +1,5 @@
-from __future__ import division
-from __future__ import absolute_import
 #!/usr/bin/env python
+from __future__ import absolute_import, division, unicode_literals
 
 __version__ = '9.3'
 
@@ -12,6 +11,10 @@ from . import Logging
 
 from . import Context
 from . import Config
+
+from future.builtins import chr as unichr
+from six import string_types
+from six import text_type
 
 ### BBB exports
 from .DOM import Text
@@ -56,12 +59,11 @@ class Argument(object):
 	def __repr__(self):
 		return '%s: %s' % (self.name, self.options)
 
-	def __cmp__(self, other):
-		c = cmp(self.name, other.name)
-		if c:
-			return c
-		return cmp(self.options, other.options)
-
+	def __eq__(self, other):
+		try:
+			return self.name == other.name and self.options == other.options
+		except AttributeError:
+			return NotImplemented
 
 class CSSStyles(dict):
 	""" CSS Style object """
@@ -138,7 +140,7 @@ class Macro(Element):
 			if value is None:
 				continue
 			if isinstance(value, Node):
-				value = u'%s' % unicode(value)
+				value = u'%s' % text_type(value)
 			attrs[name] = value
 		return attrs
 
@@ -303,7 +305,7 @@ class Macro(Element):
 					idgenerator = self.ownerDocument.userdata['idgen'] = idgen()
 
 				setattr(self, '@hasgenid', True)
-				id = self.id = idgenerator.next()
+				id = self.id = next(idgenerator)
 			return id
 		return locals()
 	id = property(**id())
@@ -365,7 +367,7 @@ class Macro(Element):
 			userdata = self.ownerDocument.userdata
 			if 'links' not in userdata:
 				userdata['links'] = {}
-			if isinstance(key, basestring):
+			if isinstance(key, string_types):
 				userdata['links'][key] = self
 			else:
 				for k in key:
@@ -407,7 +409,7 @@ class Macro(Element):
 		argSource = sourceArguments(self)
 		if not argSource:
 			argSource = ' '
-		elif argSource[0] in string.letters:
+		elif argSource[0] in string.ascii_letters:
 			argSource = ' %s' % argSource
 		s = '%s%s%s' % (escape, name, argSource)
 
@@ -617,7 +619,7 @@ class Macro(Element):
 				pass
 
 			# Argument name (and possibly type)
-			elif item[0] in string.letters:
+			elif item[0] in string.ascii_letters:
 				parts = item.split(':')
 				item = parts.pop(0)
 				# Parse for types and subtypes
@@ -782,7 +784,6 @@ class TeXFragment(DocumentFragment):
 	def source(self):
 		return sourceChildren(self)
 
-
 class TeXDocument(Document):
 	""" TeX Document node """
 	documentFragmentClass = TeXFragment
@@ -925,14 +926,14 @@ class UnrecognizedMacro(Macro):
 	class is generated as a placeholder for the missing macro.
 
 	"""
-	def __cmp__(self, other):
+	def __eq__(self, other):
 		if not hasattr(other, 'nodeName'):
-			return 0
+			return True
 		if other.nodeName in ['undefined','@undefined']:
-			return 0
+			return True
 		if isinstance(other, UnrecognizedMacro):
-			return 0
-		return super(UnrecognizedMacro, self).__cmp__(other)
+			return True
+		return super(UnrecognizedMacro, self).__eq__(other)
 
 class NewIf(Macro):
 	""" Base class for all generated \\newifs """
@@ -1120,7 +1121,7 @@ class number(int):
 
 	@property
 	def source(self):
-		return unicode(self)
+		return text_type(self)
 
 class count(number): pass
 
@@ -1132,11 +1133,11 @@ class dimen(float):
 	def __new__(cls, v):
 		if isinstance(v, Macro):
 			return v.__dimen__()
-		elif isinstance(v, basestring) and v[-1] in string.letters:
+		elif isinstance(v, string_types) and v[-1] in string.ascii_letters:
 			# Get rid of glue components
 			v = list(v.split('plus').pop(0).split('minus').pop(0).strip())
 			units = []
-			while v and v[-1] in string.letters:
+			while v and v[-1] in string.ascii_letters:
 				units.insert(0, v.pop())
 			v = float(''.join(v))
 			units = ''.join(units)
@@ -1185,11 +1186,11 @@ class dimen(float):
 		if self < 0:
 			sign = -1
 		if abs(self) >= 6e9:
-			return unicode(sign * (abs(self)-6e9)) + 'filll'
+			return text_type(sign * (abs(self)-6e9)) + 'filll'
 		if abs(self) >= 4e9:
-			return unicode(sign * (abs(self)-4e9)) + 'fill'
+			return text_type(sign * (abs(self)-4e9)) + 'fill'
 		if abs(self) >= 2e9:
-			return unicode(sign * (abs(self)-2e9)) + 'fil'
+			return text_type(sign * (abs(self)-2e9)) + 'fil'
 		return '%spt' % self.pt
 
 	@property
@@ -1445,7 +1446,7 @@ class Counter(object):
 
 	@property
 	def arabic(self):
-		return unicode(self.value)
+		return text_type(self.value)
 
 	@property
 	def Roman(self):
@@ -1496,7 +1497,7 @@ class Counter(object):
 
 	@property
 	def Alph(self):
-		return string.letters[self.value-1].upper()
+		return string.ascii_letters[self.value-1].upper()
 
 	@property
 	def alph(self):

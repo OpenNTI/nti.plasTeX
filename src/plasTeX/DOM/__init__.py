@@ -1162,7 +1162,7 @@ class Node(object):
 		""" Is this node equivalent to `other`? """
 		return other == self
 
-	def __cmp__(self, other):
+	def __py27_off_cmp__(self, other):
 		try:
 			res = cmp(self.nodeName, other.nodeName)
 			if res: return res
@@ -1173,6 +1173,31 @@ class Node(object):
 		except AttributeError:
 			pass
 		return cmp(self.nodeName, other)
+
+	def __eq__(self, other):
+		try:
+			if self.nodeName == other.nodeName and self.attributes == other.attributes:
+				if self.hasChildNodes() or other.hasChildNodes():
+					return self.childNodes == other.childNodes
+				return True
+		except AttributeError:
+			# JAM: FIXME: The right thing to do is return
+			# NotImplemented:
+			# return NotImplemented
+			# But the old code compared the node name for equality...
+			return self.nodeName == other
+
+	def __lt__(self, other):
+		return self.__py27_off_cmp__(other) < 0
+	def __gt__(self, other):
+		return self.__py27_off_cmp__(other) > 0
+
+	def __hash__(self):
+		# JAM: If we don't implement this, under py3
+		# we cannot be hashed as __eq__ hides this.
+		# FIXME: This is not consistent with eq, but it is what
+		# py2 did
+		return id(self)
 
 	def getFeature(self, feature, version):
 		""" Get the requested feature """
@@ -1714,16 +1739,22 @@ class CharacterData(unicode, Node):
 	def __getitem__(self, i):
 		return unicode.__getitem__(self, i)
 
-	def __str__(self):
-		# Python says this must return a string object. On py27,
-		# because we are unicode, this can result in an infinite
-		# loop as the interpreter tries to turn the result of this
-		# method into a str. (this is seen under pypy). Therefore, we must
-		# return the encoded form
-		return self.encode('utf8')
+	if str is bytes:
+		def __str__(self):
+			# Python says this must return a string object. On py27,
+			# because we are unicode, this can result in an infinite
+			# loop as the interpreter tries to turn the result of this
+			# method into a str. (this is seen under pypy). Therefore, we must
+			# return the encoded form
+			return self.encode('utf8')
 
-	def __unicode__(self):
-		return self # We are an instance of unicode, so this is ok
+		def __unicode__(self):
+			return self # We are an instance of unicode, so this is ok
+	else:
+		def __str__(self):
+			return self
+		__unicode__ = __str__
+
 
 class Text(CharacterData):
 	"""

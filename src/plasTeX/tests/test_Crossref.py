@@ -12,6 +12,7 @@ from hamcrest import has_property
 from hamcrest import is_not
 from hamcrest import has_length
 from hamcrest import has_item
+from hamcrest import has_entry
 from hamcrest import all_of
 
 
@@ -53,6 +54,9 @@ class TestLabels(TestCase):
 
 		assert_that( section, has_property( 'source', '\\section{hi} text \n\n'))
 		assert_that( section, has_property( 'id', 'two' ) )
+		assert_that( section, has_property( 'argSource', '{hi}' ) )
 
 		assert_that( section_star, has_property( 'source', '\\section*{bye\\label{two}}'))
+		assert_that( section_star, has_property( 'argSource', '*{bye\\label{two}}' ) )
 		assert_that( section_star, has_property( 'id', is_not( 'two' ) ) )
+		assert_that( dict(section_star.__dict__), has_entry( '@hasgenid', True ) )

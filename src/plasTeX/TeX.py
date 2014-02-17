@@ -20,7 +20,6 @@ from __future__ import print_function, absolute_import, division # TODO: Unicode
 
 import string
 import os
-import sys
 import plasTeX
 import codecs
 import subprocess
@@ -31,6 +30,9 @@ from plasTeX.Base.TeX.Primitives import MathShift
 from plasTeX import ParameterCommand, Macro
 from plasTeX import glue, muglue, mudimen, dimen, number
 from plasTeX.Logging import getLogger, disableLogging
+
+from six import string_types
+from six import text_type
 
 # Only export the TeX class
 __all__ = ['TeX']
@@ -44,14 +46,15 @@ _type = type
 class bufferediter(object):
 	""" Buffered iterator """
 	def __init__(self, obj):
-		self._next = iter(obj).next
+		self._iter = iter(obj)
 		self._buffer = []
 	def __iter__(self):
 		return self
 	def next(self):
 		if self._buffer:
 			return self._buffer.pop()
-		return self._next()
+		return next(self._iter)
+	__next__ = next
 	def push(self, value):
 		self._buffer.append(value)
 
@@ -121,7 +124,7 @@ class TeX(object):
 		if file is not None:
 
 			# Filename
-			if isinstance(file, basestring):
+			if isinstance(file, string_types):
 				try:
 					encoding = self.ownerDocument.config['files']['input-encoding']
 				except:
@@ -146,9 +149,9 @@ class TeX(object):
 		if source is None:
 			return
 		if self.jobname is None:
-			if isinstance(source, basestring):
+			if isinstance(source, string_types):
 				self.jobname = os.path.basename(os.path.splitext(source)[0])
-			elif isinstance(source, file):
+			elif hasattr(source, 'name'):
 				self.jobname = os.path.basename(os.path.splitext(source.name)[0])
 		t = Tokenizer(source, self.ownerDocument.context)
 		self.inputs.append((t, iter(t)))
@@ -249,7 +252,7 @@ class TeX(object):
 			# Always get next token from top of input stack
 			try:
 				while 1:
-					t = inputs[-1][-1].next()
+					t = next(inputs[-1][-1])
 					# Save context depth of each token for use in digestion
 					t.contextDepth = context.depth
 					t.ownerDocument = ownerDocument
@@ -297,7 +300,7 @@ class TeX(object):
 
 		"""
 		# Cache variables before starting the generator
-		next = self.itertokens().next
+		itertokens = iter(self.itertokens())
 		pushToken = self.pushToken
 		pushTokens = self.pushTokens
 		createElement = self.ownerDocument.createElement
@@ -305,7 +308,7 @@ class TeX(object):
 
 		while 1:
 			# Get the next token
-			token = next()
+			token = next(itertokens)
 
 			# Token is null, ignore it
 			if token is None:
@@ -438,7 +441,7 @@ class TeX(object):
 		text -- string containing text to be tokenized
 
 		"""
-		return [Other(x) for x in unicode(text)]
+		return [Other(x) for x in text_type(text)]
 
 	def pushToken(self, token):
 		"""
@@ -508,7 +511,7 @@ class TeX(object):
 		except TypeError: return tokens
 
 		for t in tokens:
-			if isinstance(t, basestring):
+			if isinstance(t, string_types):
 				continue
 			# Element nodes can't be part of normalized text
 			if t.nodeType == Macro.ELEMENT_NODE:
@@ -873,22 +876,23 @@ class TeX(object):
 		"""
 		tokens = self.itertokens()
 		begin, end = Other(chars[0]), Other(chars[1])
+		begin_text, end_text = chars[0], chars[1]
 		source = []
 		for t in tokens:
 			toks = []
 			source = [t]
 			# A [ ... ], ( ... ), etc. grouping was found
 			if t.catcode != Token.CC_ESCAPE and \
-			   (t == begin or unicode(t) == unicode(begin)):
+			   (t == begin or text_type(t) == begin_text):
 				level = 1
 				for t in tokens:
 					source.append(t)
 					if t.catcode != Token.CC_ESCAPE and \
-					   (t == begin or unicode(t) == unicode(begin)):
+					   (t == begin or text_type(t) == begin_text):
 						toks.append(t)
 						level += 1
 					elif t.catcode != Token.CC_ESCAPE and \
-						 (t == end or unicode(t) == unicode(end)):
+						 (t == end or text_type(t) == end_text):
 						level -= 1
 						if level == 0:
 							break
@@ -1000,7 +1004,7 @@ class TeX(object):
 		"""
 		return [x for x in tokens if x.catcode == Token.CC_ESCAPE].pop(0)
 
-	def castString(self, tokens, type=unicode, **kwargs):
+	def castString(self, tokens, type=text_type, **kwargs):
 		"""
 		Join the tokens into a string
 

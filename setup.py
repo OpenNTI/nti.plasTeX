@@ -36,6 +36,7 @@ INSTALL_REQUIRES = [
 
 	# python 2/3 compat bridge
 	'future',
+	'six',
 
 	'z3c.pt >= 3.0.0a1',  # Better ZPT support than plastex, add-in to Chameleon
 	'z3c.ptcompat >= 2.0.0a1',  # Make zope.pagetemplate also use the Chameleon-based ZPT
