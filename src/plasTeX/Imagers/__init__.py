@@ -244,7 +244,8 @@ class Image(object):
 
 		# Crop an SVG image
 		if os.path.splitext(self.path)[-1] in ['.svg']:
-			svg = open(self.path,'r').read()
+			with open(self.path,'r') as f:
+				svg = f.read()
 
 			self.width = 0
 			width = re.search(r'width=(?:\'|")([^\d\.]+)\w*(?:\'|")', svg)
@@ -565,9 +566,11 @@ class Imager(object):
 
 		for value in list(self._cache.values()):
 			if value.checksum and os.path.isfile(value.path):
-				 d = md5(open(value.path,'r').read()).digest()
-				 if value.checksum != d:
-					 log.warning('The image data for "%s" on the disk has changed.	You may want to clear the image cache.' % value.filename)
+				with open(value.path, 'r') as f:
+					d = md5(f.read()).digest()
+				if value.checksum != d:
+					log.warning('The image data for "%s" on the disk has changed. You may want to clear the image cache.',
+								value.filename)
 
 		# Bail out if there are no images
 		if not self.images:
@@ -640,9 +643,11 @@ class Imager(object):
 		# Write LaTeX source file
 		if self.config['images']['save-file']:
 			self.source.seek(0)
-			codecs.open(os.path.join(cwd,filename), 'w', self.config['files']['input-encoding']).write(self.source.read())
+			with codecs.open(os.path.join(cwd,filename), 'w', self.config['files']['input-encoding']) as f:
+				f.write(self.source.read())
 		self.source.seek(0)
-		codecs.open(os.path.join( tempdir, filename ), 'w', self.config['files']['input-encoding']).write(self.source.read())
+		with codecs.open(os.path.join( tempdir, filename ), 'w', self.config['files']['input-encoding']) as f:
+			f.write(self.source.read())
 
 		# Run LaTeX
 		#os.environ['SHELL'] = '/bin/sh'
@@ -684,7 +689,8 @@ class Imager(object):
 			logname = os.path.join( tempdir, 'images.log' )
 			__traceback_info__ = args, logname
 			if os.path.isfile( logname ):
-				lines = open(os.path.join(tempdir,'images.log'), 'rU' ).readlines()
+				with open(os.path.join(tempdir,'images.log'), 'rU' ) as f:
+					lines = f.readlines()
 				log = []
 				for i, line in enumerate(lines):
 					if 'Error' in line:
@@ -724,7 +730,8 @@ class Imager(object):
 		used, you can simply return None.
 
 		"""
-		open('images.out', 'wb').write(output.read())
+		with open('images.out', 'wb') as f:
+			f.write(output.read())
 		options = ''
 		if self._configOptions:
 			for opt, value in self._configOptions:
