@@ -305,11 +305,13 @@ class Tokenizer(object):
 		CC_IGNORED = Token.CC_IGNORED
 		CC_INVALID = Token.CC_INVALID
 
-		while 1:
+		def _read1():
 			if buffer:
-				token = buffer.pop(0)
-			else:
-				token = read(1)
+				return buffer.pop(0)
+			return read(1)
+
+		while True:
+			token = _read1()
 
 			if not token:
 				break
@@ -324,15 +326,14 @@ class Tokenizer(object):
 			code = whichCode(token)
 
 			if code == CC_SUPER:
-
 				# Handle characters like ^^M, ^^@, etc.
-				next_char = read(1)
+				next_char = _read1()
 				if next_char != token:
 					# put this back on the buffer so we read it again
 					self.pushChar(next_char)
 				else:
 					# token is '^', next_char is '^'
-					next_char = read(1)
+					next_char = _read1()
 					num = ord(next_char)
 					if num >= 64: # '@' in ascii ('A' is 65), so this is a control escape
 						token = chr(num - 64)
@@ -411,7 +412,7 @@ class Tokenizer(object):
 		CC_ACTIVE = Token.CC_ACTIVE
 		prev = None
 
-		while 1:
+		while True:
 
 			# Purge buffer first
 			while buffer:

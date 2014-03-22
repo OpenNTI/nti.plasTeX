@@ -251,7 +251,7 @@ class TeX(object):
 		while inputs:
 			# Always get next token from top of input stack
 			try:
-				while 1:
+				while True:
 					t = next(inputs[-1][-1])
 					# Save context depth of each token for use in digestion
 					t.contextDepth = context.depth
@@ -306,7 +306,7 @@ class TeX(object):
 		createElement = self.ownerDocument.createElement
 		ELEMENT_NODE = Macro.ELEMENT_NODE
 
-		while 1:
+		while True:
 			# Get the next token
 			token = next(itertokens)
 
