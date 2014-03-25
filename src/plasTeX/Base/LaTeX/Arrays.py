@@ -423,6 +423,16 @@ class Array(Environment):
 					  self.ownerDocument.createElement('ArrayCell')]
 
 	def digest(self, tokens):
+		# If any of our ancestors are in Math Mode, we should be also.
+		# Otherwise our source property returns LaTeX with too many
+		# line breaks.
+		parentNode = self.parentNode
+		while(hasattr(parentNode, 'mathMode') and parentNode.parentNode is not None):
+			if parentNode.mathMode:
+				self.mathMode = parentNode.mathMode
+				break
+			parentNode = parentNode.parentNode
+
 		Environment.digest(self, tokens)
 
 		# Give subclasses a hook before going on
