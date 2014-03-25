@@ -562,9 +562,6 @@ class brack(Command):
 class brace(Command):
 	pass
 
-class sqrt(Command):
-	pass
-
 #
 # C.7.6 Putting One Thing Above Another
 #
