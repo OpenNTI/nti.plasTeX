@@ -48,7 +48,7 @@ class TestSource(TestCase):
 		assert_that( source, is_(tex_input))
 
 	def testEquation(self):
-		tex_input = r'\sqrt {\pi ^{3}}'
+		tex_input = r'\sqrt{\pi ^{3}}'
 		s = TeX()
 		s.input(tex_input)
 
