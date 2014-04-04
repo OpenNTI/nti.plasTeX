@@ -87,10 +87,13 @@ def unmix(base, mix=None):
 def _as_unicode(child, val):
 	# If a plain string is returned, we have no idea what
 	# the encoding is, but we'll make a guess.
-	if type(val) is not unicode:
-		log.warning('The renderer for %s returned a non-unicode string.	 Using the default input encoding.',
-					type(child).__name__)
-		val = unicode(val, child.config['files']['input-encoding'])
+
+	if type(val) is unicode or isinstance(val, unicode):
+		return val
+
+	log.warning('The renderer for %s returned a non-unicode string.	 Using the default input encoding.',
+				type(child).__name__)
+	val = unicode(val, child.config['files']['input-encoding'])
 	return val
 
 def render_children(r, childNodes):

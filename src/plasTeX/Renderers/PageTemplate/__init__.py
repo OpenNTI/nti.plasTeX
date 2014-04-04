@@ -692,6 +692,9 @@ class PageTemplate(BaseRenderer):
 				   self.setImageData, s)
 
 		# Convert characters >127 to entities
+		# XXX: FIXME: This is broken for non-BMP Unicode
+		# characters in Python 2 narrow builds, because they
+		# come back as two characters (a surrogate pair)
 		if document.config['files']['escape-high-chars']:
 			s = list(s)
 			for i, item in enumerate(s):
