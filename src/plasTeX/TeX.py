@@ -1014,6 +1014,9 @@ class TeX(object):
 		Keyword Arguments:
 		type -- the string class to use for the returned object
 
+		If the 'subtype' argument is `source` then you can use special characters, escaped
+		exactly once.
+
 		Returns:
 		string
 
@@ -1022,6 +1025,24 @@ class TeX(object):
 		self.cast()
 
 		"""
+		if kwargs.get('subtype') == 'source':
+			if hasattr(tokens, 'source'): # A tex fragment
+				# Unescape the parsed source; every escape
+				# winds up with an extra space following it
+				string = type(tokens.source)
+				text = []
+				i = 0
+				while i < len(string):
+					if string[i] == '\\':
+						text.append(string[i+1])
+						i += 3 # skip following whitespace
+					else:
+						text.append(string[i])
+						i += 1
+				return ''.join(text)
+			# Otherwise, a pre-parsed list
+			return type(''.join(tokens))
+
 		return type(self.normalize(tokens))
 
 	def castLabel(self, tokens, **kwargs):

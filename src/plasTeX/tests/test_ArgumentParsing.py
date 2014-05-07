@@ -12,6 +12,7 @@ from plasTeX.TeX import TeX
 
 from hamcrest import assert_that
 from hamcrest import contains
+from hamcrest import is_
 
 class ArgumentParsing(TestCase):
 
@@ -85,6 +86,18 @@ class ArgumentParsing(TestCase):
 		arg = s.readArgument(type='str')
 		output = 'foo bar one'
 		assert arg == output, '"%s" != "%s"' % (arg, output)
+
+	def testStringSourceArgument(self):
+		s = TeX()
+		s.input(r'{With \$ and \%}')
+		arg = s.readArgument(type='str', subtype='source')
+		assert_that( arg, is_( 'With $ and %' ) )
+
+		s = TeX()
+		s.input(r'<With \$ and \%>')
+		arg = s.readArgument(spec="<>", expanded=True, delim=None, type='str', subtype='source')
+		assert_that( arg, is_( 'With $ and %' ) )
+
 
 	@unittest.skip("JAM: This fails and always has but testIntegerArgument2 used to have the same name and shadowed it")
 	def testIntegerArgument(self):
