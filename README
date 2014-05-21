@@ -1,6 +1,8 @@
+[NOTE: This README, while providing a basic introduction, is probably
+outdated in many important ways in the context of this fork.]
 
-Installation of this package is done just like any other Python package.
-See the INSTALL file for details.
+Installation of this package is done just like any other modern Python
+package. See the INSTALL file for details.
 
 Once you have plasTeX installed, you can use the command-line utility,
 called "plastex" just like latex or pdflatex.  For example, if you
@@ -23,6 +25,6 @@ import commands):
     from plasTeX.Renderers.XHTML import Renderer
     Renderer().render(TeX(file=sys.argv[1]).parse())
 
-plasTeX is really much more than just a LaTeX-to-other-format converter 
+plasTeX is really much more than just a LaTeX-to-other-format converter
 though.  See the documentation at http://plastex.sf.net/ for a complete
 view of what it is capable of.

@@ -1,12 +1,18 @@
+[NOTE: This file, while providing a basic introduction, is probably
+outdated in many important ways in the context of this fork.]
 
 Installation of plasTeX is very simple.  It installs just like any other
-Python package.  Simply run the following command.  Python 2.4+ is required.
+Python package.  Simply run the following command.
 
-    python setup.py install
+	python setup.py install
+
+Python 2.7+ is required, as is setuptools; a virtualenv is
+recommended. The tested platforms are OS X and Linux; other platforms
+may or may not work with the odds being greatest on other Unix-like
+systems.
+
 
 To generate images for destinations like HTML, you will also need to have
-a LaTeX distribution installed, and either ghostscript or, preferably, 
-either dvi2bitmap (http://dvi2bitmap.sourceforge.net/) or 
-dvipng (http://savannah.nongnu.org/projects/dvipng/).  You will also
-need to install the Python Imaging Library 
-ihttp://www.pythonware.com/products/pil/).
+a LaTeX distribution installed, and either ghostscript or, preferably,
+either dvi2bitmap (http://dvi2bitmap.sourceforge.net/) or
+dvipng (http://savannah.nongnu.org/projects/dvipng/).
