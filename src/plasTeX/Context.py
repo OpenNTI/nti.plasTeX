@@ -290,7 +290,7 @@ class Context(object):
 			stream.seek(0)
 			stream.truncate()
 
-			pickle.dump(d, stream)
+			pickle.dump(d, stream, pickle.HIGHEST_PROTOCOL)
 		finally:
 			if needs_close:
 				stream.close()
