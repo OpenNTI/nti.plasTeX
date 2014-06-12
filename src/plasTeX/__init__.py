@@ -150,7 +150,10 @@ class Macro(Element):
 				continue
 
 			if isinstance(value, Node):
-				value = u'%s' % text_type(value)
+				value = text_type(value)
+				if not value:
+					continue
+				value = u'%s' % value
 			attrs[name] = value
 
 		return attrs
