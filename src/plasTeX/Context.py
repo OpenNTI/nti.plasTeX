@@ -2,7 +2,11 @@
 
 from __future__ import print_function, absolute_import, division
 
-import os, re, time, codecs
+import os
+import re
+import time
+import codecs
+import io
 
 import plasTeX
 from ._util import ismacro, macroName
@@ -232,73 +236,109 @@ class Context(object):
 		return locals()
 	currenvir = property(**currenvir())
 
-	def persist(self, filename, rtype='none'):
+	def persist(self, filename_or_stream, rtype='none'):
 		"""
 		Persist cross-document information for labeled nodes
 
-		Required Arguments:
-		filename -- the name of the file with the shelved data
+		:param filename_or_stream: Either a path to a file,
+			or an instance of :class:`io.IOBase` in bytes mode.
+			If you pass None, we will persist to an in-memory
+			byte stream and return that stream. If you pass an
+			open stream, we do not close it.
 
-		Keyword Arguments:
-		rtype -- the key in the shelved data to look under.	 This is generally
-			the name of the renderer used since the information for each
+		:keyword rtype: The key in the shelved data to look under.
+			This is generally the name of the renderer used since the information for each
 			renderer may be different.
-
 		"""
-		if os.path.exists(filename):
+		needs_close = False
+		if isinstance(filename_or_stream, string_types):
 			try:
-				with open(filename,'rb') as f:
-					d = pickle.load(f)
-				if rtype not in d:
-					d[rtype] = {}
-			except Exception:
-				os.remove(filename)
-				d = {rtype:{}}
+				# If it exists, open it as-is
+				stream = io.open(filename_or_stream, 'r+b')
+			except IOError:
+				# If we cannot open it (doesn't exist usually)
+				# try to create it.
+				# NOTE: there is a race condition here
+				stream = io.open(filename_or_stream, 'w+b')
+			needs_close = True
+		elif filename_or_stream is None:
+			stream = io.BytesIO()
 		else:
-			d = {rtype:{}}
-		data = d[rtype]
-		for key, value in list(self.persistentLabels.items()):
-			data[key] = value.persist()
+			stream = filename_or_stream
 
+		# Read from the stream the pickled data; if we just
+		# created an empty file, we must be prepared for EOF
+		# XXX: JAM: In the past, this used to ignore
+		# all Exceptions and remove a file if it existed.
+		# That's probably not right?
 		try:
-			with open(filename,'wb') as f:
-				pickle.dump(d, f)
-		except Exception:
-			log.exception('Could not save auxiliary information.')
+			try:
+				d = pickle.load(stream)
+			except EOFError:
+				d = {}
 
-	def restore(self, filename, rtype='none'):
+			if rtype not in d:
+				d[rtype] = {}
+
+			data = d[rtype]
+			for key, value in list(self.persistentLabels.items()):
+				data[key] = value.persist()
+
+			# Great, we read the values. Seek to the beginning
+			# and truncate the file, then write back, because
+			# we may have added auxilliary info
+			stream.seek(0)
+			stream.truncate()
+
+			pickle.dump(d, stream)
+		finally:
+			if needs_close:
+				stream.close()
+		return stream
+
+	def restore(self, filename_or_stream, rtype='none'):
 		"""
 		Restore cross-document information for labeled nodes
 
-		Required Arguments:
-		filename -- the name of the file with the shelved data
-
-		Keyword Arguments:
-		rtype -- the key in the shelved data to look under.	 This is generally
-			the name of the renderer used since the information for each
+		:param filename_or_stream: Either the path to an
+			file, or an open readably bytes instance
+			of :class:`io.IOBase`. If you pass an open
+			stream, we do not close it.
+		:keyword rtype: The key in the shelved data to look under.
+			This is generally the name of the renderer used since the information for each
 			renderer may be different.
 
 		"""
+		stream = None
+		needs_close = False
 
-		if not os.path.exists(filename):
+		if filename_or_stream is None:
 			return
 
-		try:
-			with open(filename,'rb') as f:
-				d = pickle.load(f)
-			try:
-				data = d[rtype]
-			except KeyError:
+		if isinstance(filename_or_stream, string_types):
+			if not os.path.exists(filename_or_stream):
 				return
-			wou = self.warnOnUnrecognized
+			stream = io.open(filename_or_stream, 'rb')
+			needs_close = True
+		else:
+			stream = filename_or_stream
+
+		wou = self.warnOnUnrecognized
+		try:
+			d = pickle.load(stream)
+			data = d.get(rtype, {})
+
+
 			self.warnOnUnrecognized = False
 			for key, value in list(data.items()):
 				n = self[value.get('macroName','Macro')]()
 				n.restore(value)
 				self.labels[key] = n
+
+		finally:
 			self.warnOnUnrecognized = wou
-		except Exception:
-			log.exception('Could not load auxiliary information.' )
+			if needs_close:
+				stream.close()
 
 	@property
 	def isMathMode(self):
