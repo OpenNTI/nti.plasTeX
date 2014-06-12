@@ -105,8 +105,11 @@ class Macro(Element):
 	# Value to return when macro is referred to by \ref
 	ref = None
 
-	# Attributes that should be persisted between runs for nodes
-	# that can be referenced.  This allows for cross-document links.
+	#: Attributes that should be persisted between runs for nodes
+	#: that can be referenced.  This allows for cross-document links.
+	#: If an instance defines a method ``_extraRefAttributes``, it should
+	#: return a tuple of attributes that will be joined to this dictionary
+	#: to produce the final set of attributes.
 	refAttributes = ('macroName','ref','title','captionName','id','url')
 
 	# Source of the TeX macro arguments
@@ -135,13 +138,21 @@ class Macro(Element):
 		"""
 		if attrs is None:
 			attrs = {}
-		for name in self.refAttributes:
+
+		refAttributes = self.refAttributes
+		# NOTE: We do not declare _extraRefAttributes so that we're not
+		# engaged in any inheritance cycles when things get mixed in
+		refAttributes += getattr(self, '_extraRefAttributes', lambda: ())()
+
+		for name in refAttributes:
 			value = getattr(self, name, None)
 			if value is None:
 				continue
+
 			if isinstance(value, Node):
 				value = u'%s' % text_type(value)
 			attrs[name] = value
+
 		return attrs
 
 	def restore(self, attrs):
@@ -154,7 +165,7 @@ class Macro(Element):
 		"""
 		remap = {'url':'urloverride'}
 		for key, value in attrs.items():
-			setattr(self, remap.get(key, key), value)
+			setattr(self, str(remap.get(key, key)), value)
 
 	@property
 	def config(self):
