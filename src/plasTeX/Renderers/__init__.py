@@ -6,6 +6,8 @@ __docformat__ = "restructuredtext en"
 import codecs
 import os
 
+from urllib import quote as url_quote
+
 from zope.dottedname.resolve import resolve as resolve_import
 
 from plasTeX.Filenames import Filenames
@@ -280,9 +282,36 @@ class RenderableMixin(object):
 		filename = ''
 		if node is not None:
 			filename = node.filename
+
 		if base:
-			return URL('%s/%s#%s' % (base, filename, self.id))
-		return URL('%s#%s' % (filename, self.id))
+			return URL('%s/%s#%s' % (base, filename, self.url_fragment))
+		return URL('%s#%s' % (filename, self.url_fragment))
+
+	@property
+	def url_fragment(self):
+		"""
+		The ``id`` of this node, suitable for use in a url fragment.
+		"""
+		return url_quote(self.id)
+
+	@property
+	def html_id(self):
+		"""
+		The ``id`` of this node, suitable for use in an HTML ``id``
+		attribute.
+
+		From the spec: \"The value must be unique amongst all the IDs
+		in the element's home subtree and must contain at least one
+		character. The value must not contain any space characters.
+
+		There are no other restrictions on what form an ID can take; in
+		particular, IDs can consist of just digits, start with a digit, start
+		with an underscore, consist of just punctuation, etc.
+		\"
+
+		Therefore, we do not need to URL escape this, simply replace spaces.
+		"""
+		return self.id.replace(' ', '%20')
 
 	@property
 	def filename(self):
