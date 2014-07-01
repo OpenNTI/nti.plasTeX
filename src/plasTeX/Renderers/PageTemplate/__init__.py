@@ -39,14 +39,16 @@ def stringtemplate(s, encoding='utf8',filename=None):
 		return unicode(template.substitute(tvars))
 	return renderstring
 
-# Support for Python string interpolations
+# Support for Python string formatting using the fancy
+# format syntax, which is much more capable than the old '%'
+# based version (for example, it can handle attribute access)
 def pythontemplate(s, encoding='utf8',filename=None):
 	template = s
 	def renderpython(obj):
 		tvars = {'here':obj, 'self':obj, 'container':obj.parentNode,
 				 'config':obj.ownerDocument.config, 'template':template,
 				 'templates':obj.renderer, 'context':obj.ownerDocument.context}
-		return unicode(template, encoding) % tvars
+		return unicode(template, encoding).format(**tvars)
 	return renderpython
 
 # Support for ZPT HTML and XML templates was originally provided via
