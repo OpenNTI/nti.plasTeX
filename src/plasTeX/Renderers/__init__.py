@@ -236,7 +236,10 @@ class RenderableMixin(object):
 		return renderable_as_unicode( self )
 
 	def __str__(self):
-		return self.__unicode__()
+		v = self.__unicode__()
+		if v is None:
+			return str('')
+		return v
 
 	@property
 	def image(self):

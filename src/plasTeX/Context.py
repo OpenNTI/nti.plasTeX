@@ -61,8 +61,10 @@ class ContextItem(dict):
 			raise
 
 	def get(self, key, default=None):
-		try: return self[key]
-		except KeyError: return default
+		try:
+			return self[key]
+		except KeyError:
+			return default
 
 	def has_key(self, key):
 		if dict.__contains__(self, key):
@@ -84,7 +86,7 @@ class ContextItem(dict):
 	def __str__(self):
 		if self.parent is not None:
 			 return '%s -> %s' % (self.parent, self.name)
-		return self.name
+		return str(self.name)
 
 
 class Counters(dict):
@@ -651,7 +653,8 @@ class Context(object):
 				# If we hit a document element, make sure that we start
 				# at the global context.
 				if context.level == context.DOCUMENT_LEVEL:
-					stacklog.debug( "Popping all contexts up to document due to %s", context )
+					stacklog.debug( "Popping all contexts up to document due to %r", context )
+
 					while len(self.contexts) > 1:
 						self.contexts.pop()
 			stacklog.debug('pushing %s onto %s', name, self.top)
