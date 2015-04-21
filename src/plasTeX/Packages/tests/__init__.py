@@ -11,17 +11,34 @@ __docformat__ = "restructuredtext en"
 
 logger = __import__('logging').getLogger(__name__)
 
-
+from unittest import SkipTest
+import subprocess
 import platform
 py_impl = getattr(platform, 'python_implementation', lambda: None)
 IS_PYPY = py_impl() == 'PyPy'
 
+
+def _skip_if_no_binaries():
+	"""
+	If the TeX binaries are not available on the PATH in the simple
+	way we use them in these tests, raise unittest's SkipTest
+	exception. This supports testing on Travis CI.
+
+	This is only a partial check and may be slow.
+	"""
+
+	try:
+		subprocess.check_call( ['kpsewhich', '--version'])
+	except OSError:
+		raise SkipTest("kpsewhich binary not found")
+
+
 if not IS_PYPY:
 	import os
 	import os.path
-	import subprocess
 	import sys
 	def _run_plastex(tmpdir, filename):
+		_skip_if_no_binaries()
 		# Run plastex on the document
 		# Must be careful to get the right python path so we work
 		# in tox virtualenvs as well as buildouts
@@ -50,6 +67,7 @@ else:
 	from plasTeX.plastex import main as _main
 	import threading
 	def _run_plastex(tmpdir, filename):
+		_skip_if_no_binaries()
 		cmd = ['plastex', '-d', tmpdir, filename]
 		thread = threading.Thread(target=_main,
 								  args=(cmd,))
