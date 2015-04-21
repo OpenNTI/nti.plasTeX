@@ -6,6 +6,7 @@ from setuptools import setup, find_packages
 import platform
 py_impl = getattr(platform, 'python_implementation', lambda: None)
 IS_PYPY = py_impl() == 'PyPy'
+IS_JYTHON = py_impl() == 'Jython'
 
 
 entry_points = {
@@ -75,6 +76,10 @@ setup(name="nti.plasTeX",
 		  "Operating System :: POSIX :: Linux",
 		  "Programming Language :: Python :: 2.7",
 		  "Programming Language :: Python :: 3.3",
+		  "Programming Language :: Python :: 3.4",
+		  "Programming Language :: Python :: Implementation :: CPython",
+		  "Programming Language :: Python :: Implementation :: PyPy",
+		  "Programming Language :: Python :: Implementation :: Jython",
 		  "Operating System :: MacOS :: MacOS X",
 		  "Framework :: Zope3",
 	  ],

@@ -49,7 +49,7 @@ class TestAlltt(TestCase):
 		try:
 			os.chdir(tmpdir)
 			filename = os.path.join(tmpdir, 'longtable.tex')
-			with open(filename, 'w') as f:
+			with open(filename, 'wb') as f:
 				f.write(document.encode('utf-8'))
 
 			# Run plastex on the document

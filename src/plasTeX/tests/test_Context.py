@@ -20,8 +20,6 @@ from hamcrest import is_
 from hamcrest import has_property
 from hamcrest import has_entry
 
-from nti.testing import base
-from nti.testing import matchers
 
 import tempfile
 

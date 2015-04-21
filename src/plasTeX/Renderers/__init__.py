@@ -6,7 +6,7 @@ __docformat__ = "restructuredtext en"
 import codecs
 import os
 
-from urllib import quote as url_quote
+from six.moves.urllib.parse import quote as url_quote
 
 from zope.dottedname.resolve import resolve as resolve_import
 
