@@ -34,8 +34,6 @@ INSTALL_REQUIRES = [
 	# includes transparent png support, and is much cleaned up, otherwise api compatible with pillow 1/PIL 1
 	'Pillow',
 
-	# python 2/3 compat bridge
-	'future',
 	'six',
 
 	'z3c.pt >= 3.0.0a1',  # Better ZPT support than plastex, add-in to Chameleon

@@ -12,7 +12,8 @@ from . import Logging
 from . import Context
 from . import Config
 
-from future.builtins import chr as unichr
+from ._util import chr as unichr
+
 from six import string_types
 from six import text_type
 

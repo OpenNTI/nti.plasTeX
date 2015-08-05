@@ -7,7 +7,7 @@ B.5 Macros for text
 
 from plasTeX import Command, Environment, sourceChildren
 
-from future.builtins import chr as unichr
+from ..._util import chr as unichr
 
 class frenchspacing(Command):
 	unicode = u''

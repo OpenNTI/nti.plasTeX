@@ -9,7 +9,7 @@ from __future__ import absolute_import
 from plasTeX import Command
 from plasTeX.DOM import Node, Text
 
-from future.builtins import chr as unichr
+from ..._util import chr as unichr
 
 #
 # Table 3.1: Accents

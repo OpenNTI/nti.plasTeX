@@ -8,7 +8,7 @@ I figure that it wouldn't hurt to put them all in by default.
 
 from plasTeX import Command
 
-from future.builtins import chr as unichr
+from ..._util import chr as unichr
 
 class ding(Command):
 	args = 'self'
