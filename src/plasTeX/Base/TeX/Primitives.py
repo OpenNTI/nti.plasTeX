@@ -22,8 +22,15 @@ class global_(Command):
 	macroName = 'global'
 
 class par(Command):
-	""" Paragraph """
+	"""
+	Paragraph
+
+	The 'continuation' attribute flags if the paragraph is not the first
+	segment of a paragraph broken-up by other block-level elements.
+
+	"""
 	level = Command.PAR_LEVEL
+	continuation = False
 
 	def invoke(self, tex):
 		status.dot()

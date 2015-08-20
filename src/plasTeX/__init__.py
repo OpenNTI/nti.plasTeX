@@ -770,10 +770,12 @@ class Macro(Element):
 			# Block level elements get their own paragraph
 			if item.blockType:
 				par = self.ownerDocument.createElement(parname)
+				par.continuation = True
 				par.appendChild(item)
 				par.blockType = True
 				newnodes.append(par)
 				par = self.ownerDocument.createElement(parname)
+				par.continuation = True
 				newnodes.append(par)
 				continue
 			newnodes[-1].append(item)
