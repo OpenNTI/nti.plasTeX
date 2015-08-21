@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
-
+from os.path import join, dirname
 import platform
 py_impl = getattr(platform, 'python_implementation', lambda: None)
 IS_PYPY = py_impl() == 'PyPy'
@@ -37,7 +37,7 @@ INSTALL_REQUIRES = [
 	'six',
 
 	'z3c.pt >= 3.0.0a1',  # Better ZPT support than plastex, add-in to Chameleon
-	'z3c.ptcompat >= 2.0.0a1',  # Make zope.pagetemplate also use the Chameleon-based ZPT
+	'z3c.ptcompat >= 2.0.0a1',	# Make zope.pagetemplate also use the Chameleon-based ZPT
 	'zope.annotation',
 	'zope.cachedescriptors >= 4.0.0',
 
@@ -62,11 +62,20 @@ INSTALL_REQUIRES = [
 	'zope.traversing >= 4.0.0a3',
 ]
 
+def read(name, *args):
+	try:
+		with open(join(dirname(__file__), name)) as f:
+			return f.read(*args)
+	except OSError:
+		return ''
+
+
 setup(name="nti.plasTeX",
-      description="LaTeX document processing framework",
-      version="0.9.3",
-      author="Kevin D. Smith",
-      author_email="Kevin.Smith@sas.com",
+	  description="LaTeX document processing framework",
+	  long_description=read('README.rst'),
+	  version="0.9.3",
+	  author="Kevin D. Smith",
+	  author_email="Kevin.Smith@sas.com",
 	  tests_require=TESTS_REQUIRE,
 	  install_requires=INSTALL_REQUIRES,
 	  classifiers=[
@@ -95,7 +104,7 @@ setup(name="nti.plasTeX",
 		  'test': TESTS_REQUIRE,
 		  'tools': [
 			'repoze.sphinx.autointerface >= 0.7.1',
-			'sphinx >= 1.2b1',  # Narrative docs
+			'sphinx >= 1.2b1',	# Narrative docs
 			]
 		},
 		dependency_links=[
