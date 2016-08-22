@@ -1,0 +1,36 @@
+include *.txt
+include CHANGES
+include INSTALL
+include LICENSE
+include TODO
+include tox.ini
+include README.rst
+include .travis.yml
+exclude .nti_cover_package
+recursive-include Doc README
+recursive-include Doc publish
+recursive-include Doc *.cls
+recursive-include Doc *.h
+recursive-include Doc *.html
+recursive-include Doc *.ist
+recursive-include Doc *.png
+recursive-include Doc *.sty
+recursive-include Doc *.tex
+recursive-include licenses *.license README
+recursive-include src *.bib
+recursive-include src *.css
+recursive-include src *.gif
+recursive-include src *.htc
+recursive-include src *.html
+recursive-include src *.js
+recursive-include src *.png
+recursive-include src *.tex
+recursive-include src *.txt
+recursive-include src *.xml
+recursive-include src *.zcml
+recursive-include src *.zpts
+recursive-include src cgpdfpng
+recursive-include src plasTeXrc
+# XXX: Make these not write to their own directory!
+prune src/plasTeX/Packages/tests/new
+prune src/plasTeX/tests/new
