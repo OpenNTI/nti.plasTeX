@@ -3,6 +3,8 @@ from __future__ import print_function
 
 import sys, os, tempfile, shutil, difflib, subprocess
 
+from . import skip_if_no_binaries
+
 def which(name, path=None, exts=('',)):
     """
     Search PATH for a binary.
@@ -46,6 +48,7 @@ class _ComparisonBenched(object):
 
     def __call__(self, latex_file):
         __traceback_info__ = latex_file
+        skip_if_no_binaries()
         if not latex_file:
             return
 
