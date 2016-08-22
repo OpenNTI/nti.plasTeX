@@ -26,25 +26,25 @@ from .. import Imager
 from plasTeX import TeXDocument
 
 def test_file_cache():
-	doc = TeXDocument()
-	doc.config['images']['cache'] = True
-	doc.userdata['working-dir'] = tempfile.gettempdir()
-	imager = Imager(doc)
+    doc = TeXDocument()
+    doc.config['images']['cache'] = True
+    doc.userdata['working-dir'] = tempfile.gettempdir()
+    imager = Imager(doc)
 
-	with tempfile.NamedTemporaryFile() as cache_file:
-		imager._filecache = cache_file.name
+    with tempfile.NamedTemporaryFile() as cache_file:
+        imager._filecache = cache_file.name
 
-		imager.newImage(r'\includegraphics{foo.png}')
-		assert_that( imager._cache, has_length( 1 ) )
+        imager.newImage(r'\includegraphics{foo.png}')
+        assert_that( imager._cache, has_length( 1 ) )
 
-		imager._write_cache()
+        imager._write_cache()
 
-		new_imager = Imager(doc)
-		new_imager._filecache = cache_file.name
-		new_imager._read_cache(validate_files=False)
+        new_imager = Imager(doc)
+        new_imager._filecache = cache_file.name
+        new_imager._read_cache(validate_files=False)
 
-		# Image objects in values() may not be equal
-		assert_that( list(new_imager._cache.keys()), is_( list(imager._cache.keys()) ) )
+        # Image objects in values() may not be equal
+        assert_that( list(new_imager._cache.keys()), is_( list(imager._cache.keys()) ) )
 
-		new_imager._read_cache(validate_files=True)
-		assert_that( new_imager._cache, is_empty() )
+        new_imager._read_cache(validate_files=True)
+        assert_that( new_imager._cache, is_empty() )

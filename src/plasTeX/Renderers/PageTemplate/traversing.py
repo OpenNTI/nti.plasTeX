@@ -10,19 +10,19 @@ import zope.traversing.adapters
 from zope.location.interfaces import LocationError
 
 class PlastexTraverser(zope.traversing.adapters.DefaultTraversable):
-	"""
-	Missing attributes simply return None. Many existing templates
-	rely on this (instead of specifying a default fallback) since
-	the plastex simpletal engine had this behaviour.
+    """
+    Missing attributes simply return None. Many existing templates
+    rely on this (instead of specifying a default fallback) since
+    the plastex simpletal engine had this behaviour.
 
-	This MUST be registered as an adapter for the DOM objects
-	used in rendering.
+    This MUST be registered as an adapter for the DOM objects
+    used in rendering.
 
-	"""
-	def traverse( self, name, furtherPath ):
-		try:
-			return super(PlastexTraverser,self).traverse( name, furtherPath )
-		except (LocationError,IndexError):
-			# IndexError can be raised because the plasTeX objects attempt
-			# to use strings as child numbers
-			return None
+    """
+    def traverse( self, name, furtherPath ):
+        try:
+            return super(PlastexTraverser,self).traverse( name, furtherPath )
+        except (LocationError,IndexError):
+            # IndexError can be raised because the plasTeX objects attempt
+            # to use strings as child numbers
+            return None

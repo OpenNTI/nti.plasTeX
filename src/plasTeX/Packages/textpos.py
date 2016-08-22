@@ -3,4 +3,4 @@
 from plasTeX import Command, Environment
 
 class textblock(Environment):
-	args = 'hsize ( pos )'
+    args = 'hsize ( pos )'

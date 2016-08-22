@@ -25,7 +25,7 @@ from six.moves import cPickle as pickle
 from plasTeX.Config import newConfig
 
 def test_can_pickle():
-	c = newConfig( read_files=False )
-	s = pickle.dumps( c, pickle.HIGHEST_PROTOCOL )
+    c = newConfig( read_files=False )
+    s = pickle.dumps( c, pickle.HIGHEST_PROTOCOL )
 
-	assert_that( pickle.loads( s ), is_( c ) )
+    assert_that( pickle.loads( s ), is_( c ) )

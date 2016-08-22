@@ -10,10 +10,10 @@ from plasTeX.Logging import getLogger
 
 
 class quote(Environment): 
-	blockType = True
+    blockType = True
 
 class quotation(Environment):
-	blockType = True
+    blockType = True
 
 class verse(Environment):
-	blockType = True
+    blockType = True

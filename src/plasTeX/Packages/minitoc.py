@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-This is a huge package!	 Most of the commands are simply stubbed out
+This is a huge package!  Most of the commands are simply stubbed out
 and not implemented yet.  Of course, many of the commands simply won't
 need anything more since they either don't make sense for plasTeX or
 the renderer will be doing all the work.
@@ -11,291 +11,291 @@ the renderer will be doing all the work.
 from plasTeX import Command
 
 def ProcessOptions(options, document):
-	context = document.context
-	context.newcounter('partlofdepth')
-	context.newcounter('partlotdepth')
-	context.newcounter('parttocdepth')
-	context.newcounter('minilofdepth')
-	context.newcounter('minilotdepth')
-	context.newcounter('minitocdepth')
-	context.newcounter('seclofdepth')
-	context.newcounter('seclotdepth')
-	context.newcounter('sectocdepth')
-	context.newcounter('mtc')
-	context.newcounter('ptc')
-	context.newcounter('stc')
+    context = document.context
+    context.newcounter('partlofdepth')
+    context.newcounter('partlotdepth')
+    context.newcounter('parttocdepth')
+    context.newcounter('minilofdepth')
+    context.newcounter('minilotdepth')
+    context.newcounter('minitocdepth')
+    context.newcounter('seclofdepth')
+    context.newcounter('seclotdepth')
+    context.newcounter('sectocdepth')
+    context.newcounter('mtc')
+    context.newcounter('ptc')
+    context.newcounter('stc')
 
 class dominitoc(Command):
-	args = '[ pos:str ]'
+    args = '[ pos:str ]'
 
 class dominilof(dominitoc):
-	pass
+    pass
 
 class dominilot(dominitoc):
-	pass
+    pass
 
 class _minitoccommand(Command):
-	args = '[ pos:str ]'
-	titleMacro = ''
+    args = '[ pos:str ]'
+    titleMacro = ''
 
-	def invoke(self, tex):
-		Command.invoke(self, tex)
-		self.title = self.ownerDocument.createElement(self.titleMacro).expand(tex)
+    def invoke(self, tex):
+        Command.invoke(self, tex)
+        self.title = self.ownerDocument.createElement(self.titleMacro).expand(tex)
 
-	@property
-	def tableofcontents(self):
-		node = self.parentNode
-		while node is not None and node.level > Command.ENDSECTIONS_LEVEL:
-			node = node.parentNode
-		if node is not None:
-			return node.tableofcontents
+    @property
+    def tableofcontents(self):
+        node = self.parentNode
+        while node is not None and node.level > Command.ENDSECTIONS_LEVEL:
+            node = node.parentNode
+        if node is not None:
+            return node.tableofcontents
 
 class minitoc(_minitoccommand):
-	titleMacro = 'mtctitle'
+    titleMacro = 'mtctitle'
 
 class minilof(_minitoccommand):
-	titleMacro = 'mlftitle'
+    titleMacro = 'mlftitle'
 
 class minilot(_minitoccommand):
-	titleMacro = 'mlttitle'
+    titleMacro = 'mlttitle'
 
 class dosecttoc(dominitoc):
-	pass
+    pass
 
 class dosectlof(dominitoc):
-	pass
+    pass
 
 class dosectlot(dominitoc):
-	pass
+    pass
 
 class secttoc(minitoc):
-	titleMacro = 'stctitle'
+    titleMacro = 'stctitle'
 
 class sectlof(minilof):
-	titleMacro = 'slftitle'
+    titleMacro = 'slftitle'
 
 class sectlot(minilot):
-	titleMacro = 'slttitle'
+    titleMacro = 'slttitle'
 
 class doparttoc(dominitoc):
-	pass
+    pass
 
 class dopartlof(dominilof):
-	pass
+    pass
 
 class dopartlot(dominilot):
-	pass
+    pass
 
 class parttoc(minitoc):
-	titleMacro = 'ptctitle'
+    titleMacro = 'ptctitle'
 
 class partlof(minilof):
-	titleMacro = 'plftitle'
+    titleMacro = 'plftitle'
 
 class partlot(minilot):
-	titleMacro = 'plttitle'
+    titleMacro = 'plttitle'
 
 # 
 # Formatting
 #
 
 class mtcsetfont(Command):
-	args = 'which:str level:str format:nox'
+    args = 'which:str level:str format:nox'
 
 class mtcsetdepth(Command):
-	args = 'which:str depth:int'
+    args = 'which:str depth:int'
 
 class mtcprepare(Command):
-	args = 'toc:str level:str commands'
+    args = 'toc:str level:str commands'
 
 class mtcskip(Command):
-	pass
+    pass
 
 class mtcskipammount(Command):
-	pass
+    pass
 
 class tightmtcfalse(Command):
-	pass
+    pass
 
 class tightmtctrue(Command):
-	pass
+    pass
 
 class ktightmtcfalse(Command):
-	pass
+    pass
 
 class ktightmtctrue(Command):
-	pass
+    pass
 
 class undottedmtcfalse(Command):
-	pass
+    pass
 
 class undottedmtctrue(Command):
-	pass
+    pass
 
 class addstarredpart(Command):
-	args = 'title'
+    args = 'title'
 
 class addstarredchapter(Command):
-	args = 'title'
+    args = 'title'
 
 class addstarredsection(Command):
-	args = 'title'
+    args = 'title'
 
 class _adjust(Command):
-	args = '[ num:int ]'
-	default = 1
-	counterName = ''
-	def invoke(self, tex):
-		Command.invoke(self, tex)
-		n = self.attributes['num'] or self.default
-		self.ownerDocument.context.counters[self.counterName].addtocounter(n)
+    args = '[ num:int ]'
+    default = 1
+    counterName = ''
+    def invoke(self, tex):
+        Command.invoke(self, tex)
+        n = self.attributes['num'] or self.default
+        self.ownerDocument.context.counters[self.counterName].addtocounter(n)
 
 class adjustptc(_adjust):
-	counterName = 'ptc'
+    counterName = 'ptc'
 
 class adjustmtc(_adjust):
-	counterName = 'mtc'
+    counterName = 'mtc'
 
 class adjuststc(_adjust):
-	counterName = 'stc'
+    counterName = 'stc'
 
 class _decrement(Command):
-	def invoke(self, tex):
-		Command.invoke(self, tex)
-		self.ownerDocument.context.counters[self.counterName].addtocounter(-1)
+    def invoke(self, tex):
+        Command.invoke(self, tex)
+        self.ownerDocument.context.counters[self.counterName].addtocounter(-1)
 
 class decrementptc(_decrement):
-	counterName = 'ptc'
+    counterName = 'ptc'
 
 class decrementmtc(_decrement):
-	counterName = 'mtc'
+    counterName = 'mtc'
 
 class decrementstc(_decrement):
-	counterName = 'stc'
+    counterName = 'stc'
 
 class _increment(Command):
-	def invoke(self, tex):
-		Command.invoke(self, tex)
-		self.ownerDocument.context.counters[self.counterName].addtocounter(1)
+    def invoke(self, tex):
+        Command.invoke(self, tex)
+        self.ownerDocument.context.counters[self.counterName].addtocounter(1)
 
 class incrementptc(_increment):
-	counterName = 'ptc'
+    counterName = 'ptc'
 
 class incrementmtc(_increment):
-	counterName = 'mtc'
+    counterName = 'mtc'
 
 class incrementstc(_increment):
-	counterName = 'stc'
+    counterName = 'stc'
 
 class mtcaddpart(Command):
-	args = '[ title ]'
+    args = '[ title ]'
 
 class mtcaddchapter(Command):
-	args = '[ title ]'
+    args = '[ title ]'
 
 class mtcaddsection(Command):
-	args = '[ title ]'
+    args = '[ title ]'
 
 #
 # Titles
 #
 
 class mtctitle(Command):
-	unicode = 'Contents'
+    unicode = 'Contents'
 
 class mlftitle(Command):
-	unicode = 'Figures'
+    unicode = 'Figures'
 
 class mlttitle(Command):
-	unicode = 'Tables'
+    unicode = 'Tables'
 
 class ptctitle(Command):
-	unicode = 'Table of Contents'
+    unicode = 'Table of Contents'
 
 class plftitle(Command):
-	unicode = 'List of Figures'
+    unicode = 'List of Figures'
 
 class plttitle(Command):
-	unicode = 'List of Tables'
+    unicode = 'List of Tables'
 
 class stctitle(Command):
-	unicode = 'Contents'
+    unicode = 'Contents'
 
 class slftitle(Command):
-	unicode = 'Figures'
+    unicode = 'Figures'
 
 class slttitle(Command):
-	unicode = 'Tables'
+    unicode = 'Tables'
 
 class mtcsettitle(Command):
-	args = 'which:str title'
+    args = 'which:str title'
 
 class mtcsettitlefont(Command):
-	args = 'which:str commands:nox'
+    args = 'which:str commands:nox'
 
 class mtcsetformat(Command):
-	args = 'which:str param:str value:nox'
+    args = 'which:str param:str value:nox'
 
 #
 # Rules
 #
 
 class mtcsetrules(Command):
-	args = 'which:str value'
+    args = 'which:str value'
 
 class ptcrule(Command):
-	pass
+    pass
 
 class noptcrule(Command):
-	pass
+    pass
 
 class mtcrule(Command):
-	pass
+    pass
 
 class nomtcrule(Command):
-	pass
+    pass
 
 class stcrule(Command):
-	pass
+    pass
 
 class nostcrule(Command):
-	pass
+    pass
 
 class plfrule(Command):
-	pass
+    pass
 
 class noplfrule(Command):
-	pass
+    pass
 
 class mlfrule(Command):
-	pass
+    pass
 
 class nomlfrule(Command):
-	pass
+    pass
 
 class slfrule(Command):
-	pass
+    pass
 
 class noslfrule(Command):
-	pass
+    pass
 
 class pltrule(Command):
-	pass
+    pass
 
 class nopltrule(Command):
-	pass
+    pass
 
 class mltrule(Command):
-	pass
+    pass
 
 class nomltrule(Command):
-	pass
+    pass
 
 class sltrule(Command):
-	pass
+    pass
 
 class nosltrule(Command):
-	pass
+    pass
 
 
 # 
@@ -303,91 +303,91 @@ class nosltrule(Command):
 #
 
 class mtcsetpagenumbers(Command):
-	args = 'which:str value'
+    args = 'which:str value'
 
 class ptcpagenumbers(Command):
-	pass
+    pass
 
 class noptcpagenumbers(Command):
-	pass
+    pass
 
 class plfpagenumbers(Command):
-	pass
+    pass
 
 class noplfpagenumbers(Command):
-	pass
+    pass
 
 class pltpagenumbers(Command):
-	pass
+    pass
 
 class nopltpagenumbers(Command):
-	pass
+    pass
 
 class mtcpagenumbers(Command):
-	pass
+    pass
 
 class nomtcpagenumbers(Command):
-	pass
+    pass
 
 class mlfpagenumbers(Command):
-	pass
+    pass
 
 class nomlfpagenumbers(Command):
-	pass
+    pass
 
 class mltpagenumbers(Command):
-	pass
+    pass
 
 class nomltpagenumbers(Command):
-	pass
+    pass
 
 class stcpagenumbers(Command):
-	pass
+    pass
 
 class nostcpagenumbers(Command):
-	pass
+    pass
 
 class slfpagenumbers(Command):
-	pass
+    pass
 
 class noslfpagenumbers(Command):
-	pass
+    pass
 
 class sltpagenumbers(Command):
-	pass
+    pass
 
 class nosltpagenumbers(Command):
-	pass
+    pass
 
 
 class mtcsetfeature(Command):
-	args = 'which:str param:str commands:nox'
+    args = 'which:str param:str commands:nox'
 
 class firstpartis(Command):
-	args = 'num:int'
+    args = 'num:int'
 
 class firstchapteris(Command):
-	args = 'num:int'
+    args = 'num:int'
 
 class firstsectionis(Command):
-	args = 'num:int'
+    args = 'num:int'
 
 class mtcfixglossary(Command):
-	pass
+    pass
 
 class mtcfixindex(Command):
-	pass
+    pass
 
 class faketableofcontents(Command):
-	pass
+    pass
 
 class fakelistoffigures(Command):
-	pass
+    pass
 
 class fakelistoftables(Command):
-	pass
+    pass
 
 class mtcselectlanguage(Command):
-	args = 'language:str'
+    args = 'language:str'
 
 

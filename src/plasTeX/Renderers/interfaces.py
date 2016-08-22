@@ -14,4 +14,4 @@ logger = __import__('logging').getLogger(__name__)
 from plasTeX.DOM.interfaces import INode
 
 class IRenderableNode(INode):
-	pass
+    pass

@@ -10,204 +10,204 @@ from plasTeX import Command, Environment, sourceChildren
 from ..._util import chr as unichr
 
 class frenchspacing(Command):
-	unicode = u''
+    unicode = u''
 
 class nonfrenchspacing(Command):
-	unicode = u''
+    unicode = u''
 
 class normalbaselines(Command):
-	unicode = u''
+    unicode = u''
 
 class lq(Command):
-	unicode = unichr(8216)
+    unicode = unichr(8216)
 
 class rq(Command):
-	unicode = unichr(8217)
+    unicode = unichr(8217)
 
 class lbrack(Command):
-	unicode = u'['
+    unicode = u'['
 
 class rbrack(Command):
-	unicode = u']'
+    unicode = u']'
 
 class space(Command):
-	unicode = u' '
+    unicode = u' '
 
 class empty(Command):
-	unicode = u''
+    unicode = u''
 
 class null(Command):
-	unicode = u''
+    unicode = u''
 
 class bgroup(Command):
 
-	def invoke(self, tex):
-		self.ownerDocument.context.push()
+    def invoke(self, tex):
+        self.ownerDocument.context.push()
 
-	def digest(self, tokens):
-		# Absorb the tokens that belong to us
-		for item in tokens:
-			if item.nodeType == Command.ELEMENT_NODE:
-				if item.level < self.ENDSECTIONS_LEVEL:
-					tokens.push(item)
-					break
-				if isinstance(item, (egroup,endgroup)):
-					break
-				if item.contextDepth < self.contextDepth:
-					tokens.push(item)
-					break
-				item.parentNode = self
-				item.digest(tokens)
-			self.appendChild(item)
-		self.paragraphs(force=False)
+    def digest(self, tokens):
+        # Absorb the tokens that belong to us
+        for item in tokens:
+            if item.nodeType == Command.ELEMENT_NODE:
+                if item.level < self.ENDSECTIONS_LEVEL:
+                    tokens.push(item)
+                    break
+                if isinstance(item, (egroup,endgroup)):
+                    break
+                if item.contextDepth < self.contextDepth:
+                    tokens.push(item)
+                    break
+                item.parentNode = self
+                item.digest(tokens)
+            self.appendChild(item)
+        self.paragraphs(force=False)
 
-	@property
-	def source(self):
-		if self.hasChildNodes():
-			return '{%s}' % sourceChildren(self)
-		return '{'
+    @property
+    def source(self):
+        if self.hasChildNodes():
+            return '{%s}' % sourceChildren(self)
+        return '{'
 
 class begingroup(bgroup):
-	pass
+    pass
 
 class egroup(Command):
-	unicode = u''
+    unicode = u''
 
-	def invoke(self, tex):
-		self.ownerDocument.context.pop()
+    def invoke(self, tex):
+        self.ownerDocument.context.pop()
 
-	@property
-	def source(self):
-		return '}'
+    @property
+    def source(self):
+        return '}'
 
-	def digest(self, tokens):
-		return
+    def digest(self, tokens):
+        return
 
 class endgroup(egroup):
-	unicode = u''
+    unicode = u''
 
 class obeyspaces(Command):
-	unicode = u''
+    unicode = u''
 
 class loop(Command):
-	args = 'var:Tok'
-	unicode = u''
+    args = 'var:Tok'
+    unicode = u''
 
 class iterate(Command):
-	unicode = u''
+    unicode = u''
 
 class repeat(Command):
-	unicode = u''
+    unicode = u''
 
 class enskip(Command):
-	pass
+    pass
 
 class enspace(Command):
-	pass
+    pass
 
 class quad(Command):
-	pass
+    pass
 
 class qquad(Command):
-	pass
+    pass
 
 class thinspace(Command):
-	pass
+    pass
 
 class negthinspace(Command):
-	pass
+    pass
 
 class hglue(Command):
-	pass
+    pass
 
 class vglue(Command):
-	pass
+    pass
 
 class topglue(Command):
-	pass
+    pass
 
 class nointerlineskip(Command):
-	pass
+    pass
 
 class offinterlineskip(Command):
-	pass
+    pass
 
 class smallskip(Command):
-	pass
+    pass
 
 class medskip(Command):
-	pass
+    pass
 
 class bigskip(Command):
-	pass
+    pass
 
 class TeXBreak(Command):
-	macroName = 'break'
-	unicode = u''
+    macroName = 'break'
+    unicode = u''
 
 class allowbreak(Command):
-	unicode = u''
+    unicode = u''
 
 class ControlSpace(Command):
-	macroName = 'active::~'
+    macroName = 'active::~'
 
 class slash(Command):
-	pass
+    pass
 
 class filbreak(Command):
-	pass
+    pass
 
 class goodbreak(Command):
-	pass
+    pass
 
 class eject(Command):
-	unicode = u''
+    unicode = u''
 
 class supereject(Command):
-	unicode = u''
+    unicode = u''
 
 class removelastskip(Command):
-	pass
+    pass
 
 class smallbreak(Command):
-	pass
+    pass
 
 class medbreak(Command):
-	pass
+    pass
 
 class bigbreak(Command):
-	pass
+    pass
 
 class line(Command):
-	pass
+    pass
 
 class leftline(Command):
-	args = 'self'
+    args = 'self'
 
 class llap(Command):
-	args = 'self'
+    args = 'self'
 
 class centerline(Command):
-	args = 'self'
+    args = 'self'
 
 class underbar(Command):
-	args = 'self'
+    args = 'self'
 
 class hang(Command):
-	pass
+    pass
 
 class textindent(Command):
-	args = 'self'
+    args = 'self'
 
 class narrower(Command):
-	pass
+    pass
 
 class raggedright(Environment):
-	pass
+    pass
 
 #
 # Accents are done in the LaTeX package
 #
 
 class dots(Command):
-	unicode = unichr(8230)
+    unicode = unichr(8230)

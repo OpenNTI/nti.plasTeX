@@ -9,37 +9,37 @@ from plasTeX import Command, Environment, DimenCommand
 from plasTeX.Logging import getLogger
 
 class hspace(Command):
-	args = '* len:dimen'
+    args = '* len:dimen'
 
 class vspace(Command):
-	args = '* len:dimen'
+    args = '* len:dimen'
 
 class phantom(Command):
-	args = 'text:str'
+    args = 'text:str'
 
 class bigskip(Command):
-	pass
+    pass
 
 class medskip(Command):
-	pass
+    pass
 
 class smallskip(Command):
-	pass
+    pass
 
 class bigskipamount(DimenCommand):
-	value = DimenCommand.new('24pt')
+    value = DimenCommand.new('24pt')
 
 class medskipamount(DimenCommand):
-	value = DimenCommand.new('12pt')
+    value = DimenCommand.new('12pt')
 
 class smallskip(DimenCommand):
-	value = DimenCommand.new('6pt')
+    value = DimenCommand.new('6pt')
 
 class addvspace(Command):
-	args = 'len:dimen'
+    args = 'len:dimen'
 
 class hfill(Command):
-	pass
+    pass
 
 class vfill(Command):
-	pass
+    pass

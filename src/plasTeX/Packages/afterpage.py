@@ -3,8 +3,8 @@
 from plasTeX import Command, Environment
 
 class afterpage(Command):
-	args = 'self:nox'
+    args = 'self:nox'
 
-	def invoke(self, tex):
-		super(afterpage, self).invoke(tex)
-		return []
+    def invoke(self, tex):
+        super(afterpage, self).invoke(tex)
+        return []

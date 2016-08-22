@@ -8,16 +8,16 @@ plasTeX package for fancy boxes
 from plasTeX import Command
 
 class fbox(Command):
-	args = 'self'
+    args = 'self'
 
 class shadowbox(fbox):
-	pass
+    pass
 
 class doublebox(fbox):
-	pass
+    pass
 
 class ovalbox(fbox):
-	pass
+    pass
 
 class Ovalbox(ovalbox):
-	pass
+    pass

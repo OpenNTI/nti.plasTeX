@@ -25,39 +25,39 @@ import tempfile
 
 class _Persistable(object):
 
-	def persist(self):
-		return {'ref': 42}
+    def persist(self):
+        return {'ref': 42}
 
 from ..Context import Context
 
 class TestContext(unittest.TestCase):
 
-	def test_load_persist_stream(self):
-		context = Context()
-		context.persistentLabels['label'] = _Persistable()
+    def test_load_persist_stream(self):
+        context = Context()
+        context.persistentLabels['label'] = _Persistable()
 
-		bytes_io = context.persist(None)
+        bytes_io = context.persist(None)
 
-		bytes_io.seek(0) # back to beginning
+        bytes_io.seek(0) # back to beginning
 
-		context = Context()
-		context.restore(bytes_io)
+        context = Context()
+        context.restore(bytes_io)
 
-		assert_that(context, has_property( 'labels',
-										   has_entry('label', has_property('ref', 42))))
+        assert_that(context, has_property( 'labels',
+                                           has_entry('label', has_property('ref', 42))))
 
-	def test_load_persist_file(self):
-		nf = tempfile.NamedTemporaryFile()
-		try:
-			context = Context()
-			context.persistentLabels['label'] = _Persistable()
+    def test_load_persist_file(self):
+        nf = tempfile.NamedTemporaryFile()
+        try:
+            context = Context()
+            context.persistentLabels['label'] = _Persistable()
 
-			context.persist(nf.name)
+            context.persist(nf.name)
 
-			context = Context()
-			context.restore(nf.name)
+            context = Context()
+            context.restore(nf.name)
 
-			assert_that(context, has_property( 'labels',
-											   has_entry('label', has_property('ref', 42))))
-		finally:
-			nf.close()
+            assert_that(context, has_property( 'labels',
+                                               has_entry('label', has_property('ref', 42))))
+        finally:
+            nf.close()
