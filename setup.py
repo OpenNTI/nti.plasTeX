@@ -69,6 +69,7 @@ setup(name="nti.plasTeX",
       author_email="Kevin.Smith@sas.com",
       url="https://github.com/NextThought/nti.plasTeX",
       keywords='latex render zope tal zpt html DOM',
+      license='Apache',
       tests_require=TESTS_REQUIRE,
       install_requires=INSTALL_REQUIRES,
       classifiers=[
