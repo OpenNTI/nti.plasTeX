@@ -31,6 +31,14 @@ class StringOption(StringParser, GenericOption, UserString):
         UserString.__init__(self, '')
         GenericOption.initialize(self, locals())
 
+    def __getnewargs__(self):
+        # Python 3.5 UserString added this and tries to
+        # copy self.data by slicing it: self.data[:]. But
+        # our data may actually be None (which is weird for a str,
+        # but there you go) if we were just initialized with that as
+        # a default (as for --config)
+        return (self.data if not self.data else self.data[:],)
+
     def cast(self, arg):
         if arg is None:
             return
