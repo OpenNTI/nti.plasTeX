@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
 import textwrap, types
+import logging
 from logging import CRITICAL, DEBUG, Logger as _Logger, StreamHandler as _StreamHandler, Formatter
 from logging import addLevelName, setLoggerClass
 
@@ -147,7 +148,7 @@ class StatusHandler(StreamHandler):
 
 setLoggerClass(Logger)
 
-root = Logger()
+root = logging.getLogger("plasTeX")
 
 _loggers = {None:root}
 
@@ -157,8 +158,8 @@ def getLogger(name=None):
 
     If no name is specified, return the root logger.
     """
-    if name:
-        logger = Logger.manager.getLogger(name)
+    if name and name != "plasTeX":
+        logger = logging.getLogger(name)
         _loggers[name] = logger
         return logger
     else:
@@ -166,5 +167,5 @@ def getLogger(name=None):
 
 def disableLogging():
     """ Disable all logging """
-    for logger in list(_loggers.values()):
+    for logger in _loggers.values():
         logger.setLevel(CRITICAL)

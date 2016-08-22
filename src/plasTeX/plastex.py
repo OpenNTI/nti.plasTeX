@@ -28,7 +28,7 @@ from plasTeX.Logging import getLogger
 from zope.configuration import xmlconfig
 from zope.dottedname import resolve as dottedname
 
-log = getLogger()
+log = getLogger('plasTeX')
 
 
 __version__ = '0.9.3'

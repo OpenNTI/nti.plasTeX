@@ -37,7 +37,7 @@ from six import text_type
 # Only export the TeX class
 __all__ = ['TeX']
 
-log = getLogger()
+log = getLogger('plasTeX')
 status = getLogger('status')
 tokenlog = getLogger('parse.tokens')
 digestlog = getLogger('parse.digest')
@@ -1516,7 +1516,7 @@ class TeX(object):
                 return dimen(t)
             self.pushToken(t)
             break
-        true = self.readKeyword(['true'])
+        self.readKeyword(['true']) # assigned to 'true' but never used
         unit = self.readKeyword(units)
         if unit is None:
             log.warning('Missing unit (expecting %s)%s, treating as `%s`',
