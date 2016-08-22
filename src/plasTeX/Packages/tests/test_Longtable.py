@@ -4,13 +4,14 @@ import unittest, re, os, tempfile, shutil
 
 from plasTeX.TeX import TeX
 from unittest import TestCase
-from bs4 import BeautifulSoup as Soup
+
 
 from hamcrest import assert_that
 from hamcrest import has_length
 from hamcrest import is_
 #from hamcrest import same_instance
 
+from . import BeautifulSoup as Soup
 
 from . import _run_plastex
 
@@ -110,7 +111,7 @@ class TestLongtables(TestCase):
 
     def testFooters(self):
         footers = [
-           # Test \endfoot
+            # Test \endfoot
             r'M & N & O \\\endhead F & G & H \\\endfoot',
             r'M & N & O \\\endfirsthead F & G & H \\\endfoot',
             r'M & N & O \\\endfirsthead\n X & Y & Z \\\endhead F & G & H \\\endfoot',
@@ -180,9 +181,10 @@ class TestLongtables(TestCase):
             caption = longtables[0].title
 
             # Make sure that the caption node matches the caption on the table
-            table = doc.getElementsByTagName('longtable')[0]
             assert caption is not None, 'Caption is empty'
+
             # JAM: table.caption refers to the /class/
+            #table = doc.getElementsByTagName('longtable')[0]
             #assert table.caption is not None, 'Table caption is empty'
             #assert_that( table.caption, is_(same_instance( caption ) ), 'Caption does not match table caption' )
 

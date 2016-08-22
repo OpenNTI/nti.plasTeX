@@ -88,3 +88,11 @@ else:
                                   args=(cmd,))
         thread.start()
         thread.join()
+
+
+from bs4 import BeautifulSoup as _Soup
+
+def BeautifulSoup(markup, parser=None):
+    if parser is None:
+        parser = "html.parser"
+    return _Soup(markup, parser)

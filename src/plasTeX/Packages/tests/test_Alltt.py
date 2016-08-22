@@ -6,13 +6,14 @@ import tempfile
 import shutil
 from plasTeX.TeX import TeX
 from unittest import TestCase
-from bs4 import BeautifulSoup as Soup
+
 
 from hamcrest import assert_that
 from hamcrest import has_property
 from hamcrest import contains
 
 from . import _run_plastex
+from . import BeautifulSoup as Soup
 
 class TestAlltt(TestCase):
 
