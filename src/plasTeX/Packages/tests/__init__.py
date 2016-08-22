@@ -25,7 +25,7 @@ def _real_check_for_binaries():
 _check_for_binaries = _real_check_for_binaries
 
 def _already_checked_for_binaries_and_failed():
-    raise OSError()
+    raise SkipTest("kpsewhich binary not found")
 
 def _already_checked_for_binaries_and_worked():
     return
@@ -43,9 +43,9 @@ def _skip_if_no_binaries():
         _check_for_binaries()
         _check_for_binaries = _already_checked_for_binaries_and_worked
     except OSError:
-        if _check_for_binaries is _real_check_for_binaries:
-            _check_for_binaries = _already_checked_for_binaries_and_failed
-        raise SkipTest("kpsewhich binary not found")
+        _check_for_binaries = _already_checked_for_binaries_and_failed
+        _already_checked_for_binaries_and_failed()
+
 
 
 if not IS_PYPY:
