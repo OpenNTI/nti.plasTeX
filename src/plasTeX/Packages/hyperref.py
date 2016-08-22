@@ -17,18 +17,18 @@ from .nameref import Nameref, nameref
 import urlparse
 
 def addBaseURL(self, urlarg):
-	try:
-		baseurl = self.ownerDocument.userdata['packages']['hyperref']['baseurl']
-		the_url = self.attributes[urlarg]
-		# NTI/JAM: The 'url' arg type seems to not work, we get TexFragment objects
-		if getattr(baseurl, 'source', None):
-		   baseurl = baseurl.source.replace( ' ', '' ).replace( '\\&', '&' ).replace( '\\_', '_' )
-		if hasattr( the_url, 'source' ):
-		   the_url = the_url.source.replace( ' ', '' ).replace( '\\&', '&' ).replace( '\\_', '_' )
-		return urlparse.urljoin(baseurl, the_url)
-	except (KeyError,AttributeError):
-		pass
-	return self.attributes[urlarg]
+    try:
+        baseurl = self.ownerDocument.userdata['packages']['hyperref']['baseurl']
+        the_url = self.attributes[urlarg]
+        # NTI/JAM: The 'url' arg type seems to not work, we get TexFragment objects
+        if getattr(baseurl, 'source', None):
+           baseurl = baseurl.source.replace( ' ', '' ).replace( '\\&', '&' ).replace( '\\_', '_' )
+        if hasattr( the_url, 'source' ):
+           the_url = the_url.source.replace( ' ', '' ).replace( '\\&', '&' ).replace( '\\_', '_' )
+        return urlparse.urljoin(baseurl, the_url)
+    except (KeyError,AttributeError):
+        pass
+    return self.attributes[urlarg]
 
 # Basic macros
 
@@ -36,165 +36,165 @@ ref.args = '* %s' % ref.args
 pageref.args = '* %s' % pageref.args
 
 class href(Command):
-	args = 'url:url self'
-	def invoke(self, tex):
-		res = Command.invoke(self, tex)
-		self.attributes['url'] = addBaseURL(self, 'url')
-		return res
+    args = 'url:url self'
+    def invoke(self, tex):
+        res = Command.invoke(self, tex)
+        self.attributes['url'] = addBaseURL(self, 'url')
+        return res
 
 class url(Command):
-	args = 'url:url'
-	def invoke(self, tex):
-		res = Command.invoke(self, tex)
-		self.attributes['url'] = addBaseURL(self, 'url')
-		return res
+    args = 'url:url'
+    def invoke(self, tex):
+        res = Command.invoke(self, tex)
+        self.attributes['url'] = addBaseURL(self, 'url')
+        return res
 
 class nolinkurl(Command):
-	args = 'url:url'
-	def invoke(self, tex):
-		res = Command.invoke(self, tex)
-		self.attributes['url'] = addBaseURL(self, 'url')
-		return res
+    args = 'url:url'
+    def invoke(self, tex):
+        res = Command.invoke(self, tex)
+        self.attributes['url'] = addBaseURL(self, 'url')
+        return res
 
 class hyperbaseurl(Command):
-	args = 'base:url'
-	def invoke(self, tex):
-		res = Command.invoke(self, tex)
-		data = self.ownerDocument.userdata
-		if 'packages' not in data:
-			data['packages'] = {}
-		if 'hyperref' not in data['packages']:
-			data['packages']['hyperref'] = {}
-		self.ownerDocument.userdata['packages']['hyperref']['baseurl'] = self.attributes['base']
-		return res
+    args = 'base:url'
+    def invoke(self, tex):
+        res = Command.invoke(self, tex)
+        data = self.ownerDocument.userdata
+        if 'packages' not in data:
+            data['packages'] = {}
+        if 'hyperref' not in data['packages']:
+            data['packages']['hyperref'] = {}
+        self.ownerDocument.userdata['packages']['hyperref']['baseurl'] = self.attributes['base']
+        return res
 
 class hyperimage(Command):
-	args = 'url:url self'
-	def invoke(self, tex):
-		res = Command.invoke(self, tex)
-		self.attributes['url'] = addBaseURL(self, 'url')
-		return res
+    args = 'url:url self'
+    def invoke(self, tex):
+        res = Command.invoke(self, tex)
+        self.attributes['url'] = addBaseURL(self, 'url')
+        return res
 
 class hyperdef(Command):
-	args = 'category name self'
+    args = 'category name self'
 
 class hyperref(Command):
-	args = 'url:url category name self'
-	def invoke(self, tex):
-		res = Command.invoke(self, tex)
-		self.attributes['url'] = addBaseURL(self, 'url')
-		return res
+    args = 'url:url category name self'
+    def invoke(self, tex):
+        res = Command.invoke(self, tex)
+        self.attributes['url'] = addBaseURL(self, 'url')
+        return res
 
 class hyperlink(Command):
-	args = 'label:idref self'
+    args = 'label:idref self'
 
 class hypertarget(Command):
-	counter = 'hypertarget'	 # so we can link to it
-	args = 'label:id self'
+    counter = 'hypertarget'  # so we can link to it
+    args = 'label:id self'
 
 class hypertargetname(Command):
-	""" Dummy class for hypertarget macro """
-	unicode = ''
+    """ Dummy class for hypertarget macro """
+    unicode = ''
 
 class thehypertarget(Command):
-	""" Dummy class for hypertarget macro """
-	unicode = ''
+    """ Dummy class for hypertarget macro """
+    unicode = ''
 
 class phantomsection(Command):
-	pass
+    pass
 
 class autoref(Command):
-	args = 'label:idref'
+    args = 'label:idref'
 
 class pdfstringdef(Command):
-	args = 'macroname:string tex:string'
+    args = 'macroname:string tex:string'
 
 class textorpdfstring(Command):
-	args = 'tex:string pdf:string'
+    args = 'tex:string pdf:string'
 
 class pdfstringdefDisableCommands(Command):
-	args = 'tex:string'
+    args = 'tex:string'
 
 class hypercalcbp(Command):
-	args = 'size:string'
+    args = 'size:string'
 
 
 # Forms
 
 class Form(Environment):
-	args = '[ parameters:dict ]'
+    args = '[ parameters:dict ]'
 
 class TextField(Command):
-	args = '[ parameters:dict ] label'
+    args = '[ parameters:dict ] label'
 
 class CheckBox(Command):
-	args = '[ parameters:dict ] label'
+    args = '[ parameters:dict ] label'
 
 class ChoiceMenu(Command):
-	args = '[ parameters:dict ] label choices:list'
+    args = '[ parameters:dict ] label choices:list'
 
 class PushButton(Command):
-	args = '[ parameters:dict ] label'
+    args = '[ parameters:dict ] label'
 
 class Submit(Command):
-	args = '[ parameters:dict ] label'
+    args = '[ parameters:dict ] label'
 
 class Reset(Command):
-	args = '[ parameters:dict ] label'
+    args = '[ parameters:dict ] label'
 
 
 class LayoutTextField(Command):
-	args = 'label field'
+    args = 'label field'
 
 class LayoutChoiceField(Command):
-	args = 'label field'
+    args = 'label field'
 
 class LayoutCheckField(Command):
-	args = 'label field'
+    args = 'label field'
 
 
 class MakeRadioField(Command):
-	args = 'width height'
+    args = 'width height'
 
 class MakeCheckField(Command):
-	args = 'width height'
+    args = 'width height'
 
 class MakeTextField(Command):
-	args = 'width height'
+    args = 'width height'
 
 class MakeChoiceField(Command):
-	args = 'width height'
+    args = 'width height'
 
 class MakeButtonField(Command):
-	args = 'self'
+    args = 'self'
 
 
 class DefaultHeightofSubmit(Command):
-	args = 'size:dimen'
+    args = 'size:dimen'
 
 class DefaultWidthofSubmit(Command):
-	args = 'size:dimen'
+    args = 'size:dimen'
 
 class DefaultHeightofReset(Command):
-	args = 'size:dimen'
+    args = 'size:dimen'
 
 class DefaultWidthofReset(Command):
-	args = 'size:dimen'
+    args = 'size:dimen'
 
 class DefaultHeightofCheckBox(Command):
-	args = 'size:dimen'
+    args = 'size:dimen'
 
 class DefaultWidthofCheckBox(Command):
-	args = 'size:dimen'
+    args = 'size:dimen'
 
 class DefaultHeightofChoiceMenu(Command):
-	args = 'size:dimen'
+    args = 'size:dimen'
 
 class DefaultWidthofChoiceMenu(Command):
-	args = 'size:dimen'
+    args = 'size:dimen'
 
 class DefaultHeightofText(Command):
-	args = 'size:dimen'
+    args = 'size:dimen'
 
 class DefaultWidthofText(Command):
-	args = 'size:dimen'
+    args = 'size:dimen'

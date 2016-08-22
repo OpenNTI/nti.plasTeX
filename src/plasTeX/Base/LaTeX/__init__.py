@@ -36,30 +36,30 @@ from .Verbatim import *
 from plasTeX import Command
 
 class ifundefined_(Command):
-	macroName = '@ifundefined'
-	args = 'name:str true:nox false:nox'
-	def invoke(self, tex):
-		a = self.parse(tex)
-		if a['name'] in self.ownerDocument.context:
-			tex.pushTokens(a['false'])
-		else:
-			tex.pushTokens(a['true'])
-		return []
+    macroName = '@ifundefined'
+    args = 'name:str true:nox false:nox'
+    def invoke(self, tex):
+        a = self.parse(tex)
+        if a['name'] in self.ownerDocument.context:
+            tex.pushTokens(a['false'])
+        else:
+            tex.pushTokens(a['true'])
+        return []
 
 class vwritefile_(Command):
-	macroName = '@vwritefile'
-	args = 'file:nox content:nox'
+    macroName = '@vwritefile'
+    args = 'file:nox content:nox'
 
 class pagelabel(Command):
-	args = 'label:nox content:nox'
+    args = 'label:nox content:nox'
 
 class verbatiminput(Command):
-	pass
+    pass
 
 class makeatother(Command):
-	def invoke(self, tex):
-		self.ownerDocument.context.catcode('@', 12)
+    def invoke(self, tex):
+        self.ownerDocument.context.catcode('@', 12)
 
 class makeatletter(Command):
-	def invoke(self, tex):
-		self.ownerDocument.context.catcode('@', 11)
+    def invoke(self, tex):
+        self.ownerDocument.context.catcode('@', 11)

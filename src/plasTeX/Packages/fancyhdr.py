@@ -3,31 +3,31 @@
 from plasTeX import Command
 
 class fancypagestyle(Command):
-	args = 'style'
+    args = 'style'
 
 class fancyhead(Command):
-	args = '[ pos ] text'
+    args = '[ pos ] text'
 
 class fancyfoot(fancyhead):
-	pass
+    pass
 
 class fancyhf(Command):
-	args = 'text'
+    args = 'text'
 
 class rightmark(Command):
-	pass
+    pass
 
 class leftmark(Command):
-	pass
+    pass
 
 class chaptermark(Command):
-	pass
+    pass
 
 class sectionmark(Command):
-	pass
+    pass
 
 class markboth(Command):
-	pass
+    pass
 
 class markright(Command):
-	pass
+    pass

@@ -16,10 +16,10 @@ from zope import interface
 from zope.annotation.interfaces import IAnnotatable
 
 class INode(IAnnotatable):
-	pass
+    pass
 
 class IElement(INode):
-	pass
+    pass
 
 class INamedNodeMap(interface.Interface):
-	pass
+    pass

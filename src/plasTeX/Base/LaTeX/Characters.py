@@ -11,161 +11,161 @@ from plasTeX import Command
 from ..._util import chr as unichr
 
 class ding(Command):
-	args = 'self'
-	values = {}
-	@property
-	def unicode(self):
-		if int(self.textContent.strip()) in type(self).values:
-			return type(self).values[int(self.textContent)]
+    args = 'self'
+    values = {}
+    @property
+    def unicode(self):
+        if int(self.textContent.strip()) in type(self).values:
+            return type(self).values[int(self.textContent)]
 
 class textogonekcentered(Command):
-	unicode = unichr(731)
+    unicode = unichr(731)
 
 class textperthousand(Command):
-	unicode = unichr(8240)
+    unicode = unichr(8240)
 
 class textpertenthousand(Command):
-	unicode = unichr(8241)
+    unicode = unichr(8241)
 
 class textasciicircum(Command):
-	unicode = '^'
+    unicode = '^'
 
 class textasciitilde(Command):
-	unicode = '~'
+    unicode = '~'
 
 class textbackslash(Command):
-	unicode = '\\'
+    unicode = '\\'
 
 class textbar(Command):
-	unicode = '|'
+    unicode = '|'
 
 class textbraceleft(Command):
-	unicode = '{'
+    unicode = '{'
 
 class textbraceright(Command):
-	unicode = '}'
+    unicode = '}'
 
 class textcompwordmark(Command): pass
 
 class textdollar(Command):
-	unicode = '$'
+    unicode = '$'
 
 class textemdash(Command):
-	unicode = unichr(8212)
+    unicode = unichr(8212)
 
 class textendash(Command):
-	unicode = unichr(8211)
+    unicode = unichr(8211)
 
 class textexclamdown(Command):
-	unicode = unichr(161)
+    unicode = unichr(161)
 
 class textgreater(Command):
-	unicode = '>'
+    unicode = '>'
 
 class textless(Command):
-	unicode = '<'
+    unicode = '<'
 
 class textquestiondown(Command):
-	unicode = unichr(191)
+    unicode = unichr(191)
 
 class textquotedblleft(Command):
-	unicode = unichr(8220)
+    unicode = unichr(8220)
 
 class textquotedblright(Command):
-	unicode = unichr(8221)
+    unicode = unichr(8221)
 
 class textquotedbl(Command):
-	unicode = '"'
+    unicode = '"'
 
 class textquoteright(Command):
-	unicode = unichr(8217)
+    unicode = unichr(8217)
 
 class textquoteleft(Command):
-	unicode = unichr(8216)
+    unicode = unichr(8216)
 
 class textsection(Command):
-	unicode = unichr(167)
+    unicode = unichr(167)
 
 class textsterling(Command): pass
 
 class textunderscore(Command):
-	unicode = '_'
+    unicode = '_'
 
 class textvisiblespace(Command):
-	unicode = unichr(160)
+    unicode = unichr(160)
 
 class AE(Command):
-	unicode = unichr(198)
+    unicode = unichr(198)
 
 class DH(Command):
-	unicode = unichr(272)
+    unicode = unichr(272)
 
 class DJ(Command):
-	unicode = unichr(272)
+    unicode = unichr(272)
 
 class L(Command):
-	unicode = unichr(321)
+    unicode = unichr(321)
 
 class NG(Command):
-	unicode = unichr(330)
+    unicode = unichr(330)
 
 class OE(Command):
-	unicode = unichr(338)
+    unicode = unichr(338)
 
 class O(Command):
-	unicode = unichr(216)
+    unicode = unichr(216)
 
 class SS(Command):
-	unicode = unichr(223)
+    unicode = unichr(223)
 
 class TH(Command):
-	unicode = unichr(222)
+    unicode = unichr(222)
 
 class ae(Command):
-	unicode = unichr(230)
+    unicode = unichr(230)
 
 class dh(Command): pass
 
 class dj(Command):
-	unicode = unichr(273)
+    unicode = unichr(273)
 
 class guillmotleft(Command):
-	unicode = unichr(171)
+    unicode = unichr(171)
 
 class guillemotright(Command):
-	unicode = unichr(187)
+    unicode = unichr(187)
 
 class guilsinglleft(Command):
-	unicode = unichr(8249)
+    unicode = unichr(8249)
 
 class guilsinglright(Command):
-	unicode = unichr(8250)
+    unicode = unichr(8250)
 
 class i(Command):
-	unicode = unichr(305)
+    unicode = unichr(305)
 
 class j(Command): pass
 
 class l(Command):
-	unicode = unichr(322)
+    unicode = unichr(322)
 
 class ng(Command):
-	unicode = unichr(331)
+    unicode = unichr(331)
 
 class oe(Command):
-	unicode = unichr(339)
+    unicode = unichr(339)
 
 class o(Command):
-	unicode = unichr(248)
+    unicode = unichr(248)
 
 class quotedblbase(Command):
-	unicode = unichr(8222)
+    unicode = unichr(8222)
 
 class quotesinglbase(Command):
-	unicode = unichr(8218)
+    unicode = unichr(8218)
 
 class ss(Command):
-	unicode = 'SS'
+    unicode = 'SS'
 
 class th(Command):
-	unicode = unichr(254)
+    unicode = unichr(254)

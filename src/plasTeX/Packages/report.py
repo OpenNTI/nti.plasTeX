@@ -4,6 +4,6 @@ from __future__ import absolute_import
 from .book import *
 
 def ProcessOptions(options, document):
-	from . import book
-	book.ProcessOptions(options, document)
-	document.context['theequation'].format = '${equation}'
+    from . import book
+    book.ProcessOptions(options, document)
+    document.context['theequation'].format = '${equation}'

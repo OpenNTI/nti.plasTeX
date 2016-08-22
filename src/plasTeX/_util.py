@@ -15,50 +15,50 @@ PY27 = sys.version_info[0:2] == (2, 7)
 PYPY = hasattr(sys, 'pypy_translation_info')
 
 if PY2:
-	from __builtin__ import unichr as chr
+    from __builtin__ import unichr as chr
 else:
-	import builtins
-	chr = builtins.chr
+    import builtins
+    chr = builtins.chr
 
 from plasTeX.DOM import Node
 
 def subclasses(o):
-	""" Return all subclasses of the given class """
-	output = [o]
-	for item in o.__subclasses__():
-		output.extend(subclasses(item))
-	return output
+    """ Return all subclasses of the given class """
+    output = [o]
+    for item in o.__subclasses__():
+        output.extend(subclasses(item))
+    return output
 
 def sourceChildren(o, par=True):
-	""" Return the LaTeX source of the child nodes """
-	if o.hasChildNodes():
-		if par:
-			return u''.join([x.source for x in o.childNodes])
-		else:
-			source = []
-			for par in o.childNodes:
-				source += [x.source for x in par]
-			return u''.join(source)
-	return u''
+    """ Return the LaTeX source of the child nodes """
+    if o.hasChildNodes():
+        if par:
+            return u''.join([x.source for x in o.childNodes])
+        else:
+            source = []
+            for par in o.childNodes:
+                source += [x.source for x in par]
+            return u''.join(source)
+    return u''
 
 def sourceArguments(o):
-	""" Return the LaTeX source of the arguments """
-	return o.argSource
+    """ Return the LaTeX source of the arguments """
+    return o.argSource
 
 def ismacro(o):
-	""" Is the given object a macro? """
-	return hasattr(o, 'macroName')
+    """ Is the given object a macro? """
+    return hasattr(o, 'macroName')
 
 def issection(o):
-	""" Is the given object a section? """
-	return o.level >= Node.DOCUMENT_LEVEL and o.level < Node.ENDSECTIONS_LEVEL
+    """ Is the given object a section? """
+    return o.level >= Node.DOCUMENT_LEVEL and o.level < Node.ENDSECTIONS_LEVEL
 
 def macroName(o):
-	""" 
-	Return the macro name of the given object 
-	"""
-	if o.macroName is None:
-		if type(o) is type:
-			return o.__name__
-		return type(o).__name__
-	return o.macroName
+    """ 
+    Return the macro name of the given object 
+    """
+    if o.macroName is None:
+        if type(o) is type:
+            return o.__name__
+        return type(o).__name__
+    return o.macroName

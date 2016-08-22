@@ -9,10 +9,10 @@ from plasTeX import Command, Environment
 
 
 class label(Command):
-	args = 'label:id'
+    args = 'label:id'
 
 class ref(Command):
-	args = 'label:idref'
+    args = 'label:idref'
 
 class pageref(Command):
-	args = 'label:idref'
+    args = 'label:idref'

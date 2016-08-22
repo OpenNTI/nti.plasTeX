@@ -17,368 +17,368 @@ log = getLogger()
 from zope.cachedescriptors.property import Lazy as cachedproperty
 
 class TableOfContents(object):
-	"""
-	Table of Contents object
+    """
+    Table of Contents object
 
-	The table of contents object is a proxy object that limits the
-	depth of a table of contents entry.	 Each time the `tableofcontents'
-	attribute is accessed on the given node, the depth level is
-	increased.	Once the depth limit has been reached, no more
-	table of contents entries are returned.
+    The table of contents object is a proxy object that limits the
+    depth of a table of contents entry.  Each time the `tableofcontents'
+    attribute is accessed on the given node, the depth level is
+    increased.  Once the depth limit has been reached, no more
+    table of contents entries are returned.
 
-	"""
+    """
 
-	def __init__(self, node, limit, level=1):
-		"""
-		Instantiate a table of contents object
+    def __init__(self, node, limit, level=1):
+        """
+        Instantiate a table of contents object
 
-		Arguments:
-		node -- the node to retrieve the table of contents from
-		limit -- the number of levels to display
-		level -- the current level
+        Arguments:
+        node -- the node to retrieve the table of contents from
+        limit -- the number of levels to display
+        level -- the current level
 
-		"""
-		self._toc_node = node
-		self._toc_limit = limit
-		self._toc_level = level
+        """
+        self._toc_node = node
+        self._toc_limit = limit
+        self._toc_level = level
 
-	def __getattribute__(self, name):
-		"""
-		Proxy all attributes to the real object except `tableofcontents'
+    def __getattribute__(self, name):
+        """
+        Proxy all attributes to the real object except `tableofcontents'
 
-		Each nested call to the tableofcontents should limit the
-		depth of the items displayed.
+        Each nested call to the tableofcontents should limit the
+        depth of the items displayed.
 
-		"""
-		# Attributes that belong to the ToC object
-		if name.startswith('_toc_'):
-			return object.__getattribute__(self, name)
+        """
+        # Attributes that belong to the ToC object
+        if name.startswith('_toc_'):
+            return object.__getattribute__(self, name)
 
-		# Limit the number of ToC levels
-		if name in ('tableofcontents','fulltableofcontents'):
-			if self._toc_level < self._toc_limit:
-				return [type(self)(x._toc_node, self._toc_limit, self._toc_level + 1)
-						for x in self._toc_node.fulltableofcontents]
+        # Limit the number of ToC levels
+        if name in ('tableofcontents','fulltableofcontents'):
+            if self._toc_level < self._toc_limit:
+                return [type(self)(x._toc_node, self._toc_limit, self._toc_level + 1)
+                        for x in self._toc_node.fulltableofcontents]
 
-			return ()
+            return ()
 
-		# All other attribute accesses get passed on
-		return getattr(self._toc_node, name)
+        # All other attribute accesses get passed on
+        return getattr(self._toc_node, name)
 
 class SectionUtils(object):
-	""" General utilities for getting information about sections """
+    """ General utilities for getting information about sections """
 
-	tocdepth = None
+    tocdepth = None
 
-	@cachedproperty
-	def footnotes(self):
-		output = []
-		for f in self.ownerDocument.userdata.get('footnotes', ()):
-			s = f.currentSection
-			while s is not None and not s.filename:
-				s = s.currentSection
-			if s is self:
-				output.append(f)
-		for i, f in enumerate(output):
-			f.mark.attributes['num'] = i+1
-		return tuple(output)
+    @cachedproperty
+    def footnotes(self):
+        output = []
+        for f in self.ownerDocument.userdata.get('footnotes', ()):
+            s = f.currentSection
+            while s is not None and not s.filename:
+                s = s.currentSection
+            if s is self:
+                output.append(f)
+        for i, f in enumerate(output):
+            f.mark.attributes['num'] = i+1
+        return tuple(output)
 
-	# SAJ: Allows fetching of only the glossary entries for the current section
-	@cachedproperty
-	def glossary(self):
-		output = []
-		for f in self.ownerDocument.userdata.get('glossary', ()):
-			s = f.currentSection
-			while s is not None and not s.filename:
-				s = s.currentSection
-			if s is self:
-				output.append(f)
-		return tuple(output)
+    # SAJ: Allows fetching of only the glossary entries for the current section
+    @cachedproperty
+    def glossary(self):
+        output = []
+        for f in self.ownerDocument.userdata.get('glossary', ()):
+            s = f.currentSection
+            while s is not None and not s.filename:
+                s = s.currentSection
+            if s is self:
+                output.append(f)
+        return tuple(output)
 
-	@cachedproperty
-	def subsections(self):
-		""" Retrieve a list of all immediate subsections of this section """
-		return tuple((x for x in self if x.level < Command.ENDSECTIONS_LEVEL))
+    @cachedproperty
+    def subsections(self):
+        """ Retrieve a list of all immediate subsections of this section """
+        return tuple((x for x in self if x.level < Command.ENDSECTIONS_LEVEL))
 
-	@cachedproperty
-	def siblings(self):
-		""" Retrieve a list of all sibling sections of this section """
-		if not self.parentNode or self.level == Command.DOCUMENT_LEVEL:
-			return []
-		return tuple((x for x in self.parentNode.subsections if x is not self))
+    @cachedproperty
+    def siblings(self):
+        """ Retrieve a list of all sibling sections of this section """
+        if not self.parentNode or self.level == Command.DOCUMENT_LEVEL:
+            return []
+        return tuple((x for x in self.parentNode.subsections if x is not self))
 
-	def _gen_toc( self, tocdepth=1000, require_a_file=False):
-		# Bail out if they don't want a ToC
-		if tocdepth < 1:
-			return ()
+    def _gen_toc( self, tocdepth=1000, require_a_file=False):
+        # Bail out if they don't want a ToC
+        if tocdepth < 1:
+            return ()
 
-		# Don't create a ToC unless at least one subsection creates a file
-		if require_a_file and not (x for x in self.subsections if x.filename):
-			return ()
+        # Don't create a ToC unless at least one subsection creates a file
+        if require_a_file and not (x for x in self.subsections if x.filename):
+            return ()
 
-		# Include sections that don't create files in the ToC?
-		toc_non_files = self.config['document']['toc-non-files']
-		return tuple((TableOfContents(x, tocdepth)
-					  for x in self.subsections
-					  if toc_non_files or x.filename))
+        # Include sections that don't create files in the ToC?
+        toc_non_files = self.config['document']['toc-non-files']
+        return tuple((TableOfContents(x, tocdepth)
+                      for x in self.subsections
+                      if toc_non_files or x.filename))
 
-	@cachedproperty
-	def tableofcontents(self):
-		""" Return a toble of contents object limited to toc-depth """
-		if self.tocdepth is not None:
-			tocdepth = self.tocdepth
-		else:
-			tocdepth = self.config['document']['toc-depth']
+    @cachedproperty
+    def tableofcontents(self):
+        """ Return a toble of contents object limited to toc-depth """
+        if self.tocdepth is not None:
+            tocdepth = self.tocdepth
+        else:
+            tocdepth = self.config['document']['toc-depth']
 
-		return self._gen_toc( tocdepth, True )
-
-
-	@cachedproperty
-	def fulltableofcontents(self):
-		""" Return a toble of contents object without limits """
-		return self._gen_toc( 1000 )
+        return self._gen_toc( tocdepth, True )
 
 
-	@cachedproperty
-	def allSections(self):
-		""" Retrieve a list of all sections within (and including) this one """
-		sections = [self]
-		for item in self.subsections:
-			sections.extend(item.allSections)
-		return sections
-
-	@cachedproperty
-	def documentSections(self):
-		""" Retrieve a list of all sections in the document """
-		document = self
-		while document.level is not Command.DOCUMENT_LEVEL:
-			document = document.parentNode
-			if document is None:
-				return ()
-		return document.allSections
-
-	def containedChildNodesImplementing(self, iface):
-		"""
-		Return a list of nodes within this section (not subsections) that
-		either implement or can be adapted to the given interface.
-		"""
-		nodes_to_inspect = set(self.childNodes) - set(self.subsections)
-		if not nodes_to_inspect:
-			return ()
-
-		result = []
-		for node in nodes_to_inspect:
-			if iface(node,None) is not None:
-				result.append(node)
-			elif node.hasChildNodes():
-				for child in node.allChildNodes:
-					if iface(child,None) is not None:
-						result.append(child)
-
-		return result
+    @cachedproperty
+    def fulltableofcontents(self):
+        """ Return a toble of contents object without limits """
+        return self._gen_toc( 1000 )
 
 
-	@cachedproperty
-	def links(self):
-		"""
-		Return a dictionary containing a lot of navigation information.
+    @cachedproperty
+    def allSections(self):
+        """ Retrieve a list of all sections within (and including) this one """
+        sections = [self]
+        for item in self.subsections:
+            sections.extend(item.allSections)
+        return sections
 
-		JAM: FIXME: This only works at render time due to the use of 'filename'
+    @cachedproperty
+    def documentSections(self):
+        """ Retrieve a list of all sections in the document """
+        document = self
+        while document.level is not Command.DOCUMENT_LEVEL:
+            document = document.parentNode
+            if document is None:
+                return ()
+        return document.allSections
 
-		See http://fantasai.tripod.com/qref/Appendix/LinkTypes/ltdef.html
+    def containedChildNodesImplementing(self, iface):
+        """
+        Return a list of nodes within this section (not subsections) that
+        either implement or can be adapted to the given interface.
+        """
+        nodes_to_inspect = set(self.childNodes) - set(self.subsections)
+        if not nodes_to_inspect:
+            return ()
 
-		"""
-		sections = [x for x in self.documentSections if x.filename]
+        result = []
+        for node in nodes_to_inspect:
+            if iface(node,None) is not None:
+                result.append(node)
+            elif node.hasChildNodes():
+                for child in node.allChildNodes:
+                    if iface(child,None) is not None:
+                        result.append(child)
 
-		breadcrumbs = [self]
-		parent = None
-		if self.level > Command.DOCUMENT_LEVEL:
-			item = parent = self.parentNode
-			while item is not None and item.level > Command.DOCUMENT_LEVEL:
-				breadcrumbs.append(item)
-				item = item.parentNode
-			if item is not None:
-				breadcrumbs.append(item)
-		breadcrumbs.reverse()
+        return result
 
-		first = top = breadcrumbs[0]
-		last = sections[-1]
-		prev = next = None
-		breaknext = False
-		for item in sections:
-			if item is self:
-				breaknext = True
-				continue
-			if breaknext:
-				next = item
-				break
-			prev = item
 
-		document = part = chapter = section = subsection = None
-		for item in breadcrumbs:
-			if item.level == Command.DOCUMENT_LEVEL:
-				document = item
-			elif item.level == Command.PART_LEVEL:
-				part = item
-			elif item.level == Command.CHAPTER_LEVEL:
-				chapter = item
-			elif item.level == Command.SECTION_LEVEL:
-				section = item
-			elif item.level == Command.SUBSECTION_LEVEL:
-				subsection = item
+    @cachedproperty
+    def links(self):
+        """
+        Return a dictionary containing a lot of navigation information.
 
-		nav = {}
-		nav['home'] = top
-		nav['start'] = top
-		nav['begin'] = nav['first'] = first
-		nav['end'] = nav['last'] = last
-		nav['next'] = next
-		nav['previous'] = nav['prev'] = prev
-		nav['up'] = parent
-		nav['top'] = nav['origin'] = top
-		nav['parent'] = parent
-		nav['child'] = self.subsections
-		nav['sibling'] = self.siblings
+        JAM: FIXME: This only works at render time due to the use of 'filename'
 
-		# These aren't actually part of the spec, but I added
-		# them for consistency.
-		nav['document'] = document
-		nav['part'] = part
+        See http://fantasai.tripod.com/qref/Appendix/LinkTypes/ltdef.html
 
-		nav['chapter'] = chapter
-		nav['section'] = section
-		nav['subsection'] = subsection
-		nav['appendix'] = None
-		nav['glossary'] = None
-		nav['bibliography'] = None
-		nav['help'] = None
-		nav['navigator'] = top
-		nav['toc'] = nav['contents'] = top
-		nav['index'] = None
-		nav['search'] = None
-		nav['bookmark'] = None
-		nav['banner'] = None
-		nav['copyright'] = None
-		nav['trademark'] = None
-		nav['disclaimer'] = None
-		nav['publisher'] = None
-		nav['editor'] = None
-		nav['author'] = None
-		nav['made'] = None
-		nav['meta'] = None
-		nav['script'] = None
-		nav['stylesheet'] = []
-		nav['alternate'] = []
-		nav['translation'] = []
+        """
+        sections = [x for x in self.documentSections if x.filename]
 
-		# Additional related entries
-		nav['shortcut icon'] = None
-		nav['breadcrumbs'] = breadcrumbs
+        breadcrumbs = [self]
+        parent = None
+        if self.level > Command.DOCUMENT_LEVEL:
+            item = parent = self.parentNode
+            while item is not None and item.level > Command.DOCUMENT_LEVEL:
+                breadcrumbs.append(item)
+                item = item.parentNode
+            if item is not None:
+                breadcrumbs.append(item)
+        breadcrumbs.reverse()
 
-		# Get navigation info from the linkTypes
-		navinfo = self.ownerDocument.userdata.get('links', {})
-		for key, value in list(navinfo.items()):
-			nav[key] = value
+        first = top = breadcrumbs[0]
+        last = sections[-1]
+        prev = next = None
+        breaknext = False
+        for item in sections:
+            if item is self:
+                breaknext = True
+                continue
+            if breaknext:
+                next = item
+                break
+            prev = item
 
-		# Get user-defined links
-		links = {}
-		if 'links' in self.config:
-			for key in list(self.config['links'].keys()):
-				if '-' not in key:
-					continue
-				newkey, type = key.strip().split('-',1)
-				if newkey not in links:
-					links[newkey] = {}
-				links[newkey][type] = self.config['links'][key]
+        document = part = chapter = section = subsection = None
+        for item in breadcrumbs:
+            if item.level == Command.DOCUMENT_LEVEL:
+                document = item
+            elif item.level == Command.PART_LEVEL:
+                part = item
+            elif item.level == Command.CHAPTER_LEVEL:
+                chapter = item
+            elif item.level == Command.SECTION_LEVEL:
+                section = item
+            elif item.level == Command.SUBSECTION_LEVEL:
+                subsection = item
 
-		# Set links in nav object
-		for key, value in list(links.items()):
-			if key not in nav or nav[key] is None:
-				nav[key] = value
+        nav = {}
+        nav['home'] = top
+        nav['start'] = top
+        nav['begin'] = nav['first'] = first
+        nav['end'] = nav['last'] = last
+        nav['next'] = next
+        nav['previous'] = nav['prev'] = prev
+        nav['up'] = parent
+        nav['top'] = nav['origin'] = top
+        nav['parent'] = parent
+        nav['child'] = self.subsections
+        nav['sibling'] = self.siblings
 
-		return nav
+        # These aren't actually part of the spec, but I added
+        # them for consistency.
+        nav['document'] = document
+        nav['part'] = part
 
-	def digest(self, tokens):
-		# Absorb the tokens that belong to us
-#		text = []
-		for item in tokens:
-#			if item.nodeType == Command.TEXT_NODE:
-#				text.append(item)
-#				continue
-			if item.level <= self.level:
-				tokens.push(item)
-				break
-			if item.nodeType == Command.ELEMENT_NODE:
-				item.parentNode = self
-				item.digest(tokens)
-#			self.appendText(text, self.ownerDocument.charsubs)
-			self.appendChild(item)
-#		self.appendText(text, self.ownerDocument.charsubs)
-		self.paragraphs()
+        nav['chapter'] = chapter
+        nav['section'] = section
+        nav['subsection'] = subsection
+        nav['appendix'] = None
+        nav['glossary'] = None
+        nav['bibliography'] = None
+        nav['help'] = None
+        nav['navigator'] = top
+        nav['toc'] = nav['contents'] = top
+        nav['index'] = None
+        nav['search'] = None
+        nav['bookmark'] = None
+        nav['banner'] = None
+        nav['copyright'] = None
+        nav['trademark'] = None
+        nav['disclaimer'] = None
+        nav['publisher'] = None
+        nav['editor'] = None
+        nav['author'] = None
+        nav['made'] = None
+        nav['meta'] = None
+        nav['script'] = None
+        nav['stylesheet'] = []
+        nav['alternate'] = []
+        nav['translation'] = []
+
+        # Additional related entries
+        nav['shortcut icon'] = None
+        nav['breadcrumbs'] = breadcrumbs
+
+        # Get navigation info from the linkTypes
+        navinfo = self.ownerDocument.userdata.get('links', {})
+        for key, value in list(navinfo.items()):
+            nav[key] = value
+
+        # Get user-defined links
+        links = {}
+        if 'links' in self.config:
+            for key in list(self.config['links'].keys()):
+                if '-' not in key:
+                    continue
+                newkey, type = key.strip().split('-',1)
+                if newkey not in links:
+                    links[newkey] = {}
+                links[newkey][type] = self.config['links'][key]
+
+        # Set links in nav object
+        for key, value in list(links.items()):
+            if key not in nav or nav[key] is None:
+                nav[key] = value
+
+        return nav
+
+    def digest(self, tokens):
+        # Absorb the tokens that belong to us
+#       text = []
+        for item in tokens:
+#           if item.nodeType == Command.TEXT_NODE:
+#               text.append(item)
+#               continue
+            if item.level <= self.level:
+                tokens.push(item)
+                break
+            if item.nodeType == Command.ELEMENT_NODE:
+                item.parentNode = self
+                item.digest(tokens)
+#           self.appendText(text, self.ownerDocument.charsubs)
+            self.appendChild(item)
+#       self.appendText(text, self.ownerDocument.charsubs)
+        self.paragraphs()
 
 
 class StartSection(SectionUtils, Command):
-	blockType = True
-	args = '* [ toc ] title'
+    blockType = True
+    args = '* [ toc ] title'
 
 class part(StartSection):
-	level = Command.PART_LEVEL
-	counter = 'part'
+    level = Command.PART_LEVEL
+    counter = 'part'
 
 class chapter(StartSection):
-	level = Command.CHAPTER_LEVEL
-	counter = 'chapter'
+    level = Command.CHAPTER_LEVEL
+    counter = 'chapter'
 
 class section(StartSection):
-	level = Command.SECTION_LEVEL
-	counter = 'section'
+    level = Command.SECTION_LEVEL
+    counter = 'section'
 
 class subsection(StartSection):
-	level = Command.SUBSECTION_LEVEL
-	counter = 'subsection'
+    level = Command.SUBSECTION_LEVEL
+    counter = 'subsection'
 
 class subsubsection(StartSection):
-	level = Command.SUBSUBSECTION_LEVEL
-	counter = 'subsubsection'
+    level = Command.SUBSUBSECTION_LEVEL
+    counter = 'subsubsection'
 
 class paragraph(StartSection):
-	level = Command.PARAGRAPH_LEVEL
-	counter = 'paragraph'
+    level = Command.PARAGRAPH_LEVEL
+    counter = 'paragraph'
 
 class subparagraph(StartSection):
-	level = Command.SUBPARAGRAPH_LEVEL
-	counter = 'subparagraph'
+    level = Command.SUBPARAGRAPH_LEVEL
+    counter = 'subparagraph'
 
 class subsubparagraph(StartSection):
-	level = Command.SUBSUBPARAGRAPH_LEVEL
-	counter = 'subsubparagraph'
+    level = Command.SUBSUBPARAGRAPH_LEVEL
+    counter = 'subsubparagraph'
 
 #
 # C.4.2 The Appendix
 #
 
 class appendix(Command):
-	""" This needs to be implemented in the cls file """
-	blockType = True
+    """ This needs to be implemented in the cls file """
+    blockType = True
 
 #
 # C.4.3 Table of Contents
 #
 
 class tableofcontents(Command):
-	blockType = True
+    blockType = True
 
 class listoffigures(Command):
-	blockType = True
+    blockType = True
 
 class listoftables(Command):
-	blockType = True
+    blockType = True
 
 class addcontentsline(Command):
-	args = 'file:str level:str text'
+    args = 'file:str level:str text'
 
 class addtocontents(Command):
-	args = 'file:str text'
+    args = 'file:str text'
 
 #
 # C.4.4 Style Parameters

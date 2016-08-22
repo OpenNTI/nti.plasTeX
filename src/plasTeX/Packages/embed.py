@@ -4,8 +4,8 @@
 embed package
 
 To use the embed package, include the following code in your latex document.
-It will define the HTML environment and the \html command.	The HTML
-environment is exactly the same as the comment environment.	 The \html
+It will define the HTML environment and the \html command.  The HTML
+environment is exactly the same as the comment environment.  The \html
 command acts like the \verb command in that it will eat up all content
 between two matching characters (e.g., \html+<b>bold text</b>+).  In
 plasTeX, the content of both of these macros will appear in the output
@@ -13,10 +13,10 @@ document as-is.
 
 \newif\ifplastex\plastexfalse
 \ifplastex
-	\usepackage{embed}
+    \usepackage{embed}
 \else
-	\usepackage{comment}\excludecomment{HTML}
-	\def\html#1{\def\@html##1#1{}\@html}
+    \usepackage{comment}\excludecomment{HTML}
+    \def\html#1{\def\@html##1#1{}\@html}
 \fi
 
 Example:
@@ -40,26 +40,26 @@ from plasTeX.Base.LaTeX.Verbatim import verbatim
 from plasTeX.Base.LaTeX.Verbatim import verb
 
 class HTML(verbatim):
-	captionable = True
-	blockType = False
-	
-	def digest(self, tokens):
-		verbatim.digest(self, tokens)
-		self.unicode = Text(''.join(self))
-		self.unicode.isMarkup = True
-		return []
-	
+    captionable = True
+    blockType = False
+    
+    def digest(self, tokens):
+        verbatim.digest(self, tokens)
+        self.unicode = Text(''.join(self))
+        self.unicode.isMarkup = True
+        return []
+    
 class XHTML(HTML):
-	pass
-	
+    pass
+    
 class html(verb):
-	args = ''
-	
-	def digest(self, tokens):
-		verb.digest(self, tokens)
-		self.unicode = Text(''.join(self))
-		self.unicode.isMarkup = True
-		return []
-	
+    args = ''
+    
+    def digest(self, tokens):
+        verb.digest(self, tokens)
+        self.unicode = Text(''.join(self))
+        self.unicode.isMarkup = True
+        return []
+    
 class xhtml(html):
-	pass
+    pass

@@ -8,35 +8,35 @@ B.4 Font Information
 from plasTeX import Command, Environment
 
 class magstephalf(Command):
-	unicode = '1095 '
+    unicode = '1095 '
 
 class magstep(Command):
-	args = 'value:Number'
+    args = 'value:Number'
 
 class Font(Environment):
-	pass
+    pass
 
 class rm(Font):
-	pass
+    pass
 
 class cal(Font):
-	pass
+    pass
 
 class it(Font):
-	pass
+    pass
 
 class sl(Font):
-	pass
+    pass
 
 class bf(Font):
-	pass
+    pass
 
 class sf(Font):
-	pass
+    pass
 
 class tt(Font):
-	pass
+    pass
 
 class sc(Font):
-	pass
+    pass
 
