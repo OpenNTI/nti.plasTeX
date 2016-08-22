@@ -31,6 +31,3 @@ recursive-include src *.zcml
 recursive-include src *.zpts
 recursive-include src cgpdfpng
 recursive-include src plasTeXrc
-# XXX: Make these not write to their own directory!
-prune src/plasTeX/Packages/tests/new
-prune src/plasTeX/tests/new
