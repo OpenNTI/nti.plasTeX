@@ -14,6 +14,7 @@ logger = __import__('logging').getLogger(__name__)
 #disable: accessing protected members, too many methods
 #pylint: disable=W0212,R0904
 
+import unittest
 
 from hamcrest import assert_that
 from hamcrest import is_
@@ -25,26 +26,28 @@ import tempfile
 from .. import Imager
 from plasTeX import TeXDocument
 
-def test_file_cache():
-    doc = TeXDocument()
-    doc.config['images']['cache'] = True
-    doc.userdata['working-dir'] = tempfile.gettempdir()
-    imager = Imager(doc)
+class TestImagers(unittest.TestCase):
 
-    with tempfile.NamedTemporaryFile() as cache_file:
-        imager._filecache = cache_file.name
+    def test_file_cache(self):
+        doc = TeXDocument()
+        doc.config['images']['cache'] = True
+        doc.userdata['working-dir'] = tempfile.gettempdir()
+        imager = Imager(doc)
 
-        imager.newImage(r'\includegraphics{foo.png}')
-        assert_that( imager._cache, has_length( 1 ) )
+        with tempfile.NamedTemporaryFile() as cache_file:
+            imager._filecache = cache_file.name
 
-        imager._write_cache()
+            imager.newImage(r'\includegraphics{foo.png}')
+            assert_that( imager._cache, has_length( 1 ) )
 
-        new_imager = Imager(doc)
-        new_imager._filecache = cache_file.name
-        new_imager._read_cache(validate_files=False)
+            imager._write_cache()
 
-        # Image objects in values() may not be equal
-        assert_that( list(new_imager._cache.keys()), is_( list(imager._cache.keys()) ) )
+            new_imager = Imager(doc)
+            new_imager._filecache = cache_file.name
+            new_imager._read_cache(validate_files=False)
 
-        new_imager._read_cache(validate_files=True)
-        assert_that( new_imager._cache, is_empty() )
+            # Image objects in values() may not be equal
+            assert_that( list(new_imager._cache.keys()), is_( list(imager._cache.keys()) ) )
+
+            new_imager._read_cache(validate_files=True)
+            assert_that( new_imager._cache, is_empty() )

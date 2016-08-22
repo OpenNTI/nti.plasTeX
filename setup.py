@@ -17,12 +17,8 @@ entry_points = {
 
 TESTS_REQUIRE = [
     'beautifulsoup4',
-    'fudge',
-    'nose',
-    # nose-progressive breaks under py33
-    #'nose-progressive >= 1.5',
+    'zope.testrunner',
     'pyhamcrest',
-    'nti.nose_traceback_info'
 ]
 
 INSTALL_REQUIRES = [
@@ -60,6 +56,21 @@ def read(name):
     with open(join(dirname(__file__), name)) as f:
         return f.read().strip()
 
+def alltests():
+    import os
+    import sys
+    import unittest
+    # use the zope.testrunner machinery to find all the
+    # test suites we've put under ourselves.
+    # Based on zope.principalregistry
+    import zope.testrunner.find
+    import zope.testrunner.options
+    here = os.path.abspath(os.path.join(os.path.dirname(__file__), 'src'))
+    args = sys.argv[:]
+    defaults = ["--test-path", here]
+    options = zope.testrunner.options.get_options(args, defaults)
+    suites = list(zope.testrunner.find.find_suites(options))
+    return unittest.TestSuite(suites)
 
 setup(name="nti.plasTeX",
       description="Modern, extensible, LaTeX document processing framework",
@@ -76,8 +87,8 @@ setup(name="nti.plasTeX",
           "Development Status :: 4 - Beta",
           "Operating System :: POSIX :: Linux",
           "Programming Language :: Python :: 2.7",
-          "Programming Language :: Python :: 3.3",
           "Programming Language :: Python :: 3.4",
+          "Programming Language :: Python :: 3.5",
           "Programming Language :: Python :: Implementation :: CPython",
           "Programming Language :: Python :: Implementation :: PyPy",
           "Programming Language :: Python :: Implementation :: Jython",
@@ -98,4 +109,6 @@ setup(name="nti.plasTeX",
       },
       dependency_links=[
       ],
+      #test_loader="zope.testrunner.eggsupport:SkipLayers",
+      test_suite="__main__.alltests",
 )

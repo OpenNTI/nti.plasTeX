@@ -12,10 +12,16 @@ from hamcrest import is_
 #from hamcrest import same_instance
 
 from . import BeautifulSoup as Soup
-
 from . import _run_plastex
 
+class RunLongtablesLayer(object):
+    """
+    To run longtables in their own parallel layer.
+    """
+
 class TestLongtables(TestCase):
+    layer = RunLongtablesLayer
+    level = 3 # Extremely slow, especially testFooters
 
     def runDocument(self, content):
         """
