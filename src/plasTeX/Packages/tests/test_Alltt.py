@@ -15,7 +15,14 @@ from hamcrest import contains
 from . import _run_plastex
 from . import BeautifulSoup as Soup
 
+class RunAllttLayer(object):
+    """
+    To run alltt in its own layer.
+    """
+
 class TestAlltt(TestCase):
+    layer = RunAllttLayer
+    level = 2 # Fairly slow
 
     def runDocument(self, content):
         """
@@ -80,7 +87,6 @@ class TestAlltt(TestCase):
 
         plines = out.string.split('\n')
         assert lines == plines, 'Content doesn\'t match - %s - %s' % (lines, plines)
-
 
     def testCommands(self):
         text = '''\\begin{alltt}\n\t line 1\n\t \\textbf{line} 2\n\t \\textit{line 3}\n\\end{alltt}'''

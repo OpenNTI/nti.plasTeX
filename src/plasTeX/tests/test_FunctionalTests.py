@@ -3,6 +3,8 @@ from __future__ import print_function
 
 import sys, os, tempfile, shutil, difflib, subprocess
 
+from . import skip_if_no_binaries
+
 def which(name, path=None, exts=('',)):
     """
     Search PATH for a binary.
@@ -46,12 +48,13 @@ class _ComparisonBenched(object):
 
     def __call__(self, latex_file):
         __traceback_info__ = latex_file
+        skip_if_no_binaries()
         if not latex_file:
             return
 
         # Create temp dir and files
         outdir = tempfile.mkdtemp()
-
+        clean_up = True
         try:
             self._compare(outdir, latex_file)
         except self.DontCleanupError:
@@ -151,3 +154,42 @@ def testSuite():
 
             __traceback_info__ = root, f
             yield _ComparisonBenched(), os.path.abspath(os.path.join(root, f))
+
+def load_tests(testloader, module_suite, _):
+    """
+    Plain unittest/zope.testrunner compatible version of testSuite.
+    """
+
+    class RenderingLayer(object):
+        """
+        To mark a test that runs file based renders, slowly.
+        """
+
+    import unittest
+    suite = unittest.TestSuite()
+    class CompTestCase(unittest.TestCase):
+        level = 2 # These are slow
+        layer = RenderingLayer
+        def __init__(self, filename):
+            unittest.TestCase.__init__(self)
+            self.__filename = filename
+            self.__name__ = filename
+
+        def runTest(self): #magic unitest method name
+            _ComparisonBenched()(self.__filename)
+
+        def __print_name(self):
+            cp = os.path.commonprefix([os.getcwd(), self.__filename])
+            return self.__filename[len(cp) + 1:]
+
+        def __str__(self):
+            # zope.testrunner uses this to print
+            return "%s (%s.%s)" % (self.__print_name(),
+                                   self.__class__.__module__,
+                                   self.__class__.__name__)
+
+    for _, filename in testSuite():
+        case = CompTestCase(filename)
+        suite.addTest(case)
+
+    return suite
