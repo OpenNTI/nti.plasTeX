@@ -6,3 +6,6 @@ build
 dist
 *.egg
 .eggs
+/.project
+/.pydevproject
+/.settings/
