@@ -1,0 +1,18 @@
+[run]
+source = src/plasTeX/
+omit = src/plasTeX/tests/*
+
+[report]
+# Coverage is run on Linux under cPython 2 and 3,
+# exclude branches that are windows, pypy
+# specific
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if PYPY:
+    if sys.platform == 'win32':
+    if mswindows:
+    if is_windows:

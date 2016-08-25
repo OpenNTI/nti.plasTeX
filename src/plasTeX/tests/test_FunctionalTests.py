@@ -1,44 +1,14 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-import sys, os, tempfile, shutil, difflib, subprocess
+import os
+import tempfile
+import shutil
+import difflib
+import subprocess
 
 from . import skip_if_no_binaries
-
-def which(name, path=None, exts=('',)):
-    """
-    Search PATH for a binary.
-
-    Args:
-    name -- the filename to search for
-    path -- the optional path string (default: os.environ['PATH')
-    exts -- optional list/tuple of extensions to try (default: ('',))
-
-    Returns:
-    The abspath to the binary or None if not found.
-    """
-    path = os.environ.get('PATH', path)
-    for dir in path.split(os.pathsep):
-        for ext in exts:
-            binpath = os.path.abspath(os.path.join(dir, name) + ext)
-            if os.path.isfile(binpath):
-                return binpath
-    return None
-
-class Process(object):
-    """ Simple subprocess wrapper """
-    def __init__(self, *args, **kwargs):
-        if 'stdin' not in kwargs:
-            kwargs['stdin'] = subprocess.PIPE
-        if 'stdout' not in kwargs:
-            kwargs['stdout'] = subprocess.PIPE
-        if 'stderr' not in kwargs:
-            kwargs['stderr'] = subprocess.STDOUT
-        self.process = subprocess.Popen(args, **kwargs)
-        self.log = self.process.stdout.read()
-        self.returncode = self.process.returncode
-        self.process.stdout.close()
-        self.process.stdin.close()
+from . import run_plastex
 
 class _ComparisonBenched(object):
     """ Compile LaTeX file and compare to benchmark file """
@@ -72,9 +42,7 @@ class _ComparisonBenched(object):
             for line in f:
                 if line.startswith('%*'):
                     command = line[2:].strip()
-                    p = Process(cwd=outdir, *command.split())
-                    if p.returncode:
-                        raise OSError('Preprocessing command exited abnormally with return code %s: %s' % (command, p.log))
+                    subprocess.check_call(cwd=outdir, *command.split())
                 elif line.startswith('%#'):
                     filename = line[2:].strip()
                     shutil.copyfile(os.path.join(root,'extras',filename),
@@ -87,16 +55,12 @@ class _ComparisonBenched(object):
                     break
 
     def __run_plastex(self, outdir, outfile, original_source_file):
-        plastex = which('plastex') or 'plastex'
-        python = sys.executable
-        p = Process(python, plastex,'--split-level=0','--no-theme-extras',
-                    '--dir=%s' % outdir,'--theme=minimal',
-                    '--filename=%s' % os.path.basename(outfile), os.path.basename(original_source_file),
-                    cwd=outdir)
-        if p.returncode:
-            raise OSError( 'plastex failed with code %s: %s' % (p.returncode, p.log))
-
-        return p.log
+        return run_plastex(outdir, os.path.basename(original_source_file),
+                           cwd=outdir,
+                           args=(
+                               '--split-level=0','--no-theme-extras',
+                               '--theme=minimal',
+                               '--filename=%s' % os.path.basename(outfile)))
 
     def __no_benchmark_file(self, outdir, outfile, benchfile):
         raise self.DontCleanupError( 'No benchmark file: %s; new file in %s' % (benchfile, outfile) )
@@ -140,7 +104,7 @@ class _ComparisonBenched(object):
         diff = ''.join(list(difflib.unified_diff(benchlines, outputlines))).strip()
         if diff:
             # Don't cleanup, let the user decide to copy the new file into place
-            self._differences_found(outdir, outfile, benchfile, diff)
+            self.__differences_found(outdir, outfile, benchfile, diff)
 
 def testSuite():
     """
