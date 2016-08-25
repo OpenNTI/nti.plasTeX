@@ -1,6 +1,9 @@
 [run]
 source = src/plasTeX/
-omit = src/plasTeX/tests/*
+omit = 
+	src/plasTeX/tests/*
+	src/plasTeX/DOM/tests/*
+
 
 [report]
 # Coverage is run on Linux under cPython 2 and 3,
