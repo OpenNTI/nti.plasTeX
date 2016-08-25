@@ -104,7 +104,7 @@ class _ComparisonBenched(object):
         diff = ''.join(list(difflib.unified_diff(benchlines, outputlines))).strip()
         if diff:
             # Don't cleanup, let the user decide to copy the new file into place
-            self._differences_found(outdir, outfile, benchfile, diff)
+            self.__differences_found(outdir, outfile, benchfile, diff)
 
 def testSuite():
     """
