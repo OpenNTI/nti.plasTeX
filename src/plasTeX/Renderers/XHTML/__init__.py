@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import warnings
 import re
 import codecs
 from plasTeX.Renderers.PageTemplate import Renderer as _Renderer
+
 
 class XHTML(_Renderer):
     """ Renderer for XHTML documents """
@@ -15,12 +15,8 @@ class XHTML(_Renderer):
     def cleanup(self, document, files, postProcess=None):
         res = _Renderer.cleanup(self, document, files, postProcess=postProcess)
 
-        # TODO: Convert all of these to named registered utilities
-
-        self.doJavaHelpFiles(document, version='1')
-        self.doJavaHelpFiles(document, version='2')
+        # TODO: Convert this to named registered utilities or adapters
         self.doEclipseHelpFiles(document)
-        self.doCHMFiles(document)
         return res
 
     def processFileContent(self, document, s):
@@ -38,48 +34,17 @@ class XHTML(_Renderer):
 
         return s
 
-    def doCHMFiles(self, document, encoding='ISO-8859-1'):
-        """ Generate files needed to for CHM help files """
-        warnings.warn("CHM Disabled, doesn't work (template out of sync)")
-        return # FIXME JAM: Disabled, doesn't work (template out of sync)
-
-        latexdoc = document.getElementsByTagName('document')[0]
-
-        # Create table of contents
-        if 'chm-toc' in self:
-            toc = self['chm-toc'](latexdoc)
-            #toc = re.sub(r'\s*</li>', r'', toc)
-            toc = re.sub(r'\s*/\s*>', r'>', toc)
-            toc = re.sub(r'(<param)(\s+[^>]*)(\s+name="[^"]*")(\s*>)', r'\1\3\2\4', toc)
-            f = codecs.open('chm.hhc', 'w', encoding, errors='xmlcharrefreplace')
-            f.write('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">\n')
-            f.write(toc)
-            f.close()
-
-        # Create index file
-        if 'chm-index' in self:
-            idx = self['chm-index'](latexdoc)
-            #idx = re.sub(r'\s*</li>', r'', toc)
-            idx = re.sub(r'\s*/\s*>', r'>', idx)
-            idx = re.sub(r'(<param)(\s+[^>]*)(\s+name="[^"]*")(\s*>)', r'\1\3\2\4', idx)
-            f = codecs.open('chm.hhk', 'w', encoding, errors='xmlcharrefreplace')
-            f.write('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/loose.dtd">\n')
-            f.write(idx)
-            f.close()
-
-        # Create help file
-        if 'chm-help' in self:
-            help = self['chm-help'](latexdoc)
-            f = codecs.open('chm.hhp', 'w', encoding, errors='xmlcharrefreplace')
-            f.write(help)
-            f.close()
-
-    _XXX_ECLIPSE_DISABLED = True
     def doEclipseHelpFiles(self, document, encoding='ASCII'):
-        """ Generate files needed to use HTML as Eclipse Help """
-        if self._XXX_ECLIPSE_DISABLED:
-            warnings.warn("Eclipse Help disabled, doesn't work (template out of sync, has NTI dep) %s" % type(self))
-            return # FIXME: JAM Disabled
+        """
+        Generate an XML table of contents file named 'eclipse-toc.xml'.
+
+        In the past, this was part of a set of files needed to use the
+        XHTML output as Eclipse Help files, hence the method name.
+
+        Our format, however, has diverged substantially from that
+        and that's typically no longer possible.
+        """
+
         latexdoc = document.getElementsByTagName('document')[0]
 
         # Create table of contents
@@ -90,64 +55,5 @@ class XHTML(_Renderer):
             with codecs.open('eclipse-toc.xml', 'w', encoding, errors='xmlcharrefreplace') as f:
                 f.write("<?xml version='1.0' encoding='%s' ?>\n" % encoding)
                 f.write(toc)
-
-        # Create plugin file
-        if 'eclipse-plugin' in self:
-            toc = self['eclipse-plugin'](latexdoc)
-            f = codecs.open('eclipse-plugin.xml', 'w', encoding, errors='xmlcharrefreplace')
-            f.write("<?xml version='1.0' encoding='%s' ?>\n" % encoding)
-            f.write(toc)
-            f.close()
-
-        # Create index file
-        if 'eclipse-index' in self:
-            toc = self['eclipse-index'](latexdoc)
-            f = codecs.open('eclipse-index.xml', 'w', encoding, errors='xmlcharrefreplace')
-            f.write("<?xml version='1.0' encoding='%s' ?>\n" % encoding)
-            f.write(toc)
-            f.close()
-
-    def doJavaHelpFiles(self, document, encoding='ISO-8859-1', version='2'):
-        """ Generate files needed to use HTML as Java Help """
-        warnings.warn("Java Help disabled, doesn't work (template out of sync)")
-        return # FIXME JAM: Disabled, doesn't work (template out of sync)
-        latexdoc = document.getElementsByTagName('document')[0]
-        version = str(version)
-
-        # Create table of contents
-        if ('javahelp-toc-'+version) in self:
-            toc = self['javahelp-toc-'+version](latexdoc)
-            toc = re.sub(r'(<tocitem\b[^>]*[^/])\s*>\s*</tocitem>', r'\1 />', toc)
-            f = codecs.open('javahelp%s-toc.xml' % version, 'w', encoding, errors='xmlcharrefreplace')
-            f.write("<?xml version='1.0' encoding='%s' ?>\n" % encoding)
-            f.write(toc)
-            f.close()
-
-        # Create index
-        if ('javahelp-index-'+version) in self and latexdoc.index:
-            idx = self['javahelp-index-'+version](latexdoc)
-            idx = re.sub(r'(\n\s*)+', r'\n', idx)
-            f = codecs.open('javahelp%s-index.xml' % version, 'w', encoding, errors='xmlcharrefreplace')
-            f.write("<?xml version='1.0' encoding='%s' ?>\n" % encoding)
-            f.write(idx)
-            f.close()
-
-        # Create map file
-        if ('javahelp-map-'+version) in self:
-            idx = self['javahelp-map-'+version](latexdoc)
-            idx = re.sub(r'(\n\s*)+', r'\n', idx)
-            f = codecs.open('javahelp%s.jhm' % version, 'w', encoding, errors='xmlcharrefreplace')
-            f.write("<?xml version='1.0' encoding='%s' ?>\n" % encoding)
-            f.write(idx)
-            f.close()
-
-        # Create helpset file
-        if ('javahelp-helpset-'+version) in self:
-            idx = self['javahelp-helpset-'+version](latexdoc)
-            idx = re.sub(r'(\n\s*)+', r'\n', idx)
-            f = codecs.open('javahelp%s.hs' % version, 'w', encoding, errors='xmlcharrefreplace')
-            f.write("<?xml version='1.0' encoding='%s' ?>\n" % encoding)
-            f.write(idx)
-            f.close()
 
 Renderer = XHTML

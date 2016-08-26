@@ -48,6 +48,7 @@ INSTALL_REQUIRES = [
     'zope.i18nmessageid >= 4.0.2',
     'zope.interface',
     'zope.location',
+    'zope.mimetype',
     'zope.proxy',  # 4.1.x support py3k, uses newer APIs. Not binary compat with older extensions, must rebuild. (In partic, req zope.security >= 3.9)
     'zope.traversing >= 4.0.0a3', # tal/tales paths, also our own traversing implementation
 ]

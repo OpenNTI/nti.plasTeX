@@ -334,6 +334,7 @@ class PageTemplate(BaseRenderer):
         self.registerEngine('tal', 'xml', '.xml', xmltemplate)
         self.registerEngine('html', None, htmlexts, htmltemplate)
         self.registerEngine('xml', 'xml', '.xml', xmltemplate)
+
         self.registerEngine('python', None, '.pyt', pythontemplate)
         self.registerEngine('string', None, '.st', stringtemplate)
         self.registerEngine('kid', None, '.kid', kidtemplate)

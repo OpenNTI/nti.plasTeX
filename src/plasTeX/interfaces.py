@@ -66,3 +66,20 @@ class IOptionAwarePythonPackage(IPythonPackage):
         """
         Process the options for the use of the package.
         """
+
+from zope.mimetype.interfaces import IContentTypeAware
+
+class IEmbeddedContainer(IContentTypeAware):
+    """
+    Intended to be implemented (or adapted from) nodes in the plasTeX
+    DOM tree, this object represents a portion of content, embedded
+    in other content, that should function as its own user-generated
+    data container. Typically these will be rendered in HTML with ``<object>``
+    tags, and the attributes declared in this interface will be
+    echoed in the rendered version.
+
+    We inherit a ``mimeType`` attribute from our parent interface; this
+    should be the ``mimeType`` of the container being pointed to.
+    """
+
+    ntiid = interface.Attribute("A unique identifier.")
