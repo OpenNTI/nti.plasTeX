@@ -15,7 +15,16 @@ import os
 import re
 import shutil
 import string
+
+from zope import component
+from zope import interface
+
 from plasTeX.Renderers import Renderer as BaseRenderer
+
+from .interfaces import ITextTemplateEngine
+from .interfaces import IXMLTemplateEngine
+from .interfaces import IHTMLTemplateEngine
+from .interfaces import ITemplateEngine
 
 import logging
 log = logging.getLogger(__name__)
@@ -288,14 +297,20 @@ def copytree(src, dest, symlink=None):
             else:
                 shutil.copy2(srcpath, destpath)
 
+
+@interface.implementer(ITemplateEngine)
 class TemplateEngine(object):
-    def __init__(self, ext, function):
-        if not isinstance(ext, (list,tuple)):
-            ext = [ext]
-        self.ext = ext
+    def __init__(self,  extensions, function):
+        if not isinstance(extensions, (list,tuple)):
+            extensions = [extensions]
+        self.extensions = extensions
         self.function = function
+
     def compile(self, *args, **kwargs):
         return self.function(*args, **kwargs)
+
+
+
 
 class PageTemplate(BaseRenderer):
     """ Renderer for page template based documents """
@@ -307,40 +322,12 @@ class PageTemplate(BaseRenderer):
     def __init__(self, *args, **kwargs):
         super(PageTemplate,self).__init__( *args, **kwargs )
         self.engines = {}
-        htmlexts = ['.html','.htm','.xhtml','.xhtm','.zpt','.pt']
-        # JAM: TODO: Zope components for this
-        self.registerEngine('pt', None, htmlexts, htmltemplate)
-        self.registerEngine('zpt', None, htmlexts, htmltemplate)
-        self.registerEngine('zpt', 'xml', '.xml', xmltemplate)
-        self.registerEngine('tal', None, htmlexts, htmltemplate)
-        self.registerEngine('tal', 'xml', '.xml', xmltemplate)
-        self.registerEngine('html', None, htmlexts, htmltemplate)
-        self.registerEngine('xml', 'xml', '.xml', xmltemplate)
 
-        self.registerEngine('python', None, '.pyt', pythontemplate)
-        self.registerEngine('string', None, '.st', stringtemplate)
-        self.registerEngine('kid', None, '.kid', kidtemplate)
-        self.registerEngine('cheetah', None, '.che', cheetahtemplate)
-        self.registerEngine('genshi', None, '.gen', genshihtmltemplate)
-        self.registerEngine('genshi', 'xml', '.genx', genshixmltemplate)
-        self.registerEngine('genshi', 'text', '.gent', genshitexttemplate)
+        for engine_iface in (ITextTemplateEngine, IXMLTemplateEngine, IHTMLTemplateEngine, ITemplateEngine):
+            engine_type = engine_iface.getTaggedValue('engine_type')
+            for name, engine in component.getUtilitiesFor(engine_iface):
+                self.engines[(name, engine_type)] = engine
 
-    def registerEngine(self, name, type, ext, function):
-        """
-        Register a new type of templating engine
-
-        Arguments:
-        name -- the name of the engine
-        type -- the type of output supported by the engine (e.g., html,
-            xml, text, etc.)
-        ext -- the file extensions associated with that template type
-        function -- the function used to compile templates of that type
-
-        """
-        if not type:
-            type = None
-        key = (name, type)
-        self.engines[key] = TemplateEngine(ext, function)
 
     def textDefault(self, node):
         """
@@ -434,7 +421,7 @@ class PageTemplate(BaseRenderer):
                 if document.config['general']['copy-theme-extras']:
                     extensions = ['.ini'] # Don't copy the theme_conf.ini file
                     for e in list(self.engines.values()):
-                        extensions += e.ext + [x + 's' for x in e.ext]
+                        extensions += e.extensions + [x + 's' for x in e.extensions]
 
                     # Copy all theme extras
                     cwd = os.getcwd()
@@ -482,13 +469,13 @@ class PageTemplate(BaseRenderer):
 
         enames = {}
         for key, value in list(self.engines.items()):
-            for i in value.ext:
-                enames[i+'s'] = key[0]
+            for extension in value.extensions:
+                enames[extension+'s'] = key[0]
 
         singleenames = {}
         for key, value in list(self.engines.items()):
-            for i in value.ext:
-                singleenames[i] = key[0]
+            for extension in value.extensions:
+                singleenames[extension] = key[0]
 
         if templatedir and os.path.isdir(templatedir):
             files = os.listdir(templatedir)
@@ -522,7 +509,7 @@ class PageTemplate(BaseRenderer):
                 options = {'name':basename}
 
                 for value in list(self.engines.values()):
-                    if ext in value.ext:
+                    if ext in value.extensions:
                         options['engine'] = singleenames[ext.lower()]
                         self.parseTemplates(f, options)
                         del options['engine']

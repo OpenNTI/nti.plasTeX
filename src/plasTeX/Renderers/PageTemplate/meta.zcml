@@ -1,0 +1,13 @@
+<!-- -*- mode: nxml -*- -->
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:i18n="http://namespaces.zope.org/i18n"
+           xmlns:zcml="http://namespaces.zope.org/zcml"
+           xmlns:meta="http://namespaces.zope.org/meta">
+
+    <meta:directive
+        namespace="http://nextthought.com/ntp/plastex"
+        name="registerStandardTemplateEngines"
+        schema=".zcml.IStandardTemplateEnginesDirective"
+        handler=".zcml.registerStandardTemplateEngines" />
+
+</configure>

@@ -1,0 +1,11 @@
+<!-- -*- mode: nxml -*- -->
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:ptex="http://nextthought.com/ntp/plastex">
+
+    <include package="zope.traversing" />
+
+    <include package="." file="meta.zcml" />
+
+    <ptex:registerStandardTemplateEngines />
+
+</configure>
