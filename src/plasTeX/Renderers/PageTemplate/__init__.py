@@ -15,237 +15,63 @@ import os
 import re
 import shutil
 import string
+
+from zope import component
+from zope import interface
+
 from plasTeX.Renderers import Renderer as BaseRenderer
+
+from .interfaces import ITextTemplateEngine
+from .interfaces import IXMLTemplateEngine
+from .interfaces import IHTMLTemplateEngine
+from .interfaces import ITemplateEngine
 
 import logging
 log = logging.getLogger(__name__)
 logger = log
 
 from six.moves import configparser as ConfigParser
-try:
-    unicode
-except NameError: # py3
-    unicode = str
+from six import text_type
 
 # Support for Python string templates
 def stringtemplate(s, encoding='utf8',filename=None):
     if isinstance(s, bytes):
-        s = unicode(s, encoding)
+        s = s.decode(encoding)
     template = string.Template(s)
     def renderstring(obj):
-        tvars = {'here':obj, 'self':obj, 'container':obj.parentNode,
-                 'config':obj.ownerDocument.config, 'template':template,
-                 'templates':obj.renderer, 'context':obj.ownerDocument.context}
-        return unicode(template.substitute(tvars))
+        tvars = {
+            'here':obj,
+            'self':obj,
+            'container':obj.parentNode,
+            'config':obj.ownerDocument.config,
+            'template':template,
+            'templates':obj.renderer,
+            'context':obj.ownerDocument.context
+        }
+        # Given a unicode argument, automatically returns a unicode
+        # result.
+        return template.substitute(tvars)
     return renderstring
 
 # Support for Python string formatting using the fancy
 # format syntax, which is much more capable than the old '%'
 # based version (for example, it can handle attribute access)
 def pythontemplate(s, encoding='utf8',filename=None):
+    if isinstance(s, bytes):
+        s = s.decode(encoding)
     template = s
     def renderpython(obj):
-        tvars = {'here':obj, 'self':obj, 'container':obj.parentNode,
-                 'config':obj.ownerDocument.config, 'template':template,
-                 'templates':obj.renderer, 'context':obj.ownerDocument.context}
-        return unicode(template, encoding).format(**tvars)
-    return renderpython
-
-# Support for ZPT HTML and XML templates was originally provided via
-# an embedded copy of simpleTAL. This version instead uses Chameleon
-# and some other parts of the Zope/Repoze ecosystem.
-
-# The simpletal implementation did have some conveniences, such as
-# use of 'self' and some more lax traversing rules. These are replicated
-# here.
-
-from z3c.pt.pagetemplate import PageTemplate as Z3CPageTemplate
-from chameleon.zpt.template import PageTemplate as ChameleonPageTemplate
-from chameleon.zpt.program import MacroProgram as BaseMacroProgram
-from chameleon.astutil import Builtin
-
-import ast
-
-class MacroProgram(BaseMacroProgram):
-    """For compatibility with simpletal, we default everything to be non-escaped (substitition)"""
-    def _make_content_node( self, expression, default, key, translate ):
-        return BaseMacroProgram._make_content_node( self, expression, default, 'substitution', translate )
-
-class _NTIPageTemplate(Z3CPageTemplate):
-    def parse(self, body):
-        if self.literal_false:
-            default_marker = ast.Str(s="__default__")
-        else:
-            default_marker = Builtin("False")
-        # For compatibility with simpletal, we default everything to be non-escaped (substitition)
-        program = MacroProgram(
-            body, self.mode, self.filename,
-            escape=False,
-            default_marker=default_marker,
-            boolean_attributes=self.boolean_attributes,
-            implicit_i18n_translate=self.implicit_i18n_translate,
-            implicit_i18n_attributes=self.implicit_i18n_attributes,
-            trim_attribute_space=self.trim_attribute_space,
-            )
-        return program
-
-# Allow all of the chameleon expression types, like import...
-_NTIPageTemplate.expression_types = ChameleonPageTemplate.expression_types.copy()
-# ...except where they are overridded explicitly
-_NTIPageTemplate.expression_types.update(Z3CPageTemplate.expression_types)
-_NTIPageTemplate.expression_types['stripped'] = _NTIPageTemplate.expression_types['path']
-
-# NOTE: Depending on import order, this may or may not disable access
-# to z3c.macro, which only places itself in the BaseTemplate types,
-# expecting to be inherited
-
-import chameleon.utils
-import chameleon.template
-class _Scope(chameleon.utils.Scope):
-    """The existing simpletal templates assume 'self', which is not valid
-    in TAL because the arguments are passed as kword args, and 'self' is already
-    used. Thus, we use 'here' and then override."""
-    def __getitem__( self, key ):
-        if key == 'self':
-            key = 'here'
-        return chameleon.utils.Scope.__getitem__( self, key )
-chameleon.template.Scope = _Scope
-
-def zpttemplate(s, encoding='utf8', filename=None):
-    # It improves error message slightly if we keep the body around
-    # The source is not as necessary, but what the heck, it's only memory
-    config = {'keep_body': True, 'keep_source': True}
-    if filename:
-        config['filename'] = filename
-    template = _NTIPageTemplate( s, **config )
-
-    def render(obj):
-        context = {
-            'here': obj,
-            'container': obj.parentNode,
-            'config': obj.ownerDocument.config,
-            'context': obj.ownerDocument.context,
-            'template': template,
-            'templates': obj.renderer
+        tvars = {
+            'here':obj,
+            'self':obj,
+            'container':obj.parentNode,
+            'config':obj.ownerDocument.config,
+            'template':template,
+            'templates':obj.renderer,
+            'context':obj.ownerDocument.context
         }
-        rdr = template.render( **context )
-        return rdr if isinstance(rdr,unicode) else unicode(rdr,encoding)
-    return render
-htmltemplate = zpttemplate
-xmltemplate = zpttemplate
-
-# Support for Cheetah templates
-try:
-
-    from Cheetah.Template import Template as CheetahTemplate
-    from Cheetah.Filters import Filter as CheetahFilter
-    class CheetahUnicode(CheetahFilter):
-        def filter(self, val, encoding='utf-8', **kw):
-            return unicode(val).encode(encoding)
-    def cheetahtemplate(s, encoding='utf8',filename=None):
-        def rendercheetah(obj, s=s):
-            tvars = {'here':obj, 'container':obj.parentNode,
-                     'config':obj.ownerDocument.config,
-                     'context':obj.ownerDocument.context,
-                     'templates':obj.renderer}
-            return CheetahTemplate(source=s, searchList=[tvars],
-                                   filter=CheetahUnicode).respond()
-        return rendercheetah
-
-except ImportError:
-
-    def cheetahtemplate(s, encoding='utf8',filename=None):
-        def rendercheetah(obj):
-            return unicode(s, encoding)
-        return rendercheetah
-
-# Support for Kid templates
-try:
-
-    from kid import Template as KidTemplate
-
-    def kidtemplate(s, encoding='utf8',filename=None):
-        # Add namespace py: in
-        s = '<div xmlns:py="http://purl.org/kid/ns#" py:strip="True">%s</div>' % s
-        def renderkid(obj, s=s):
-            tvars = {'here':obj, 'container':obj.parentNode,
-                     'config':obj.ownerDocument.config,
-                     'context':obj.ownerDocument.context,
-                     'templates':obj.renderer}
-            return unicode(KidTemplate(source=s,
-                   **tvars).serialize(encoding=encoding, fragment=1), encoding)
-        return renderkid
-
-except ImportError:
-
-    def kidtemplate(s, encoding='utf8',filename=None):
-        def renderkid(obj):
-            return unicode(s, encoding)
-        return renderkid
-
-# Support for Genshi templates
-try:
-
-    from genshi.template import MarkupTemplate as GenshiTemplate
-    from genshi.template import TextTemplate as GenshiTextTemplate
-    from genshi.core import Markup
-
-    def markup(obj):
-        return Markup(unicode(obj))
-
-    def genshixmltemplate(s, encoding='utf8',filename=None):
-        # Add namespace py: in
-        s = '<div xmlns:py="http://genshi.edgewall.org/" py:strip="True">%s</div>' % s
-        template = GenshiTemplate(s)
-        def rendergenshixml(obj):
-            tvars = {'here':obj, 'container':obj.parentNode, 'markup':markup,
-                     'config':obj.ownerDocument.config, 'template':template,
-                     'context':obj.ownerDocument.context,
-                     'templates':obj.renderer}
-            return unicode(template.generate(**tvars).render(method='xml',
-                           encoding=encoding), encoding)
-        return rendergenshixml
-
-    def genshihtmltemplate(s, encoding='utf8',filename=None):
-        # Add namespace py: in
-        s = '<div xmlns:py="http://genshi.edgewall.org/" py:strip="True">%s</div>' % s
-        template = GenshiTemplate(s)
-        def rendergenshihtml(obj):
-            tvars = {'here':obj, 'container':obj.parentNode, 'markup':markup,
-                     'config':obj.ownerDocument.config, 'template':template,
-                     'context':obj.ownerDocument.context,
-                     'templates':obj.renderer}
-            return unicode(template.generate(**tvars).render(method='html',
-                           encoding=encoding), encoding)
-        return rendergenshihtml
-
-    def genshitexttemplate(s, encoding='utf8',filename=None):
-        template = GenshiTextTemplate(s)
-        def rendergenshitext(obj):
-            tvars = {'here':obj, 'container':obj.parentNode, 'markup':markup,
-                     'config':obj.ownerDocument.config, 'template':template,
-                     'context':obj.ownerDocument.context,
-                     'templates':obj.renderer}
-            return unicode(template.generate(**tvars).render(method='text',
-                           encoding=encoding), encoding)
-        return rendergenshitext
-
-except ImportError:
-
-    def genshixmltemplate(s, encoding='utf8',filename=None):
-        def rendergenshixml(obj):
-            return unicode(s, encoding)
-        return rendergenshixml
-
-    def genshihtmltemplate(s, encoding='utf8',filename=None):
-        def rendergenshihtml(obj):
-            return unicode(s, encoding)
-        return rendergenshihtml
-
-    def genshitexttemplate(s, encoding='utf8',filename=None):
-        def rendergenshitext(obj):
-            return unicode(s, encoding)
-        return rendergenshitext
+        return template.format(**tvars)
+    return renderpython
 
 
 def copytree(src, dest, symlink=None):
@@ -288,59 +114,34 @@ def copytree(src, dest, symlink=None):
             else:
                 shutil.copy2(srcpath, destpath)
 
+
+@interface.implementer(ITemplateEngine)
 class TemplateEngine(object):
-    def __init__(self, ext, function):
-        if not isinstance(ext, (list,tuple)):
-            ext = [ext]
-        self.ext = ext
+    def __init__(self,  extensions, function):
+        if not isinstance(extensions, (list,tuple)):
+            extensions = [extensions]
+        self.extensions = extensions
         self.function = function
+
     def compile(self, *args, **kwargs):
         return self.function(*args, **kwargs)
 
 class PageTemplate(BaseRenderer):
     """ Renderer for page template based documents """
 
-    outputType = unicode
+    outputType = text_type
     fileExtension = '.xml'
     encodingErrors = 'xmlcharrefreplace'
 
     def __init__(self, *args, **kwargs):
         super(PageTemplate,self).__init__( *args, **kwargs )
         self.engines = {}
-        htmlexts = ['.html','.htm','.xhtml','.xhtm','.zpt','.pt']
-        # JAM: TODO: Zope components for this
-        self.registerEngine('pt', None, htmlexts, htmltemplate)
-        self.registerEngine('zpt', None, htmlexts, htmltemplate)
-        self.registerEngine('zpt', 'xml', '.xml', xmltemplate)
-        self.registerEngine('tal', None, htmlexts, htmltemplate)
-        self.registerEngine('tal', 'xml', '.xml', xmltemplate)
-        self.registerEngine('html', None, htmlexts, htmltemplate)
-        self.registerEngine('xml', 'xml', '.xml', xmltemplate)
 
-        self.registerEngine('python', None, '.pyt', pythontemplate)
-        self.registerEngine('string', None, '.st', stringtemplate)
-        self.registerEngine('kid', None, '.kid', kidtemplate)
-        self.registerEngine('cheetah', None, '.che', cheetahtemplate)
-        self.registerEngine('genshi', None, '.gen', genshihtmltemplate)
-        self.registerEngine('genshi', 'xml', '.genx', genshixmltemplate)
-        self.registerEngine('genshi', 'text', '.gent', genshitexttemplate)
+        for engine_iface in (ITextTemplateEngine, IXMLTemplateEngine, IHTMLTemplateEngine, ITemplateEngine):
+            engine_type = engine_iface.getTaggedValue('engine_type')
+            for name, engine in component.getUtilitiesFor(engine_iface):
+                self.engines[(name, engine_type)] = engine
 
-    def registerEngine(self, name, type, ext, function):
-        """
-        Register a new type of templating engine
-
-        Arguments:
-        name -- the name of the engine
-        type -- the type of output supported by the engine (e.g., html,
-            xml, text, etc.)
-        ext -- the file extensions associated with that template type
-        function -- the function used to compile templates of that type
-
-        """
-        if not type:
-            type = None
-        key = (name, type)
-        self.engines[key] = TemplateEngine(ext, function)
 
     def textDefault(self, node):
         """
@@ -434,7 +235,7 @@ class PageTemplate(BaseRenderer):
                 if document.config['general']['copy-theme-extras']:
                     extensions = ['.ini'] # Don't copy the theme_conf.ini file
                     for e in list(self.engines.values()):
-                        extensions += e.ext + [x + 's' for x in e.ext]
+                        extensions += e.extensions + [x + 's' for x in e.extensions]
 
                     # Copy all theme extras
                     cwd = os.getcwd()
@@ -482,13 +283,13 @@ class PageTemplate(BaseRenderer):
 
         enames = {}
         for key, value in list(self.engines.items()):
-            for i in value.ext:
-                enames[i+'s'] = key[0]
+            for extension in value.extensions:
+                enames[extension+'s'] = key[0]
 
         singleenames = {}
         for key, value in list(self.engines.items()):
-            for i in value.ext:
-                singleenames[i] = key[0]
+            for extension in value.extensions:
+                singleenames[extension] = key[0]
 
         if templatedir and os.path.isdir(templatedir):
             files = os.listdir(templatedir)
@@ -522,7 +323,7 @@ class PageTemplate(BaseRenderer):
                 options = {'name':basename}
 
                 for value in list(self.engines.values()):
-                    if ext in value.ext:
+                    if ext in value.extensions:
                         options['engine'] = singleenames[ext.lower()]
                         self.parseTemplates(f, options)
                         del options['engine']
