@@ -39,25 +39,41 @@ except NameError: # py3
 # Support for Python string templates
 def stringtemplate(s, encoding='utf8',filename=None):
     if isinstance(s, bytes):
-        s = unicode(s, encoding)
+        s = s.decode(encoding)
     template = string.Template(s)
     def renderstring(obj):
-        tvars = {'here':obj, 'self':obj, 'container':obj.parentNode,
-                 'config':obj.ownerDocument.config, 'template':template,
-                 'templates':obj.renderer, 'context':obj.ownerDocument.context}
-        return unicode(template.substitute(tvars))
+        tvars = {
+            'here':obj,
+            'self':obj,
+            'container':obj.parentNode,
+            'config':obj.ownerDocument.config,
+            'template':template,
+            'templates':obj.renderer,
+            'context':obj.ownerDocument.context
+        }
+        # Given a unicode argument, automatically returns a unicode
+        # result.
+        return template.substitute(tvars)
     return renderstring
 
 # Support for Python string formatting using the fancy
 # format syntax, which is much more capable than the old '%'
 # based version (for example, it can handle attribute access)
 def pythontemplate(s, encoding='utf8',filename=None):
+    if isinstance(s, bytes):
+        s = s.decode(encoding)
     template = s
     def renderpython(obj):
-        tvars = {'here':obj, 'self':obj, 'container':obj.parentNode,
-                 'config':obj.ownerDocument.config, 'template':template,
-                 'templates':obj.renderer, 'context':obj.ownerDocument.context}
-        return unicode(template, encoding).format(**tvars)
+        tvars = {
+            'here':obj,
+            'self':obj,
+            'container':obj.parentNode,
+            'config':obj.ownerDocument.config,
+            'template':template,
+            'templates':obj.renderer,
+            'context':obj.ownerDocument.context
+        }
+        return template.format(**tvars)
     return renderpython
 
 
