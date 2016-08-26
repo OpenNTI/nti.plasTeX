@@ -55,15 +55,6 @@ def pythontemplate(s, encoding='utf8',filename=None):
 # an embedded copy of simpleTAL. This version instead uses Chameleon
 # and some other parts of the Zope/Repoze ecosystem.
 
-# Chameleon/z3c.pt is: faster, better documented, more flexible i18n,
-# consistent with Pyramid, more customizable and powerful (uses
-# zope.traversing), offers much better error messages.
-
-# NOTE: ZCA must be configured (zope.traversing loaded, and usually
-# nti.contentrendering) See
-# http://chameleon.repoze.org/docs/latest/reference.html and
-# http://docs.zope.org/zope2/zope2book/AppendixC.html#tales-path-expressions
-
 # The simpletal implementation did have some conveniences, such as
 # use of 'self' and some more lax traversing rules. These are replicated
 # here.
@@ -72,7 +63,7 @@ from z3c.pt.pagetemplate import PageTemplate as Z3CPageTemplate
 from chameleon.zpt.template import PageTemplate as ChameleonPageTemplate
 from chameleon.zpt.program import MacroProgram as BaseMacroProgram
 from chameleon.astutil import Builtin
-from collections import OrderedDict
+
 import ast
 
 class MacroProgram(BaseMacroProgram):
@@ -98,17 +89,6 @@ class _NTIPageTemplate(Z3CPageTemplate):
             )
         return program
 
-    @property
-    def builtins(self):
-        d = super(_NTIPageTemplate,self).builtins
-        #d['__loader'] = self._loader # For the load expression type, currently not exposed
-        # https://github.com/malthe/chameleon/issues/154
-        # We try to get iteration order fixed here:
-        result = OrderedDict()
-        for k in sorted(d.keys()):
-            result[k] = d[k]
-        return result
-
 # Allow all of the chameleon expression types, like import...
 _NTIPageTemplate.expression_types = ChameleonPageTemplate.expression_types.copy()
 # ...except where they are overridded explicitly
@@ -131,7 +111,7 @@ class _Scope(chameleon.utils.Scope):
         return chameleon.utils.Scope.__getitem__( self, key )
 chameleon.template.Scope = _Scope
 
-def zpttemplate(s,encoding='utf8',filename=None):
+def zpttemplate(s, encoding='utf8', filename=None):
     # It improves error message slightly if we keep the body around
     # The source is not as necessary, but what the heck, it's only memory
     config = {'keep_body': True, 'keep_source': True}
@@ -140,12 +120,14 @@ def zpttemplate(s,encoding='utf8',filename=None):
     template = _NTIPageTemplate( s, **config )
 
     def render(obj):
-        context = {'here': obj,
-                   'container': obj.parentNode,
-                   'config': obj.ownerDocument.config,
-                   'context': obj.ownerDocument.context,
-                   'template': template,
-                   'templates': obj.renderer}
+        context = {
+            'here': obj,
+            'container': obj.parentNode,
+            'config': obj.ownerDocument.config,
+            'context': obj.ownerDocument.context,
+            'template': template,
+            'templates': obj.renderer
+        }
         rdr = template.render( **context )
         return rdr if isinstance(rdr,unicode) else unicode(rdr,encoding)
     return render
