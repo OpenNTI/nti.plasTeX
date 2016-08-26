@@ -43,3 +43,7 @@
 
 - Remove the ``registerEngine`` method from the PageTemplate renderer.
   All engines should now be registered in the component registry.
+
+- The Cheetah, genshi, and Kid template support has been removed. It
+  can easily be added back by a different package thanks to the
+  extensibility introduced by the component registry.

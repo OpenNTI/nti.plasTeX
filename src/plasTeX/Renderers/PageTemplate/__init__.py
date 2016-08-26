@@ -31,10 +31,7 @@ log = logging.getLogger(__name__)
 logger = log
 
 from six.moves import configparser as ConfigParser
-try:
-    unicode
-except NameError: # py3
-    unicode = str
+from six import text_type
 
 # Support for Python string templates
 def stringtemplate(s, encoding='utf8',filename=None):
@@ -75,120 +72,6 @@ def pythontemplate(s, encoding='utf8',filename=None):
         }
         return template.format(**tvars)
     return renderpython
-
-
-# Support for Cheetah templates
-try:
-
-    from Cheetah.Template import Template as CheetahTemplate
-    from Cheetah.Filters import Filter as CheetahFilter
-    class CheetahUnicode(CheetahFilter):
-        def filter(self, val, encoding='utf-8', **kw):
-            return unicode(val).encode(encoding)
-    def cheetahtemplate(s, encoding='utf8',filename=None):
-        def rendercheetah(obj, s=s):
-            tvars = {'here':obj, 'container':obj.parentNode,
-                     'config':obj.ownerDocument.config,
-                     'context':obj.ownerDocument.context,
-                     'templates':obj.renderer}
-            return CheetahTemplate(source=s, searchList=[tvars],
-                                   filter=CheetahUnicode).respond()
-        return rendercheetah
-
-except ImportError:
-
-    def cheetahtemplate(s, encoding='utf8',filename=None):
-        def rendercheetah(obj):
-            return unicode(s, encoding)
-        return rendercheetah
-
-# Support for Kid templates
-try:
-
-    from kid import Template as KidTemplate
-
-    def kidtemplate(s, encoding='utf8',filename=None):
-        # Add namespace py: in
-        s = '<div xmlns:py="http://purl.org/kid/ns#" py:strip="True">%s</div>' % s
-        def renderkid(obj, s=s):
-            tvars = {'here':obj, 'container':obj.parentNode,
-                     'config':obj.ownerDocument.config,
-                     'context':obj.ownerDocument.context,
-                     'templates':obj.renderer}
-            return unicode(KidTemplate(source=s,
-                   **tvars).serialize(encoding=encoding, fragment=1), encoding)
-        return renderkid
-
-except ImportError:
-
-    def kidtemplate(s, encoding='utf8',filename=None):
-        def renderkid(obj):
-            return unicode(s, encoding)
-        return renderkid
-
-# Support for Genshi templates
-try:
-
-    from genshi.template import MarkupTemplate as GenshiTemplate
-    from genshi.template import TextTemplate as GenshiTextTemplate
-    from genshi.core import Markup
-
-    def markup(obj):
-        return Markup(unicode(obj))
-
-    def genshixmltemplate(s, encoding='utf8',filename=None):
-        # Add namespace py: in
-        s = '<div xmlns:py="http://genshi.edgewall.org/" py:strip="True">%s</div>' % s
-        template = GenshiTemplate(s)
-        def rendergenshixml(obj):
-            tvars = {'here':obj, 'container':obj.parentNode, 'markup':markup,
-                     'config':obj.ownerDocument.config, 'template':template,
-                     'context':obj.ownerDocument.context,
-                     'templates':obj.renderer}
-            return unicode(template.generate(**tvars).render(method='xml',
-                           encoding=encoding), encoding)
-        return rendergenshixml
-
-    def genshihtmltemplate(s, encoding='utf8',filename=None):
-        # Add namespace py: in
-        s = '<div xmlns:py="http://genshi.edgewall.org/" py:strip="True">%s</div>' % s
-        template = GenshiTemplate(s)
-        def rendergenshihtml(obj):
-            tvars = {'here':obj, 'container':obj.parentNode, 'markup':markup,
-                     'config':obj.ownerDocument.config, 'template':template,
-                     'context':obj.ownerDocument.context,
-                     'templates':obj.renderer}
-            return unicode(template.generate(**tvars).render(method='html',
-                           encoding=encoding), encoding)
-        return rendergenshihtml
-
-    def genshitexttemplate(s, encoding='utf8',filename=None):
-        template = GenshiTextTemplate(s)
-        def rendergenshitext(obj):
-            tvars = {'here':obj, 'container':obj.parentNode, 'markup':markup,
-                     'config':obj.ownerDocument.config, 'template':template,
-                     'context':obj.ownerDocument.context,
-                     'templates':obj.renderer}
-            return unicode(template.generate(**tvars).render(method='text',
-                           encoding=encoding), encoding)
-        return rendergenshitext
-
-except ImportError:
-
-    def genshixmltemplate(s, encoding='utf8',filename=None):
-        def rendergenshixml(obj):
-            return unicode(s, encoding)
-        return rendergenshixml
-
-    def genshihtmltemplate(s, encoding='utf8',filename=None):
-        def rendergenshihtml(obj):
-            return unicode(s, encoding)
-        return rendergenshihtml
-
-    def genshitexttemplate(s, encoding='utf8',filename=None):
-        def rendergenshitext(obj):
-            return unicode(s, encoding)
-        return rendergenshitext
 
 
 def copytree(src, dest, symlink=None):
@@ -243,13 +126,10 @@ class TemplateEngine(object):
     def compile(self, *args, **kwargs):
         return self.function(*args, **kwargs)
 
-
-
-
 class PageTemplate(BaseRenderer):
     """ Renderer for page template based documents """
 
-    outputType = unicode
+    outputType = text_type
     fileExtension = '.xml'
     encodingErrors = 'xmlcharrefreplace'
 
