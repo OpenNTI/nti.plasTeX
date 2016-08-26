@@ -23,30 +23,29 @@ def registerStandardTemplateEngines(_context):
 
     from . import pythontemplate
     from . import stringtemplate
-    from . import htmltemplate
-    from . import xmltemplate
+    from .zpt import zpttemplate
 
     htmlexts = ['.html','.htm','.xhtml','.xhtm','.zpt','.pt']
 
-    utility(_context, component=TemplateEngine(htmlexts, htmltemplate),
+    utility(_context, component=TemplateEngine(htmlexts, zpttemplate),
             provides=ITemplateEngine,
             name=u'pt')
-    utility(_context, component=TemplateEngine(htmlexts, htmltemplate),
+    utility(_context, component=TemplateEngine(htmlexts, zpttemplate),
             provides=ITemplateEngine,
             name=u'zpt')
-    utility(_context, component=TemplateEngine(['.xml'], xmltemplate),
+    utility(_context, component=TemplateEngine(['.xml'], zpttemplate),
             provides=IXMLTemplateEngine,
             name=u'zpt')
-    utility(_context, component=TemplateEngine(htmlexts, htmltemplate),
+    utility(_context, component=TemplateEngine(htmlexts, zpttemplate),
             provides=ITemplateEngine,
             name=u'tal')
-    utility(_context, component=TemplateEngine(['.xml'], xmltemplate),
+    utility(_context, component=TemplateEngine(['.xml'], zpttemplate),
             provides=IXMLTemplateEngine,
             name=u'tal')
-    utility(_context, component=TemplateEngine(htmlexts, htmltemplate),
+    utility(_context, component=TemplateEngine(htmlexts, zpttemplate),
             provides=ITemplateEngine,
             name=u'html')
-    utility(_context, component=TemplateEngine( ['.xml'], xmltemplate),
+    utility(_context, component=TemplateEngine( ['.xml'], zpttemplate),
             provides=IXMLTemplateEngine,
             name=u'xml')
 

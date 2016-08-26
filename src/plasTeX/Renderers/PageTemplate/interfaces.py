@@ -18,6 +18,9 @@ class ITemplateEngine(interface.Interface):
         """
         Compile the template.
 
+        Returns a callable object that takes an object and returns the
+        unicode string result of rendering it.
+
         :param template: A string representing the template. If it
           is a byte string, it should be decoded according to *encoding*.
         :keyword str filename: If not-None, the path to the file the template
