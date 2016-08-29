@@ -6,6 +6,7 @@ import tempfile
 import shutil
 import difflib
 import subprocess
+import unittest
 
 from . import skip_if_no_binaries
 from . import run_plastex
@@ -16,9 +17,11 @@ class _ComparisonBenched(object):
     class DontCleanupError(OSError):
         pass
 
+    additional_renderers = (('.txt', 'Text'),
+                            ('.docbook', 'DocBook'))
+
     def __call__(self, latex_file):
         __traceback_info__ = latex_file
-        skip_if_no_binaries()
         if not latex_file:
             return
 
@@ -122,7 +125,7 @@ class _ComparisonBenched(object):
         self.__compare(outdir, eclipse_outfile, eclipse_benchfile)
 
         # Now try to run the other renderers
-        for ext, renderer in (('.txt', 'Text'), ('.docbook', 'DocBook')):
+        for ext, renderer in self.additional_renderers:
             outfile = os.path.join(outdir, basename + ext)
             benchfile = os.path.join(orig_root, 'benchmarks', os.path.basename(outfile))
             log = self.__run_plastex(outdir, outfile, original_source_file,
@@ -154,18 +157,28 @@ def load_tests(testloader, module_suite, _):
         To mark a test that runs file based renders, slowly.
         """
 
-    import unittest
+    try:
+        skip_if_no_binaries()
+    except unittest.SkipTest:
+        has_binaries = False
+    else:
+        has_binaries = True
+
     suite = unittest.TestSuite()
     class CompTestCase(unittest.TestCase):
         level = 2 # These are slow
         layer = RenderingLayer
+        additional_renderers = _ComparisonBenched.additional_renderers
+
         def __init__(self, filename):
             unittest.TestCase.__init__(self)
             self.__filename = filename
             self.__name__ = filename
 
         def runTest(self): #magic unitest method name
-            _ComparisonBenched()(self.__filename)
+            c = _ComparisonBenched()
+            c.additional_renderers = self.additional_renderers
+            c(self.__filename)
 
         def __print_name(self):
             cp = os.path.commonprefix([os.getcwd(), self.__filename])
@@ -178,7 +191,11 @@ def load_tests(testloader, module_suite, _):
                                    self.__class__.__name__)
 
     for _, filename in testSuite():
+
         case = CompTestCase(filename)
+        if filename.endswith('align.tex') and not has_binaries:
+            # This one doesn't work right because it uses images
+            case.additional_renderers = (('.txt', 'Text'),)
         suite.addTest(case)
 
     return suite

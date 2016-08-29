@@ -104,8 +104,32 @@ if not os.environ.get("PLASTEX_SUBPROC"):
 
     from plasTeX.plastex import main as _main
 
+    def _run_patched(target, cmd):
+        ppn = subprocess.Popen
+        subprocess.Popen = lambda *args, **kwargs: None
+        co = subprocess.check_output
+        def check_output(cmd, **kwargs):
+            if cmd[0] == 'kpsewhich':
+                return cmd[1]
+            return co(cmd, **kwargs)
+        subprocess.check_output = check_output
+
+        cc = subprocess.check_call
+        def check_call(args, **kwargs):
+            if args[0] == 'latex':
+                return
+            cc(args, **kwargs)
+        subprocess.check_call = check_call
+
+        try:
+            target(cmd)
+        finally:
+            subprocess.Popen = ppn
+            subprocess.check_output = co
+            subprocess.check_call = cc
+
+
     def run_plastex(tmpdir, filename, args=(), cwd=None):
-        skip_if_no_binaries()
         _chameleon_cache()
         cmd = ['plastex', '-d', tmpdir]
         cmd.extend(args)
@@ -120,7 +144,12 @@ if not os.environ.get("PLASTEX_SUBPROC"):
                 finally:
                     os.chdir(pwd)
         # At one time we used threads for this, for no apparent reason
-        target(cmd)
+        try:
+            skip_if_no_binaries()
+        except SkipTest:
+            _run_patched(target, cmd)
+        else:
+            target(cmd)
 else:
     import os.path
 
