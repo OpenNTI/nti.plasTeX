@@ -29,6 +29,7 @@ class _ComparisonBenched(object):
             self._compare(outdir, latex_file)
         except self.DontCleanupError:
             clean_up = False
+            raise
         finally:
             # Clean up
             if clean_up:
@@ -69,25 +70,7 @@ class _ComparisonBenched(object):
         raise self.DontCleanupError('Diff between benchmark file (%s) and new file (%s):\n%s'
                                     % (benchfile, outfile, diff))
 
-    def _compare(self, outdir, original_source_file):
-        orig_root = os.path.dirname(os.path.dirname(original_source_file))
-
-        outfile = os.path.join(outdir,
-                               os.path.splitext(os.path.basename(original_source_file))[0] + '.html')
-        benchfile = os.path.join(orig_root, 'benchmarks', os.path.basename(outfile))
-
-        temp_latex_file = os.path.join(outdir, os.path.basename(original_source_file))
-
-        shutil.copyfile(original_source_file, temp_latex_file)
-
-        self.__preprocess_file(outdir, original_source_file)
-
-        # Run plastex
-        log = self.__run_plastex(outdir, outfile, original_source_file)
-
-        # Read output file
-        __traceback_info__ = log, outdir, outfile
-
+    def __compare(self, outdir, outfile, benchfile):
         # Get name of output file / benchmark file
 
         if not os.path.isfile(benchfile):
@@ -105,6 +88,34 @@ class _ComparisonBenched(object):
         if diff:
             # Don't cleanup, let the user decide to copy the new file into place
             self.__differences_found(outdir, outfile, benchfile, diff)
+
+    def _compare(self, outdir, original_source_file):
+        orig_root = os.path.dirname(os.path.dirname(original_source_file))
+
+        basename = os.path.splitext(os.path.basename(original_source_file))[0]
+
+        outfile = os.path.join(outdir, basename + '.html')
+
+        benchfile = os.path.join(orig_root, 'benchmarks', os.path.basename(outfile))
+
+        temp_latex_file = os.path.join(outdir, os.path.basename(original_source_file))
+
+        shutil.copyfile(original_source_file, temp_latex_file)
+
+        self.__preprocess_file(outdir, original_source_file)
+
+        # Run plastex
+        log = self.__run_plastex(outdir, outfile, original_source_file)
+
+        # Read output file
+        __traceback_info__ = log, outdir, outfile
+
+        self.__compare(outdir, outfile, benchfile)
+
+        eclipse_benchfile = os.path.join(orig_root, 'benchmarks', basename + '-eclipse-toc.xml')
+        eclipse_outfile = os.path.join(outdir, 'eclipse-toc.xml')
+
+        self.__compare(outdir, eclipse_outfile, eclipse_benchfile)
 
 def testSuite():
     """
