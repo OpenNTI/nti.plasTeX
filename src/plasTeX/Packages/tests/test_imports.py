@@ -33,9 +33,8 @@ class TestImports(unittest.TestCase):
     def test_beamer(self):
         # Have to do this in a subprocess, it screws up
         # global state.
-        import subprocess
-        import sys
-        subprocess.check_call([sys.executable, '-c', 'import plasTeX.Packages.beamer'])
+        from plasTeX.tests import run_sys_executable
+        run_sys_executable([ '-c', 'import plasTeX.Packages.beamer'])
 
     def _check(self, name):
         importlib.import_module('plasTeX.Packages.' + name)

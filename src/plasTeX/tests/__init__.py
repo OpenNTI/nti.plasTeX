@@ -6,6 +6,7 @@ __docformat__ = "restructuredtext en"
 
 import subprocess
 import tempfile
+import sys
 import os
 
 from unittest import SkipTest
@@ -59,6 +60,32 @@ def _chameleon_cache():
                 temp_mod.CACHE_DIRECTORY = conf_mod.CACHE_DIRECTORY
                 temp_mod.BaseTemplate.loader = temp_mod._make_module_loader()
 
+def run_sys_executable(args=(), cwd=None):
+    # Run in the current path. Must be careful to set
+    # this up so it works in virtualenvs and buildout
+
+    path = os.path.pathsep.join(sys.path)
+    env = os.environ.copy()
+    env['PYTHONPATH'] = path
+
+    cmd = [sys.executable] + list(args)
+
+    __traceback_info__ = env, cmd
+    proc = subprocess.Popen( cmd,
+                             env=env,
+                             cwd=cwd,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE )
+    out, err = proc.communicate()
+    log = out + err
+    __traceback_info__ = env, cmd, log
+    if proc.returncode:
+        raise OSError("plastex failed with code %s:\n%s" % (proc.returncode, log))
+
+
+    return log
+
+
 if not os.environ.get("PLASTEX_SUBPROC"):
     # Spawning a new process is really slow under
     # PyPy, messing up all the jit work. It turns out to be much
@@ -96,34 +123,16 @@ if not os.environ.get("PLASTEX_SUBPROC"):
         target(cmd)
 else:
     import os.path
-    import sys
 
     def run_plastex(tmpdir, filename, args=(), cwd=None):
         skip_if_no_binaries()
         _chameleon_cache()
         print("WARNING: Running plastex in subprocess.")
         # Run plastex on the document
-        # Must be careful to get the right python path so we work
-        # in tox virtualenvs as well as buildouts
-        path = os.path.pathsep.join(sys.path)
-        env = os.environ.copy()
-        env['PYTHONPATH'] = path
         cmd = [
-            sys.executable,
             '-m', 'plasTeX.plastex',
             '-d', tmpdir
         ]
         cmd.extend(args)
         cmd.append(filename)
-        __traceback_info__ = env, cmd
-        proc = subprocess.Popen( cmd,
-                                 env=env,
-                                 cwd=cwd,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE )
-        out, err = proc.communicate()
-        log = out + err
-        __traceback_info__ = env, cmd, log
-        if proc.returncode:
-            raise OSError("plastex failed with code %s:\n%s" % (proc.returncode, log))
-        return log
+        return run_sys_executable(args=cmd, cwd=cwd)
