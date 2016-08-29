@@ -13,7 +13,7 @@ from hashlib import md5
 from plasTeX.Logging import getLogger
 from io import StringIO
 from plasTeX.Filenames import Filenames
-from plasTeX.dictutils import ordereddict
+from collections import OrderedDict as ordereddict
 import subprocess
 
 from six.moves import cPickle as pickle

@@ -17,7 +17,7 @@ followed by a bunch of imaginary command line options and arguments.
 from __future__ import absolute_import, print_function, unicode_literals
 
 import sys, string, re, os
-from plasTeX.dictutils import ordereddict
+from collections import OrderedDict as ordereddict
 try:
     from UserDict import UserDict
 except ImportError: # py33
