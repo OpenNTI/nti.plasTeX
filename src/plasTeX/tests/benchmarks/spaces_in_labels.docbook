@@ -1,0 +1,19 @@
+<sect3 remap="subsubsection" id="sec:with space">
+
+  <title>A Section</title>
+
+    
+  
+  <para> <anchor id="a0000000002"/> This section has a space. </para>
+
+
+</sect3><sect3 remap="subsubsection" id="a0000000003">
+
+  <title>Ref</title>
+
+    
+  
+  <para> This section refs <link linkend="sec:with space"></link>. </para>
+
+
+</sect3>

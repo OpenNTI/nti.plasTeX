@@ -1,0 +1,178 @@
+
+  
+  <para><informaltable remap="eqnarray" xml:id="a0000000002">
+<tr xml:id="a0000000003">
+    
+    <td>
+    
+    <mediaobject remap="math">
+    <imageobject>
+      <imagedata role="math" fileref="images/img-0001.png" depth="&amp;images/img-0002.png-depth;px;" contentwidth="92px" contentdepth="37px" />
+    </imageobject>
+    <textobject role="tex">
+      <phrase>$\displaystyle  \frac{\partial }{\partial \beta } {x}’A^{-1}{x} = $</phrase>
+    </textobject>
+  </mediaobject>
+</td>
+    
+    
+    <td>
+    
+    <mediaobject remap="math">
+    <imageobject>
+      <imagedata role="math" fileref="images/img-0003.png" depth="&amp;images/img-0002.png-depth;px;" contentwidth="117px" contentdepth="21px" />
+    </imageobject>
+    <textobject role="tex">
+      <phrase>$\displaystyle  -{x}’A^{-1}\dot{A}_\beta A^{-1}{x}  $</phrase>
+    </textobject>
+  </mediaobject>
+</td>
+    
+    
+</tr>
+<tr xml:id="a0000000004">
+    
+    <td>
+    
+    <mediaobject remap="math">
+    <imageobject>
+      <imagedata role="math" fileref="images/img-0004.png" depth="&amp;images/img-0002.png-depth;px;" contentwidth="69px" contentdepth="37px" />
+    </imageobject>
+    <textobject role="tex">
+      <phrase>$\displaystyle \frac{\partial }{\partial \beta }A^{-1} = $</phrase>
+    </textobject>
+  </mediaobject>
+</td>
+    
+    
+    <td>
+    
+    <mediaobject remap="math">
+    <imageobject>
+      <imagedata role="math" fileref="images/img-0005.png" depth="&amp;images/img-0002.png-depth;px;" contentwidth="91px" contentdepth="21px" />
+    </imageobject>
+    <textobject role="tex">
+      <phrase>$\displaystyle  -A^{-1}\dot{A}_\beta A^{-1}  $</phrase>
+    </textobject>
+  </mediaobject>
+</td>
+    
+    
+</tr>
+<tr xml:id="a0000000005">
+    
+    <td>
+    
+    <mediaobject remap="math">
+    <imageobject>
+      <imagedata role="math" fileref="images/img-0006.png" depth="&amp;images/img-0002.png-depth;px;" contentwidth="60px" contentdepth="37px" />
+    </imageobject>
+    <textobject role="tex">
+      <phrase>$\displaystyle \frac{\partial }{\partial \beta } |A| =  $</phrase>
+    </textobject>
+  </mediaobject>
+</td>
+    
+    
+    <td>
+    
+    <mediaobject remap="math">
+    <imageobject>
+      <imagedata role="math" fileref="images/img-0007.png" depth="&amp;images/img-0002.png-depth;px;" contentwidth="132px" contentdepth="30px" />
+    </imageobject>
+    <textobject role="tex">
+      <phrase>$\displaystyle  \, \, |A| \, {trace}\left( A^{-1}\dot{A}_\beta \right)  $</phrase>
+    </textobject>
+  </mediaobject>
+</td>
+    
+    
+</tr>
+<tr xml:id="a0000000006">
+    
+    <td>
+    
+    <mediaobject remap="math">
+    <imageobject>
+      <imagedata role="math" fileref="images/img-0008.png" depth="&amp;images/img-0002.png-depth;px;" contentwidth="104px" contentdepth="37px" />
+    </imageobject>
+    <textobject role="tex">
+      <phrase>$\displaystyle \frac{\partial }{\partial \beta } \log \left\{ |A|\right\}  = $</phrase>
+    </textobject>
+  </mediaobject>
+</td>
+    
+    
+    <td>
+    
+    <mediaobject remap="math">
+    <imageobject>
+      <imagedata role="math" fileref="images/img-0009.png" depth="&amp;images/img-0002.png-depth;px;" contentwidth="194px" contentdepth="38px" />
+    </imageobject>
+    <textobject role="tex">
+      <phrase>$\displaystyle  \, \, \frac{1}{|A|}\,  \frac{\partial }{\partial \beta }A= {trace}\left( A^{-1}\dot{A}_\beta \right)  $</phrase>
+    </textobject>
+  </mediaobject>
+</td>
+    
+    
+</tr>
+<tr xml:id="a0000000007">
+    
+    <td>
+    
+    <mediaobject remap="math">
+    <imageobject>
+      <imagedata role="math" fileref="images/img-0010.png" depth="&amp;images/img-0002.png-depth;px;" contentwidth="87px" contentdepth="40px" />
+    </imageobject>
+    <textobject role="tex">
+      <phrase>$\displaystyle \frac{\partial ^2}{\partial \beta \partial \theta } A^{-1} = $</phrase>
+    </textobject>
+  </mediaobject>
+</td>
+    
+    
+    <td>
+    
+    <mediaobject remap="math">
+    <imageobject>
+      <imagedata role="math" fileref="images/img-0011.png" depth="&amp;images/img-0002.png-depth;px;" contentwidth="403px" contentdepth="21px" />
+    </imageobject>
+    <textobject role="tex">
+      <phrase>$\displaystyle  -A^{-1}\ddot{A}_{\beta \theta }A^{-1} + A^{-1}\dot{A}_\beta A^{-1}\dot{A}_\theta A^{-1} + A^{-1}\dot{A}_\theta A^{-1}\dot{A}_\beta A^{-1}  $</phrase>
+    </textobject>
+  </mediaobject>
+</td>
+    
+    
+</tr>
+<tr xml:id="a0000000008">
+    
+    <td>
+    
+    <mediaobject remap="math">
+    <imageobject>
+      <imagedata role="math" fileref="images/img-0012.png" depth="&amp;images/img-0002.png-depth;px;" contentwidth="122px" contentdepth="40px" />
+    </imageobject>
+    <textobject role="tex">
+      <phrase>$\displaystyle \frac{\partial ^2}{\partial \beta \partial \theta } \log \left\{ |A|\right\}  = $</phrase>
+    </textobject>
+  </mediaobject>
+</td>
+    
+    
+    <td>
+    
+    <mediaobject remap="math">
+    <imageobject>
+      <imagedata role="math" fileref="images/img-0013.png" depth="&amp;images/img-0002.png-depth;px;" contentwidth="298px" contentdepth="30px" />
+    </imageobject>
+    <textobject role="tex">
+      <phrase>$\displaystyle  \, \, {trace}\left(A^{-1}\ddot{A}_{\beta \theta } \right) - {trace}\left(A^{-1}\dot{A}_\beta A^{-1}\dot{A}_\theta \right)  $</phrase>
+    </textobject>
+  </mediaobject>
+</td>
+    
+    
+</tr>
+</informaltable></para>

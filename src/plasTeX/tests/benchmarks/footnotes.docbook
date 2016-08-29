@@ -1,0 +1,34 @@
+<sect1 remap="section" id="a0000000002">
+
+  <title>First Section</title>
+
+    
+  
+  <para>Vivamus congue leo sed nulla. In hac habitasse platea dictumst. Nulla congue suscipit ante. Quisque in risus. Nullam dignissim arcu ac libero. Duis adipiscing lacinia neque. Aenean velit justo, sagittis et, pharetra sed, semper ut, metus. Vestibulum sit amet dolor vitae lacus cursus auctor. SuspendisseYet another footnote in metus a ipsum bibendum malesuada. Aenean ac quam vel lectus aliquam facilisis. Integer dolor. Ut nunc. Ut interdum lacus eu pede. </para>
+
+  
+  
+<sect2 remap="subsection" id="a0000000003">
+
+  <title>First Subsection</title>
+
+    
+  
+  <para>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Sed euismod velit. Aliquam quis enim ut erat semper eleifend. Mauris dignissim, elit id rhoncus porta, justo nulla vestibulum justo, varius euismod nisl massa ut ligula<footnote><para>The first footnote</para></footnote>. Quisque tincidunt iaculis sapien. Aliquam urna mi, venenatis at, lobortis sed, cursus in, leo. Sed eget massa. Aenean tempor. Phasellus consectetuer velit id dolor. Vivamus in lorem. Integer sodales porttitor risus. Sed nunc tortor, tristique et, ultricies id, vestibulum nec, mi.<footnote><para>Another footnote</para></footnote> </para>
+
+  
+  <para>Vivamus congue leo sed nulla. In hac habitasse platea dictumst. Nulla congue suscipit ante. Quisque in risus. Nullam dignissim arcu ac libero. Duis adipiscing lacinia neque. Aenean velit justo, sagittis et, pharetra sed, semper ut, metus. Vestibulum sit amet dolor vitae lacus cursus auctor. Suspendisse in metus a ipsum bibendum malesuada. Aenean ac quam vel lectus aliquam facilisis. Integer dolor. Ut nunc. Ut interdum lacus eu pede. </para>
+
+
+</sect2>
+
+</sect1><sect1 remap="section" id="a0000000004">
+
+  <title>Second Section</title>
+
+    
+  
+  <para>Etiam gravida, lectus nec lacinia imperdiet, dolor enim aliquet augue, id scelerisque lorem tortor ac massa. Ut eu odio ut lectus varius condimentum. Suspendisse molestie. Phasellus eget felis. Donec eget velit sed quam scelerisque faucibus. Suspendisse potenti. Vivamus sed dolor ac neque molestie ornare. Suspendisse ultricies, justo vitae varius auctor, ante arcu pulvinar augue<footnote><para>second footnote</para></footnote>, in suscipit augue magna tempus massa. Ut semper. Praesent felis ipsum, porttitor vitae, ullamcorper sed, pharetra vel, felis. Praesent nec tortor ullamcorper tellus iaculis scelerisque. In dapibus massa nec mauris. Nulla facilisi. Donec vel odio quis eros nonummy viverra. Maecenas mollis tortor eget ante. </para>
+
+
+</sect1>

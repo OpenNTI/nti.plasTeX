@@ -306,7 +306,7 @@ class TextRenderer(BaseRenderer):
         return mark
 
     def do_footnotetext(self, node):
-        self.do_footnote(self, node)
+        self.do_footnote(node)
         return ''
 
     def do_footnotemark(self, node):
