@@ -4,6 +4,9 @@ from __future__ import division
 
 from plasTeX.Renderers import Renderer as BaseRenderer
 import textwrap, re, string
+
+from six import text_type
+from six import string_types
 try:
     unicode
 except NameError: # py3
@@ -13,7 +16,7 @@ except NameError: # py3
 class TextRenderer(BaseRenderer):
     """ Renderer for plain text documents """
 
-    outputType = unicode
+    outputType = text_type
     fileExtension = '.txt'
     lineWidth = 76
 
@@ -61,7 +64,7 @@ class TextRenderer(BaseRenderer):
             return self.textDefault(node.nodeName)
 
         # Render child nodes
-        return unicode(node)
+        return text_type(node)
 
     def processFileContent(self, document, s):
         s = super(TextRenderer,self).processFileContent( document, s )
@@ -91,18 +94,18 @@ class TextRenderer(BaseRenderer):
         return re.sub(r'\s*\n\s*\n(\s*\n)+', r'\n\n\n', s)
 
     def textDefault(self, node):
-        return unicode(node)
+        return text_type(node)
 
     def wrap(self, s, **kwargs):
-        return textwrap.wrap(unicode(s), self.lineWidth, break_long_words=False, **kwargs)
+        return textwrap.wrap(text_type(s), self.lineWidth, break_long_words=False, **kwargs)
 
     def fill(self, s, **kwargs):
-        return textwrap.fill(unicode(s), self.lineWidth, break_long_words=False, **kwargs)
+        return textwrap.fill(text_type(s), self.lineWidth, break_long_words=False, **kwargs)
 
     # Alignment
 
     def do_flushleft(self, node):
-        return self.fill(unicode(node)).strip()
+        return self.fill(text_type(node)).strip()
 
     do_raggedbottom = do_raggedright = do_leftline = do_flushleft
 
@@ -114,7 +117,7 @@ class TextRenderer(BaseRenderer):
         return '\n'.join(s)
 
     def do_center(self, node):
-        return self.center(unicode(node))
+        return self.center(text_type(node))
 
     do_centering = do_centerline = do_center
 
@@ -129,12 +132,12 @@ class TextRenderer(BaseRenderer):
 
     # Arrays
 
-    def do_array(self, node, cellspacing=(2,1), render=unicode):
+    def do_array(self, node, cellspacing=(2,1), render=text_type):
         # Render the table cells and get min and max column widths
         colwidths = []
         for r, row in enumerate(node):
             for c, cell in enumerate(row):
-                if isinstance(render, basestring):
+                if isinstance(render, string_types):
                     s = getattr(cell, render)().strip()
                 else:
                     s = render(cell).strip()
@@ -181,7 +184,7 @@ class TextRenderer(BaseRenderer):
             for c, cell in enumerate(row):
                 origwidth = self.lineWidth
                 self.lineWidth = outwidths[c]
-                if isinstance(render, basestring):
+                if isinstance(render, string_types):
                     s = getattr(cell, render)().split('\n')
                 else:
                     s = render(cell).strip().split('\n')
@@ -222,7 +225,7 @@ class TextRenderer(BaseRenderer):
         return ''
 
     def do_multicolumn(self, node):
-        return unicode(node)
+        return text_type(node)
 
     # Bibliography
     def do_thebibliography(self, node):
@@ -245,7 +248,7 @@ class TextRenderer(BaseRenderer):
     def do_cite(self, node):
         output = []
         for item in node.citation():
-            output.append(unicode(item))
+            output.append(text_type(item))
         return u''.join(output)
 
     def do_bibliographyref(self, node):
@@ -266,7 +269,7 @@ class TextRenderer(BaseRenderer):
     # Crossref
 
     def do_ref(self, node):
-        return unicode(node.idref['label'].ref)
+        return text_type(node.idref['label'].ref)
 
     def do_pageref(self, node):
         return u'*'
@@ -277,12 +280,12 @@ class TextRenderer(BaseRenderer):
     # Floats
 
     def do_figure(self, node):
-        return unicode(node)
+        return text_type(node)
 
     do_table = do_marginpar = do_figure
 
     def do_caption(self, node):
-        return u'%s %s: %s' % (node.title, node.ref, unicode(node))
+        return u'%s %s: %s' % (node.title, node.ref, text_type(node))
 
     # Font Selection
 
@@ -403,11 +406,11 @@ class TextRenderer(BaseRenderer):
 
     def do_par(self, node):
         numchildren = len(node.childNodes)
-        if numchildren == 1 and not isinstance(node[0], basestring):
-            return u'%s\n\n' % unicode(node)
-        elif numchildren == 2 and isinstance(node[1], basestring) and \
+        if numchildren == 1 and not isinstance(node[0], string_types):
+            return u'%s\n\n' % text_type(node)
+        elif numchildren == 2 and isinstance(node[1], string_types) and \
            not node[1].strip():
-            return u'%s\n\n' % unicode(node)
+            return u'%s\n\n' % text_type(node)
         s = u'%s\n\n' % self.fill(node)
         if not s.strip():
             return u''
@@ -424,9 +427,9 @@ class TextRenderer(BaseRenderer):
     def do_quote(self, node):
         backslash = self['\\']
         self['\\'] = lambda *args: u'\001'
-        res = [x.strip() for x in unicode(node).split(u'\001')]
+        res = [x.strip() for x in text_type(node).split(u'\001')]
         output = []
-        for par in [x.strip() for x in unicode(node).split(u'\n\n')]:
+        for par in [x.strip() for x in text_type(node).split(u'\n\n')]:
             for item in [x.strip() for x in par.split(u'\001')]:
                 output.append(self.fill(item, initial_indent='   ', subsequent_indent='      '))
             output.append('')
@@ -439,7 +442,7 @@ class TextRenderer(BaseRenderer):
     # Sectioning
 
     def do_document(self, node):
-        content = unicode(node).rstrip()
+        content = text_type(node).rstrip()
         footnotes = u'\n\n'.join(self.footnotes).rstrip()
         if footnotes:
             content = u'%s\n\n\n%s' % (content, footnotes)
@@ -541,7 +544,7 @@ class TextRenderer(BaseRenderer):
     # Verbatim
 
     def do_verbatim(self, node):
-        return re.sub(r'^\s*\n', r'', unicode(node)).rstrip()
+        return re.sub(r'^\s*\n', r'', text_type(node)).rstrip()
 
     do_alltt = do_verbatim
 

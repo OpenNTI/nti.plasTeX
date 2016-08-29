@@ -1,5 +1,6 @@
 include *.txt
-include CHANGES
+include *.rst
+include .coveragerc
 include INSTALL
 include LICENSE
 include TODO
@@ -29,5 +30,6 @@ recursive-include src *.txt
 recursive-include src *.xml
 recursive-include src *.zcml
 recursive-include src *.zpts
+recursive-include src *.docbook
 recursive-include src cgpdfpng
 recursive-include src plasTeXrc
