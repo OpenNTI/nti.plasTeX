@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""
+r"""
 embed package
 
 To use the embed package, include the following code in your latex document.
@@ -42,24 +42,24 @@ from plasTeX.Base.LaTeX.Verbatim import verb
 class HTML(verbatim):
     captionable = True
     blockType = False
-    
+
     def digest(self, tokens):
         verbatim.digest(self, tokens)
         self.unicode = Text(''.join(self))
         self.unicode.isMarkup = True
         return []
-    
+
 class XHTML(HTML):
     pass
-    
+
 class html(verb):
     args = ''
-    
+
     def digest(self, tokens):
         verb.digest(self, tokens)
         self.unicode = Text(''.join(self))
         self.unicode.isMarkup = True
         return []
-    
+
 class xhtml(html):
     pass
