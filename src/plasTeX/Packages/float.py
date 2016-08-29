@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import new
 from plasTeX import Command, Environment
 from plasTeX.Base.LaTeX.Floats import Float, Caption
 
@@ -11,9 +10,9 @@ class newfloat(Command):
         name = str(self.attributes['name'])
 
         # Create the float class and the caption class
-        floatcls = new.classobj(name, (Float,), {})
-        captioncls = new.classobj('caption', (Caption,), 
-                                  {'macroName':'caption', 'counter':name})
+        floatcls = type(name, (Float,), {})
+        captioncls = type('caption', (Caption,),
+                          {'macroName':'caption', 'counter':name})
         floatcls.caption = captioncls
         c = self.ownerDocument.context
         c.addGlobal(name, floatcls)
@@ -27,7 +26,7 @@ class newfloat(Command):
 
 
 class floatstyle(Command):
-    args = 'style:str' 
+    args = 'style:str'
 
 class restylefloat(Command):
     args = 'float:str'

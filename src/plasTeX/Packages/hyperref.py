@@ -14,7 +14,11 @@ from __future__ import absolute_import
 from plasTeX import Command, Environment
 from plasTeX.Base.LaTeX.Crossref import ref, pageref
 from .nameref import Nameref, nameref
-import urlparse
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    # Py2
+    from urlparse import urljoin
 
 def addBaseURL(self, urlarg):
     try:
@@ -25,7 +29,7 @@ def addBaseURL(self, urlarg):
            baseurl = baseurl.source.replace( ' ', '' ).replace( '\\&', '&' ).replace( '\\_', '_' )
         if hasattr( the_url, 'source' ):
            the_url = the_url.source.replace( ' ', '' ).replace( '\\&', '&' ).replace( '\\_', '_' )
-        return urlparse.urljoin(baseurl, the_url)
+        return urljoin(baseurl, the_url)
     except (KeyError,AttributeError):
         pass
     return self.attributes[urlarg]

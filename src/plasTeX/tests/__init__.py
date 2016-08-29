@@ -5,6 +5,7 @@ from __future__ import print_function, absolute_import, division
 __docformat__ = "restructuredtext en"
 
 import subprocess
+import tempfile
 import os
 
 from unittest import SkipTest
@@ -37,6 +38,26 @@ def skip_if_no_binaries():
         _check_for_binaries = _already_checked_for_binaries_and_failed
         _already_checked_for_binaries_and_failed()
 
+def _chameleon_cache():
+    # A properly configured chameleon cache is the difference
+    # between a 15s test run and a 2 minute test run.
+    if not os.environ.get("CHAMELEON_CACHE"):
+        cache_dir = os.path.join(tempfile.gettempdir(), 'plasTeXTestCache')
+        try:
+            os.makedirs(cache_dir)
+        except OSError:
+            pass
+        os.environ['CHAMELEON_CACHE'] = cache_dir
+        import chameleon.config as conf_mod
+        if conf_mod.CACHE_DIRECTORY != cache_dir:  # previously imported before we set the environment
+            conf_mod.CACHE_DIRECTORY = cache_dir
+            # Which, crap, means the template is probably also screwed up.
+            # It imports all of this stuff statically, and BaseTemplate
+            # statically creates a default loader at import time
+            import chameleon.template as temp_mod
+            if temp_mod.CACHE_DIRECTORY != conf_mod.CACHE_DIRECTORY:
+                temp_mod.CACHE_DIRECTORY = conf_mod.CACHE_DIRECTORY
+                temp_mod.BaseTemplate.loader = temp_mod._make_module_loader()
 
 if not os.environ.get("PLASTEX_SUBPROC"):
     # Spawning a new process is really slow under
@@ -58,6 +79,7 @@ if not os.environ.get("PLASTEX_SUBPROC"):
 
     def run_plastex(tmpdir, filename, args=(), cwd=None):
         skip_if_no_binaries()
+        _chameleon_cache()
         cmd = ['plastex', '-d', tmpdir]
         cmd.extend(args)
         cmd.append(filename)
@@ -78,6 +100,7 @@ else:
 
     def run_plastex(tmpdir, filename, args=(), cwd=None):
         skip_if_no_binaries()
+        _chameleon_cache()
         print("WARNING: Running plastex in subprocess.")
         # Run plastex on the document
         # Must be careful to get the right python path so we work
