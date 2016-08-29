@@ -47,3 +47,5 @@
 - The Cheetah, genshi, and Kid template support has been removed. It
   can easily be added back by a different package thanks to the
   extensibility introduced by the component registry.
+
+- Remove Entites.py and ent.xml.
