@@ -55,13 +55,17 @@ class _ComparisonBenched(object):
                 else:
                     break
 
-    def __run_plastex(self, outdir, outfile, original_source_file):
+    def __run_plastex(self, outdir, outfile, original_source_file, renderer=None):
+        args = (
+            '--split-level=0','--no-theme-extras',
+            '--theme=minimal',
+            '--filename=%s' % os.path.basename(outfile)
+        )
+        if renderer:
+            args += ('--renderer=' + renderer, )
         return run_plastex(outdir, os.path.basename(original_source_file),
                            cwd=outdir,
-                           args=(
-                               '--split-level=0','--no-theme-extras',
-                               '--theme=minimal',
-                               '--filename=%s' % os.path.basename(outfile)))
+                           args=args)
 
     def __no_benchmark_file(self, outdir, outfile, benchfile):
         raise self.DontCleanupError( 'No benchmark file: %s; new file in %s' % (benchfile, outfile) )
@@ -116,6 +120,16 @@ class _ComparisonBenched(object):
         eclipse_outfile = os.path.join(outdir, 'eclipse-toc.xml')
 
         self.__compare(outdir, eclipse_outfile, eclipse_benchfile)
+
+        # Now try to run the other renderers
+        for ext, renderer in (('.txt', 'Text'), ('.docbook', 'DocBook')):
+            outfile = os.path.join(outdir, basename + ext)
+            benchfile = os.path.join(orig_root, 'benchmarks', os.path.basename(outfile))
+            log = self.__run_plastex(outdir, outfile, original_source_file,
+                                     renderer=renderer)
+            __traceback_info__ = log, outdir, outfile
+            self.__compare(outdir, outfile, benchfile)
+
 
 def testSuite():
     """

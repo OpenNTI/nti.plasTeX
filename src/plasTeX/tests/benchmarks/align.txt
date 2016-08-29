@@ -1,0 +1,24 @@
+  x’A-1x =
+
+ -x’A-1AβA-1x
+
+A-1 =
+
+ -A-1AβA-1
+
+ |A| =
+
+   |A|  trace A-1Aβ
+
+ |A| =
+
+     A= trace A-1Aβ
+
+ A-1 =
+
+ -A-1AβθA-1 + A-1AβA-1AθA-1 + A-1AθA-1AβA-1
+
+ |A| =
+
+   traceA-1Aβθ  - traceA-1AβA-1Aθ
+
