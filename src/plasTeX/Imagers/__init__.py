@@ -531,11 +531,11 @@ class Imager(object):
     def verify(self):
         """ Verify that this commmand works on this machine """
         if self.verification:
-            proc = os.popen(self.verification)
-            proc.read()
-            if not proc.close():
-                return True
-            return False
+            try:
+                subprocess.check_call(self.verification)
+            except subprocess.CalledProcessError:
+                return False
+            return True
 
         if not self.command.strip():
             return False
@@ -545,12 +545,13 @@ class Imager(object):
         if not cmd:
             return False
 
-        proc = os.popen('%s --help' % cmd)
-        proc.read()
-        if not proc.close():
-            return True
-
-        return False
+        try:
+            __traceback_info__ = cmd
+            with open('/dev/null', 'w') as n:
+                subprocess.check_call([cmd, '--help'], stdout=n)
+        except subprocess.CalledProcessError:
+            return False
+        return True
 
     @property
     def enabled(self):

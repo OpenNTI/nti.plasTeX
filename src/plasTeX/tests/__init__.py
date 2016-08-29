@@ -118,8 +118,15 @@ if not os.environ.get("PLASTEX_SUBPROC"):
         def check_call(args, **kwargs):
             if args[0] == 'latex':
                 return
+            raise subprocess.CalledProcessError(1, args)
             cc(args, **kwargs)
         subprocess.check_call = check_call
+
+        st = os.system
+        def system(*args):
+            # XXX: We shouldn't ever be doing os.system. Fix these.
+            return 0
+        os.system = system
 
         try:
             target(cmd)
@@ -127,6 +134,7 @@ if not os.environ.get("PLASTEX_SUBPROC"):
             subprocess.Popen = ppn
             subprocess.check_output = co
             subprocess.check_call = cc
+            os.system = st
 
 
     def run_plastex(tmpdir, filename, args=(), cwd=None):

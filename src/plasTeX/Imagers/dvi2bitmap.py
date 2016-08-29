@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import absolute_import, unicode_literals, print_function
 import plasTeX.Imagers
 
 class DVI2Bitmap(plasTeX.Imagers.Imager):
@@ -17,7 +17,7 @@ class DVI2Bitmap(plasTeX.Imagers.Imager):
     def formatConfigOptions(self, config):
         options = []
         if config['resolution']:
-            options.append(('--resolution=%s' % config['resolution'], '')) 
+            options.append(('--resolution=%s' % config['resolution'], ''))
         return options
 
 Imager = DVI2Bitmap
