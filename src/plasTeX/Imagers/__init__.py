@@ -790,8 +790,7 @@ class Imager(object):
         # Sort by creation date
         #images.sort(lambda a,b: cmp(os.stat(a)[9], os.stat(b)[9]))
 
-        images.sort(lambda a,b: cmp(int(re.search(r'(\d+)\.\w+$',a).group(1)),
-                                    int(re.search(r'(\d+)\.\w+$',b).group(1))))
+        images.sort(key=lambda a: int(re.search(r'(\d+)\.\w+$',a).group(1)))
 
         os.chdir(cwd)
 
