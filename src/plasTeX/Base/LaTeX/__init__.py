@@ -1,8 +1,6 @@
 from __future__ import absolute_import
 #!/usr/bin/env python
 
-#from Entities import *
-
 from .Accents import *
 from .Alignment import *
 from .Arrays import *
