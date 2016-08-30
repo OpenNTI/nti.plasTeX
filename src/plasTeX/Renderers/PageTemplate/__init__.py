@@ -278,56 +278,53 @@ class PageTemplate(BaseRenderer):
         templatedir -- the directory to search for template files
 
         """
-        # Create a list for resolving aliases
+        # Create a list for resolving aliases; always clear these at the beginning
         self.aliases = {}
+        if not templatedir or not os.path.isdir(templatedir):
+            logger.debug("Not a directory: %s", templatedir)
+            return
 
         enames = {}
-        for key, value in list(self.engines.items()):
+        for key, value in self.engines.items():
             for extension in value.extensions:
-                enames[extension+'s'] = key[0]
+                enames[extension + 's'] = key[0]
 
         singleenames = {}
-        for key, value in list(self.engines.items()):
+        for key, value in self.engines.items():
             for extension in value.extensions:
                 singleenames[extension] = key[0]
 
-        if templatedir and os.path.isdir(templatedir):
-            files = os.listdir(templatedir)
-            # (JAM) Ensure sorted so overrides are dependable
-            # (On OS X, directory listings are always sorted, thats
-            # why this hasn't been a problem before)
-            files.sort()
 
-            # Compile multi-pt files first
-            for f in files:
-                ext = os.path.splitext(f)[-1]
-                f = os.path.join(templatedir, f)
+        files = os.listdir(templatedir)
+        # (JAM) Ensure sorted so overrides are dependable
+        # (On OS X, directory listings are always sorted, thats
+        # why this hasn't been a problem before)
+        files.sort()
+        files = [os.path.join(templatedir, f) for f in files]
+        files = [f for f in files if os.path.isfile(f)]
 
-                if not os.path.isfile(f):
-                    continue
+        # Compile multi-pt files first
+        for f in files:
+            ext = os.path.splitext(f)[-1]
 
-                # Multi-pt files
-                if ext.lower() in enames:
-                    logger.debug( 'Parsing multi-pt file %s', f )
-                    self.parseTemplates(f, {'engine': enames[ext.lower()]})
+            # Multi-pt files
+            if ext.lower() in enames:
+                logger.debug( 'Parsing multi-pt file %s', f )
+                self.parseTemplates(f, {'engine': enames[ext.lower()]})
 
-            # Now compile macros in individual files.  These have
-            # a higher precedence than macros found in multi-pt files.
-            for f in files:
-                basename, ext = os.path.splitext(f)
-                f = os.path.join(templatedir, f)
+        # Now compile macros in individual files.  These have
+        # a higher precedence than macros found in multi-pt files.
+        for f in files:
+            basename, ext = os.path.splitext(f)
+            basename = os.path.basename(basename)
+            options = {'name': basename}
 
-                if not os.path.isfile(f):
-                    continue
-
-                options = {'name':basename}
-
-                for value in list(self.engines.values()):
-                    if ext in value.extensions:
-                        options['engine'] = singleenames[ext.lower()]
-                        self.parseTemplates(f, options)
-                        del options['engine']
-                        break
+            for value in self.engines.values():
+                if ext in value.extensions:
+                    options['engine'] = singleenames[ext.lower()]
+                    self.parseTemplates(f, options)
+                    del options['engine']
+                    break
 
         if self.aliases:
            log.warning('The following aliases were unresolved: %s',
