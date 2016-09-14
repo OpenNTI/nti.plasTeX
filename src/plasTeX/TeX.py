@@ -973,7 +973,8 @@ class TeX(object):
 
         # Could not find specified type
         elif dtype not in argtypes:
-            log.warning('Could not find datatype "%s"' % dtype)
+            log.warning('Could not find datatype "%s" from %s (in %r)',
+                        dtype, argtypes, self)
             pass
 
         # Casting to specified type
