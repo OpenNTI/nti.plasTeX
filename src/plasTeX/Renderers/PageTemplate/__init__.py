@@ -303,6 +303,9 @@ class PageTemplate(BaseRenderer):
         files = [os.path.join(templatedir, f) for f in files]
         files = [f for f in files if os.path.isfile(f)]
 
+        logger.debug("Possible template files in %s: %s",
+                     files, templatedir)
+
         # Compile multi-pt files first
         for f in files:
             ext = os.path.splitext(f)[-1]
@@ -405,6 +408,7 @@ class PageTemplate(BaseRenderer):
         options = options.copy() if options is not None else {}
         defaults = options.copy()
         name = None
+        logger.debug("Parsing templates from %s (%r)", filename, options)
         if not options or 'name' not in options:
             f = open(filename, 'r')
             for i, line in enumerate(f):
