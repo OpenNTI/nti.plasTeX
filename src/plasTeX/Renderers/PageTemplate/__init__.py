@@ -136,7 +136,6 @@ class PageTemplate(BaseRenderer):
     def __init__(self, *args, **kwargs):
         super(PageTemplate,self).__init__( *args, **kwargs )
         self.engines = {}
-
         for engine_iface in (ITextTemplateEngine, IXMLTemplateEngine, IHTMLTemplateEngine, ITemplateEngine):
             engine_type = engine_iface.getTaggedValue('engine_type')
             for name, engine in component.getUtilitiesFor(engine_iface):
@@ -388,6 +387,7 @@ class PageTemplate(BaseRenderer):
             raise ValueError( 'Could not compile template "%s" %s' % (names[0], e) )
 
         for name in names:
+            logger.debug("Storing template %s = %r (%s)", name, template, filename)
             self[name] = template
 
         return template
