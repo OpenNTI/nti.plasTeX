@@ -26,8 +26,8 @@ from .interfaces import IXMLTemplateEngine
 from .interfaces import IHTMLTemplateEngine
 from .interfaces import ITemplateEngine
 
-import logging
-log = logging.getLogger(__name__)
+from plasTeX.Logging import getLogger
+log = getLogger(__name__)
 logger = log
 
 from six.moves import configparser as ConfigParser
@@ -140,7 +140,8 @@ class PageTemplate(BaseRenderer):
             engine_type = engine_iface.getTaggedValue('engine_type')
             for name, engine in component.getUtilitiesFor(engine_iface):
                 self.engines[(name, engine_type)] = engine
-
+        if not self.engines: # pragma: no cover
+            logger.warning("No configured template engines found.")
 
     def textDefault(self, node):
         """
@@ -387,7 +388,7 @@ class PageTemplate(BaseRenderer):
             raise ValueError( 'Could not compile template "%s" %s' % (names[0], e) )
 
         for name in names:
-            logger.debug("Storing template %s = %r (%s)", name, template, filename)
+            logger.debug1("Storing template %s = %r (%s)", name, template, filename)
             self[name] = template
 
         return template

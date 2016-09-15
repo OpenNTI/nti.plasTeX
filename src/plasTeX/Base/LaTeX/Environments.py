@@ -7,7 +7,9 @@ C.1.2 Environments (p167)
 
 from plasTeX import Command
 
-logger = __import__('logging').getLogger(__name__)
+from plasTeX.Logging import getLogger
+
+logger = getLogger(__name__)
 
 class begin(Command):
     """ Beginning of an environment """
@@ -17,7 +19,7 @@ class begin(Command):
         """ Parse the \\begin{...} """
 #       name = self.parse(tex)['name']
         name = tex.readArgument(type=str)
-        logger.debug( 'Begin environment %s', name)
+        logger.debug1( 'Begin environment %s', name)
 
         self.ownerDocument.context.currenvir = name
 
@@ -42,7 +44,7 @@ class end(Command):
         """ Parse the \\end{...} """
 #       name = self.parse(tex)['name']
         name = tex.readArgument(type=str)
-        logger.debug( 'End environment %s', name)
+        logger.debug1( 'End environment %s', name)
 
         # Instantiate the correct macro and let it know
         # that it came from a \end{...} macro
