@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import textwrap, types
 import logging
 from logging import CRITICAL, DEBUG, Logger as _Logger, StreamHandler as _StreamHandler, Formatter
-from logging import addLevelName, setLoggerClass
+from logging import addLevelName, setLoggerClass, getLoggerClass
 
 
 MAX_WIDTH = 75
@@ -23,7 +23,7 @@ addLevelName(DEBUG3, 'DEBUG-3')
 addLevelName(DEBUG4, 'DEBUG-4')
 addLevelName(DEBUG5, 'DEBUG-5')
 
-class Logger(_Logger):
+class Logger(getLoggerClass()):
 
     def __init__(self, name='', *args, **kwargs):
         _Logger.__init__(self, name, *args, **kwargs)
@@ -64,7 +64,7 @@ class Logger(_Logger):
         return self.log(DEBUG5, *args, **kwargs)
 
     def dot(self):
-        return self.debug('.')
+        return self.debug1('.')
 
 
 class StreamFormatter(Formatter):

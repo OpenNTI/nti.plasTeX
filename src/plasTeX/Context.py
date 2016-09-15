@@ -653,11 +653,11 @@ class Context(object):
                 # If we hit a document element, make sure that we start
                 # at the global context.
                 if context.level == context.DOCUMENT_LEVEL:
-                    stacklog.debug( "Popping all contexts up to document due to %r", context )
+                    stacklog.debug1( "Popping all contexts up to document due to %r", context )
 
                     while len(self.contexts) > 1:
                         self.contexts.pop()
-            stacklog.debug('pushing %s onto %s', name, self.top)
+            stacklog.debug1('pushing %s onto %s', name, self.top)
             self.contexts.append(self.createContext(context))
 
         self.mapMethods()
@@ -743,7 +743,7 @@ class Context(object):
 
         """
 
-        #stacklog.debug( 'Popping %s %s from %s', obj, type(obj), self.contexts[-1] )
+        #stacklog.debug1( 'Popping %s %s from %s', obj, type(obj), self.contexts[-1] )
 
         if obj is None:
             # Pop until we hit a None in the context
@@ -945,7 +945,7 @@ class Context(object):
         """
         name = str(name)
         # Generate a new count class
-        macrolog.debug('creating count %s', name)
+        macrolog.debug1('creating count %s', name)
         newclass = type(name, (plasTeX.CountCommand,),
                                {'value': plasTeX.count(initial)})
         self.addGlobal(name, newclass)
@@ -963,7 +963,7 @@ class Context(object):
         """
         name = str(name)
         # Generate a new dimen class
-        macrolog.debug('creating dimen %s', name)
+        macrolog.debug1('creating dimen %s', name)
         newclass = type(name, (plasTeX.DimenCommand,),
                                 {'value': plasTeX.dimen(initial)})
         self.addGlobal(name, newclass)
@@ -981,7 +981,7 @@ class Context(object):
         """
         name = str(name)
         # Generate a new glue class
-        macrolog.debug('creating dimen %s', name)
+        macrolog.debug1('creating dimen %s', name)
         newclass = type(name, (plasTeX.GlueCommand,),
                                 {'value': plasTeX.glue(initial)})
         self.addGlobal(name, newclass)
@@ -999,7 +999,7 @@ class Context(object):
         """
         name = str(name)
         # Generate a new muglue class
-        macrolog.debug('creating muskip %s', name)
+        macrolog.debug1('creating muskip %s', name)
         newclass = type(name, (plasTeX.MuGlueCommand,),
                                 {'value': plasTeX.muglue(initial)})
         self.addGlobal(name, newclass)
@@ -1025,7 +1025,7 @@ class Context(object):
             return
 
         # Generate new 'if' class
-        macrolog.debug('creating if %s', name)
+        macrolog.debug1('creating if %s', name)
         ifclass = type(name, (plasTeX.NewIf,), {'state':initial})
         self.addGlobal(name, ifclass)
 
@@ -1074,7 +1074,7 @@ class Context(object):
         if isinstance(opt, string_types):
             opt = [x for x in Tokenizer(opt, self)]
 
-        macrolog.debug('creating newcommand %s', name)
+        macrolog.debug1('creating newcommand %s', name)
         newclass = type(name, (plasTeX.NewCommand,),
                        {'nargs':nargs,'opt':opt,'definition':definition})
 
@@ -1123,7 +1123,7 @@ class Context(object):
         if isinstance(opt, string_types):
             opt = [x for x in Tokenizer(opt, self)]
 
-        macrolog.debug('creating newenvironment %s', name)
+        macrolog.debug1('creating newenvironment %s', name)
 
         # Begin portion
         newclass = type(name, (plasTeX.NewCommand,),
@@ -1163,7 +1163,7 @@ class Context(object):
         if isinstance(definition, string_types):
             definition = [x for x in Tokenizer(definition, self)]
 
-        macrolog.debug('creating def %s', name)
+        macrolog.debug1('creating def %s', name)
         newclass = type(name, (plasTeX.Definition,),
                        {'args':args,'definition':definition})
 
@@ -1197,7 +1197,7 @@ class Context(object):
         """
         name = str(name)
         # Generate a new chardef class
-        macrolog.debug('creating chardef %s', name)
+        macrolog.debug1('creating chardef %s', name)
         newclass = type(name, (plasTeX.Command,),
                         {'unicode':chr(num)})
         self.addGlobal(name, newclass)
