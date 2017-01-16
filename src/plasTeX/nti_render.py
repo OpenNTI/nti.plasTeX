@@ -246,7 +246,7 @@ def main():
 
 from nti.utils import setupChameleonCache
 
-def postRender(document, contentLocation='.', jobname='prealgebra', context=None, dochecking=True, doindexing=True):
+def postRender(document, contentLocation='.', jobname='prealgebra', context=None, dochecking=True):
     # FIXME: This was not particularly well thought out. We're using components,
     # but named utilities, not generalized adapters or subscribers.
     # That makes this not as extensible as it should be.
@@ -286,19 +286,6 @@ def postRender(document, contentLocation='.', jobname='prealgebra', context=None
         contentchecks.performChecks(book, context=context)
 
     contentPath = os.path.realpath(contentLocation)
-    if doindexing and  not os.path.exists(os.path.join(contentPath, 'indexdir')):
-        # We'd like to be able to run this with pypy (it's /much/ faster)
-        # but some of the Zope libs we import during contentsearch (notably Persistent)
-        # are not quite compatible. A previous version of this code made the correct
-        # changes PYTHONPATH changes for this to work (before contentsearch grew those deps);
-        # now it just generates exceptions, so we don't try right now
-        start_t = time.time()
-        logger.info("Indexing content in-process.")
-        for name, impl in component.getUtilitiesFor(interfaces.IRenderedBookIndexer):
-            logger.info("Indexing %s content" % name)
-            impl.transform(book, jobname)
-        elapsed = time.time() - start_t
-        logger.info("Content indexing took %s(s)" % elapsed)
 
     # TODO: Aren't the things in the archive mirror file the same things
     # we want to list in the manifest? If so, we should be able to combine
