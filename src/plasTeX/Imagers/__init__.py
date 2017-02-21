@@ -637,7 +637,7 @@ class Imager(object):
         cwd = os.getcwd()
 
         # Make a temporary directory to work in
-        tempdir = tempfile.mkdtemp()
+        tempdir = tempfile.mkdtemp(prefix="compileLatex_")
 
         filename = 'images.tex'
 
@@ -656,11 +656,11 @@ class Imager(object):
         if not program:
             program = self.compiler
 
-        args = [program]
+        pargs = [program]
         if program.endswith( 'tex' ):
-            args.append( '--interaction=batchmode' )
+            pargs.append( '--interaction=batchmode' )
 
-        args.append( filename )
+        pargs.append( filename )
 
         kwargs = {}
         if program.endswith( 'tex' ):
@@ -678,9 +678,8 @@ class Imager(object):
         env_entries.extend( self.ownerDocument.userdata.get('texinputs_paths','').split(os.pathsep) )
         new_env['TEXINPUTS'] = os.pathsep.join( env_entries )
 
-
         try:
-            subprocess.check_call( args,
+            subprocess.check_call( pargs,
                                    cwd=tempdir,
                                    **kwargs )
         except:
@@ -688,7 +687,7 @@ class Imager(object):
             # about the reason, which would be in 'images.log'
             # TODO: Adopt this everywhere we're calling latex
             logname = os.path.join( tempdir, 'images.log' )
-            __traceback_info__ = args, logname
+            __traceback_info__ = pargs, logname
             if os.path.isfile( logname ):
                 with open(os.path.join(tempdir,'images.log'), 'rU' ) as f:
                     lines = f.readlines()
