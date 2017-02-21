@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
-from __future__ import absolute_import
-from __future__ import division
+from __future__ import absolute_import, division
 
 import re
 from plasTeX import Command
 
-from .graphics import DeclareGraphicsExtensions, graphicspath, _locate_image_file
+from .graphics import _locate_image_file
+
+from .graphics import graphicspath
+from .graphics import DeclareGraphicsExtensions
 
 class includegraphics(Command):
     args = '* [ options:dict ] file:str'
@@ -15,9 +17,7 @@ class includegraphics(Command):
 
     default_extensions = ('.png','.jpg','.jpeg','.gif','.pdf','.ps','.eps')
 
-    def invoke(self, tex):
-        res = Command.invoke(self, tex)
-
+    def process_image(self, tex=None):
         f = self.attributes['file']
         img = _locate_image_file( self, tex, f, self.packageName, self.default_extensions )
 
@@ -70,6 +70,9 @@ class includegraphics(Command):
 
         self.imageoverride = img
 
+    def invoke(self, tex):
+        res = Command.invoke(self, tex)
+        self.process_image(tex)
         return res
 
 class DeclareGraphicsExtensions(DeclareGraphicsExtensions):
