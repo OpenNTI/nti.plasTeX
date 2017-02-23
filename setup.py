@@ -23,7 +23,7 @@ TESTS_REQUIRE = [
 
 INSTALL_REQUIRES = [
     # Chameleon for template rendering.
-    'Chameleon',
+    'Chameleon >= 3.1',
     'z3c.pt >= 3.0.0a1',  # Better ZPT support than plastex, add-in to Chameleon
     'z3c.ptcompat >= 2.0.0a1',  # Make zope.pagetemplate also use the Chameleon-based ZPT
     'zope.pagetemplate >= 4.0.4', # pulled in by z3c.ptcompat, pin to newer version
