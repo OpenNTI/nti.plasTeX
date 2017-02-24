@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import division, unicode_literals
+from __future__ import division, unicode_literals, print_function
 
 import os
 
@@ -219,6 +219,8 @@ class Image(object):
         def fget(self):
             return getattr(self, '_depth', None)
         def fset(self, value):
+            print("Setting depth", self, value, type(value))
+            import traceback; traceback.print_stack()
             if value is None:
                 self._depth = value
             elif isinstance(value, DimensionPlaceholder):
