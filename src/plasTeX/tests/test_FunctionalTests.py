@@ -8,6 +8,7 @@ import difflib
 import subprocess
 import unittest
 
+from . import check_for_binary
 from . import skip_if_no_binaries
 from . import run_plastex
 
@@ -19,6 +20,7 @@ class _ComparisonBenched(object):
 
     additional_renderers = (('.txt', 'Text'),
                             ('.docbook', 'DocBook'))
+    expect_html_diffs = False
 
     def __call__(self, latex_file):
         __traceback_info__ = latex_file
@@ -117,7 +119,8 @@ class _ComparisonBenched(object):
         # Read output file
         __traceback_info__ = log, outdir, outfile
 
-        self.__compare(outdir, outfile, benchfile)
+        if not self.expect_html_diffs:
+            self.__compare(outdir, outfile, benchfile)
 
         eclipse_benchfile = os.path.join(orig_root, 'benchmarks', basename + '-eclipse-toc.xml')
         eclipse_outfile = os.path.join(outdir, 'eclipse-toc.xml')
@@ -169,6 +172,7 @@ def load_tests(testloader, module_suite, _):
         level = 2 # These are slow
         layer = RenderingLayer
         additional_renderers = _ComparisonBenched.additional_renderers
+        expect_html_diffs = False
 
         def __init__(self, filename):
             unittest.TestCase.__init__(self)
@@ -178,6 +182,7 @@ def load_tests(testloader, module_suite, _):
         def runTest(self): #magic unitest method name
             c = _ComparisonBenched()
             c.additional_renderers = self.additional_renderers
+            c.expect_html_diffs = self.expect_html_diffs
             c(self.__filename)
 
         def __print_name(self):
@@ -196,6 +201,9 @@ def load_tests(testloader, module_suite, _):
         if filename.endswith('align.tex') and not has_binaries:
             # This one doesn't work right because it uses images
             case.additional_renderers = (('.txt', 'Text'),)
+            if not check_for_binary('dvipng'):
+                case.expect_html_diffs = True
+
         suite.addTest(case)
 
     return suite

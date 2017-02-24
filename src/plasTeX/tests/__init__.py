@@ -11,17 +11,21 @@ import os
 
 from unittest import SkipTest
 
-def _real_check_for_binaries():
-    with open('/dev/null', 'wb') as f: # Unix specific (prior to Python 3)
-        subprocess.check_call( ['kpsewhich', '--version'], stdout=f)
+def check_for_binary(name='kpsewhich'):
+    try:
+        with open('/dev/null', 'wb') as f: # Unix specific (prior to Python 3)
+            subprocess.check_call( [name, '--version'], stdout=f)
+        return True
+    except OSError:
+        return False
 
-_check_for_binaries = _real_check_for_binaries
+_check_for_binaries = check_for_binary
 
 def _already_checked_for_binaries_and_failed():
     raise SkipTest("kpsewhich binary not found")
 
 def _already_checked_for_binaries_and_worked():
-    return
+    return True
 
 def skip_if_no_binaries():
     """
@@ -32,10 +36,9 @@ def skip_if_no_binaries():
     This is only a partial check and may be slow.
     """
     global _check_for_binaries
-    try:
-        _check_for_binaries()
+    if _check_for_binaries():
         _check_for_binaries = _already_checked_for_binaries_and_worked
-    except OSError:
+    else:
         _check_for_binaries = _already_checked_for_binaries_and_failed
         _already_checked_for_binaries_and_failed()
 
