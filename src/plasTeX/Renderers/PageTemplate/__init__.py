@@ -476,10 +476,6 @@ class PageTemplate(BaseRenderer):
 
     def processFileContent(self, document, s):
         # Add width, height, and depth to images
-        print("procFileContent")
-        print("document", document)
-        print("s", s)
-
         s = re.sub(r'&amp;(\S+)-(width|height|depth);(?:&amp;([a-z]+);)?',
                    self.setImageData, s)
 

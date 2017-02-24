@@ -404,10 +404,11 @@ def _create_imager(config, document, defaultImager, imageTypes, imageUnits, imag
         imager = Imager(document, imageTypes)
 
         # Make sure that this imager works on this machine
+        print("CHECKING IMAGER", imager)
         if imager.verify():
             log.info('Using the imager "%s".', name)
             break
-
+        print("IMAGER FAILED")
         imager = None
 
     # Still no imager? Just use the default.
@@ -423,7 +424,7 @@ def _create_imager(config, document, defaultImager, imageTypes, imageUnits, imag
         imager.imageAttrs = imageAttrs
     if imageUnits and not imager.imageUnits:
         imager.imageUnits = imageUnits
-
+    print("USING IMAGER", imager)
     return imager
 
 # JAM: Make access to the current renderer thread-safe.
