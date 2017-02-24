@@ -4,7 +4,7 @@ python:
   - 2.7
   - 3.4
   - 3.5
-  - pypy
+  - pypy-5.4.1
 dist: trusty
 script:
 # Coverage is slow on this old version of pypy
