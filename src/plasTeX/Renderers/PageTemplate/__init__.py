@@ -520,7 +520,7 @@ class PageTemplate(BaseRenderer):
             img = self.imager.images.get(filename,
                                          self.vectorImager.images.get(filename,
                                                                       self.imager.staticimages.get(filename)))
-            print(img, getattr(img, parameter))
+            print(img, type(getattr(img, parameter)))
             if img is not None and getattr(img, parameter) is not None:
                 if units:
                     return getattr(getattr(img, parameter), units)
