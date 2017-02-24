@@ -517,13 +517,18 @@ class PageTemplate(BaseRenderer):
         filename, parameter, units = m.group(1), m.group(2), m.group(3)
         print('SID', m, filename, parameter, units)
         try:
-            img = self.imager.images.get(filename, self.vectorImager.images.get(filename, self.imager.staticimages.get(filename)))
+            img = self.imager.images.get(filename,
+                                         self.vectorImager.images.get(filename,
+                                                                      self.imager.staticimages.get(filename)))
+            print(img, getattr(img, parameter))
             if img is not None and getattr(img, parameter) is not None:
                 if units:
                     return getattr(getattr(img, parameter), units)
                 return str(getattr(img, parameter))
-        except KeyError: pass
-
+        except KeyError:
+            import traceback; traceback.print_exc()
+            pass
+        print("Nothing found")
         return '&%s-%s;' % (filename, parameter)
 
 
