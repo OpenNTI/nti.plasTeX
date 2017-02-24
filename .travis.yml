@@ -9,7 +9,7 @@ dist: trusty
 script:
 # Coverage is slow on this old version of pypy
   - if [[ $TRAVIS_PYTHON_VERSION != 'pypy' ]]; then coverage run `which zope-testrunner` --test-path=src  --auto-color --auto-progress --all; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then zope-testrunner --test-path=src --all; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 'pypy' ]]; then zope-testrunner --test-path=src --all test_FunctionalTests; fi
 after_success:
   - coveralls
 notifications:

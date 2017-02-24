@@ -476,6 +476,10 @@ class PageTemplate(BaseRenderer):
 
     def processFileContent(self, document, s):
         # Add width, height, and depth to images
+        print("procFileContent")
+        print("document", document)
+        print("s", s)
+
         s = re.sub(r'&amp;(\S+)-(width|height|depth);(?:&amp;([a-z]+);)?',
                    self.setImageData, s)
 
@@ -511,7 +515,7 @@ class PageTemplate(BaseRenderer):
 
         """
         filename, parameter, units = m.group(1), m.group(2), m.group(3)
-
+        print('SID', m, filename, parameter, units)
         try:
             img = self.imager.images.get(filename, self.vectorImager.images.get(filename, self.imager.staticimages.get(filename)))
             if img is not None and getattr(img, parameter) is not None:
