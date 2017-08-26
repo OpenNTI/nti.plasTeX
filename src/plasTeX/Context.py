@@ -9,7 +9,10 @@ import codecs
 import io
 
 import plasTeX
-from ._util import ismacro, macroName
+from ._util import text_
+from ._util import ismacro
+from ._util import macroName
+from ._util import chr as unichr
 
 from plasTeX.Logging import getLogger
 from plasTeX.Tokenizer import Tokenizer, Token, DEFAULT_CATEGORIES, VERBATIM_CATEGORIES
@@ -85,7 +88,7 @@ class ContextItem(dict):
 
     def __str__(self):
         if self.parent is not None:
-             return '%s -> %s' % (self.parent, self.name)
+            return '%s -> %s' % (self.parent, self.name)
         return str(self.name)
 
 
@@ -128,7 +131,7 @@ class LanguageParser(object):
         # the minor language section
         for key, value in list(self.data.items()):
             if '-' in key:
-                major, minor = key.split('-',1)
+                major, _ = key.split('-',1)
                 if major in self.data:
                     majordict = self.data[major]
                     for mkey, mvalue in list(majordict.items()):
@@ -422,7 +425,7 @@ class Context(object):
                         if data['number'] is not None:
                             value = unichr(int(data['number']))
                         else:
-                            value = unicode(data['string'])
+                            value = text_(data['string'])
                         macros[name] = type(name, (baseclass,),
                                             {'unicode': value})
                         continue
