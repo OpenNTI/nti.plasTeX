@@ -2,11 +2,10 @@
 from __future__ import print_function, absolute_import, division
 __docformat__ = "restructuredtext en"
 
-
-import codecs
 import os
-
-from six.moves.urllib.parse import quote as url_quote
+import six
+import codecs
+from six.moves import urllib_parse
 
 from zope.dottedname.resolve import resolve as resolve_import
 
@@ -29,7 +28,7 @@ __all__ = ['Renderer','Renderable']
 
 def baseclasses(cls):
     return [x for x in cls.mro() if x is not object]
-    # XXX: What's the difference between this and mro()?
+    # What's the difference between this and mro()?
     #  mro() is only defined on new-style classes;
     #  this could result in multiple copies of the same class
     #output = [cls]
@@ -69,6 +68,7 @@ def unmix(base, mix=None):
     mix -- the mixin class to remove from `base`
 
     """
+    # pylint: disable=protected-access
     if mix is None:
         for key, value in list(base._mixed_.items()):
             if value[1] is not None:
@@ -295,7 +295,7 @@ class RenderableMixin(object):
         """
         The ``id`` of this node, suitable for use in a url fragment.
         """
-        return url_quote(self.id)
+        return urllib_parse.quote(self.id.encode('utf-8'))
 
     @property
     def html_id(self):
