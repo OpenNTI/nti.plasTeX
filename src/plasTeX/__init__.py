@@ -946,11 +946,16 @@ class UnrecognizedMacro(Macro):
     def __eq__(self, other):
         if not hasattr(other, 'nodeName'):
             return True
-        if other.nodeName in ['undefined','@undefined']:
+        if other.nodeName in ('undefined', '@undefined'):
             return True
         if isinstance(other, UnrecognizedMacro):
             return True
         return super(UnrecognizedMacro, self).__eq__(other)
+
+    # In Python 3, you must override __hash__ at the same level you
+    # override __eq__, even if you want to inherit.
+    def __hash__(self):
+        return super(UnrecognizedMacro, self).__hash__()
 
 class NewIf(Macro):
     """ Base class for all generated \\newifs """
