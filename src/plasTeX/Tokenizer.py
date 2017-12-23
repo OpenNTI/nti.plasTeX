@@ -271,6 +271,13 @@ class Tokenizer(object):
         self.tell = source.tell
         self.lineNumber = 1
 
+        try:
+            # Let us be closable if the source is.
+            # We tend to do `Tokenizer(open(filename))` a lot
+            self.close = source.close
+        except AttributeError:
+            pass
+
 # There seems to be a problem with readline in Python 2.4 !!!
     def readline(self):
         read = self.read
@@ -419,7 +426,12 @@ class Tokenizer(object):
                 yield buffer.pop(0)
 
             # Get the next character
-            token = next(charIter)
+            try:
+                token = next(charIter)
+            except StopIteration:
+                # Don't let StopIteration bubble up, that's
+                # deprecated on Python 3 and produces warnings
+                return
 
             if token.nodeType == ELEMENT_NODE:
                 raise ValueError('Expanded tokens should never make it here')

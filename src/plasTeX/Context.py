@@ -476,16 +476,16 @@ class Context(object):
                 #m = __import__(module, globals(), locals())
                 # JAM: We want to allow for dottednames
                 try:
-                    package = zope.dottedname.resolve.resolve( module_name )
-                except (ValueError,SystemError):
+                    package = zope.dottedname.resolve.resolve(module_name)
+                except (ValueError, SystemError, ImportError):
                     # JAM: plastex tries to put its raw Packages directory
                     # on sys.path. This is broken as soon as any of those packages
                     # try to import each other in an absolute fashion, as is required
                     # in python 3. You get "'Attempted relative import in non-package'" in
                     # Py2 as a ValueError, and in py3 you get " Parent module '' not loaded, cannot perform relative import"
-                    # as a SystemError
+                    # as a SystemError OR ImportError, depending on the version.
                     if '.' not in module_name:
-                        package = zope.dottedname.resolve.resolve( 'plasTeX.Packages.' + module_name )
+                        package = zope.dottedname.resolve.resolve('plasTeX.Packages.' + module_name)
             except ImportError as e:
                 # No Python module
                 if 'No module' in str(e):
@@ -1140,7 +1140,7 @@ class Context(object):
 
     def newdef(self, name, args=None, definition=None, local=True):
         """
-        Create a \def
+        Create a \\def
 
         Required Arguments:
         name -- name of the macro to create
@@ -1177,7 +1177,7 @@ class Context(object):
 
     def let(self, dest, source):
         """
-        Create a \let
+        Create a \\let
 
         Required Arguments:
         dest -- the command sequence to create

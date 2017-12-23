@@ -37,7 +37,13 @@
 #  def foo():
 #    if baz:
 #      return 1
+# bad-whitespace: Sadly we have millions of these. They do need to be fixed,
+#  but they bury more important warnings
+# wrong-import-order,wrong-import-position: same as bad-whitespace
 disable=
+    bad-whitespace,
+    wrong-import-order,
+    wrong-import-position,
     missing-docstring,
     invalid-name,
     too-few-public-methods,

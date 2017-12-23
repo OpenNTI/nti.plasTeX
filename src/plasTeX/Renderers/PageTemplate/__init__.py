@@ -30,8 +30,10 @@ from plasTeX.Logging import getLogger
 log = getLogger(__name__)
 logger = log
 
-from six.moves import configparser as ConfigParser
+from six.moves import configparser
 from six import text_type
+
+ConfigParser = configparser.SafeConfigParser if sys.version_info[0] < 3 else configparser.ConfigParser
 
 # Support for Python string templates
 def stringtemplate(s, encoding='utf8',filename=None):
@@ -98,10 +100,12 @@ def copytree(src, dest, symlink=None):
                 os.makedirs(destpath)
                 try:
                     shutil.copymode(srcpath, destpath)
-                except: pass
+                except:
+                    pass
                 try:
                     shutil.copystat(srcpath, destpath)
-                except: pass
+                except:
+                    pass
         for f in files:
             if f.startswith('.'):
                 continue
@@ -154,7 +158,7 @@ class PageTemplate(BaseRenderer):
         node -- the Text node to process
 
         """
-        if not(getattr(node, 'isMarkup', None)):
+        if not getattr(node, 'isMarkup', None):
             node = node.replace('&', '&amp;')
             node = node.replace('<', '&lt;')
             node = node.replace('>', '&gt;')
@@ -216,7 +220,7 @@ class PageTemplate(BaseRenderer):
                     shutil.copy(item, os.path.join(dest,item))
 
         def _get_base_theme( theme_dir ):
-            p = ConfigParser.SafeConfigParser()
+            p = ConfigParser()
             p.read( os.path.join( theme_dir, 'theme_conf.ini' ) )
             for conf in (p,document.config):
                 if conf.has_option( 'general', 'theme-base' ):

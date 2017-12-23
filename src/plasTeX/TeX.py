@@ -77,6 +77,7 @@ class TeX(object):
         self.ownerDocument = ownerDocument
 
         # Input source stack
+        # (Tokenizer, iter(Tokenizer))
         self.inputs = []
 
         # Auxiliary files loaded
@@ -164,7 +165,13 @@ class TeX(object):
 
         """
         if self.inputs:
-            self.inputs.pop()
+            old_input = self.inputs.pop()
+            try:
+                close = old_input[0].close
+            except AttributeError:
+                pass
+            else:
+                close()
         if self.inputs:
             self.currentInput = self.inputs[-1]
 
@@ -306,9 +313,8 @@ class TeX(object):
         createElement = self.ownerDocument.createElement
         ELEMENT_NODE = Macro.ELEMENT_NODE
 
-        while True:
+        for token in itertokens:
             # Get the next token
-            token = next(itertokens)
 
             # Token is null, ignore it
             if token is None:
