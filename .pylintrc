@@ -15,7 +15,7 @@
 
 # invalid-name, ; We get lots of these, especially in scripts. should fix many of them
 # protected-access, ; We have many cases of this; legit ones need to be examinid and commented, then this removed
-# no-self-use, ; common in superclasses with extension points
+# no-self-use, ; common in superclasses with extension points and here, sadly, test cases
 # too-few-public-methods, ; Exception and marker classes get tagged with this
 # exec-used, ; should tag individual instances with this, there are some but not too many
 # global-statement,     ; should tag individual instances
@@ -41,6 +41,7 @@
 #  but they bury more important warnings
 # wrong-import-order,wrong-import-position: same as bad-whitespace
 disable=
+    no-self-use,
     bad-whitespace,
     wrong-import-order,
     wrong-import-position,

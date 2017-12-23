@@ -19,7 +19,7 @@ class CategoryCodes(TestCase):
                 self.ownerDocument.context.catcode('$',11)
                 return Macro.parse(self, tex)
         s = TeX()
-        s.input('\code{this # is $ some & nasty _ text}&_2')
+        s.input(r'\code{this # is $ some & nasty _ text}&_2')
         s.ownerDocument.context['code'] = code
         tokens = [x for x in s]
 
@@ -33,7 +33,7 @@ class CategoryCodes(TestCase):
         tok = type(tokens[-3])
         cs = type(s.ownerDocument.createElement('active::&'))
         assert tok is cs, '"%s" != "%s"' % (tok, cs)
-    
+
 #       tok = type(tokens[-2])
 #       cs = type(s.ownerDocument.createElement('active::_'))
 #       assert tok is cs, '"%s" != "%s"' % (tok, cs)
@@ -42,7 +42,7 @@ class CategoryCodes(TestCase):
         class code(Macro):
             args = 'self'
         s = TeX()
-        s.input("{\catcode`\#=11\catcode`\$=11\catcode`\&=11\catcode`\_=11{this # is $ some & nasty _ text}}&_2")
+        s.input(r"{\catcode`\#=11\catcode`\$=11\catcode`\&=11\catcode`\_=11{this # is $ some & nasty _ text}}&_2")
         s.ownerDocument.context['code'] = code
         tokens = [x for x in s]
 
@@ -52,7 +52,7 @@ class CategoryCodes(TestCase):
         tok = type(tokens[-3])
         tab = type(s.ownerDocument.createElement('active::&'))
         assert tok is tab, '"%s" != "%s"' % (tok, tab)
-    
+
 #       tok = type(tokens[-1])
 #       tab = type(s.ownerDocument.createElement('active::_'))
 #       assert tok is tab, '"%s" != "%s"' % (tok, tab)
@@ -60,4 +60,3 @@ class CategoryCodes(TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

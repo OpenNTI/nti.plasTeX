@@ -14,7 +14,7 @@ class verbatim(Environment):
     captionable = True
 
     def invoke(self, tex):
-        """ Parse until we reach `\end{verbatim}' or `\endverbatim' """
+        """ Parse until we reach ``\\end{verbatim}`` or ``\\endverbatim`` """
         if self.macroMode == Environment.MODE_END:
             return
 
@@ -126,10 +126,9 @@ class verb(Command):
     @property
     def source(self):
         return '\\%s%s%s%s%s' % (self.nodeName, sourceArguments(self),
-                                 self.delimiter, sourceChildren(self), 
+                                 self.delimiter, sourceChildren(self),
                                  self.delimiter)
 
     def normalize(self, charsubs=[]):
         """ Normalize, but don't allow character substitutions """
         return Command.normalize(self)
-
