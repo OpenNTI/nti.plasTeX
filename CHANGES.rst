@@ -49,3 +49,5 @@
   extensibility introduced by the component registry.
 
 - Remove Entites.py and ent.xml.
+
+- Add support for Python 3.5 and 3.6 and PyPy.
