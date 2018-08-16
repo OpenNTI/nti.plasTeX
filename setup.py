@@ -23,34 +23,34 @@ TESTS_REQUIRE = [
 
 INSTALL_REQUIRES = [
     # Chameleon for template rendering.
-    'Chameleon >= 3.1',
-    'z3c.pt >= 3.0.0a1',  # Better ZPT support than plastex, add-in to Chameleon
-    'z3c.ptcompat >= 2.0.0a1',  # Make zope.pagetemplate also use the Chameleon-based ZPT
-    'zope.pagetemplate >= 4.0.4', # pulled in by z3c.ptcompat, pin to newer version
+    'Chameleon >= 3.4',
+    'z3c.pt >= 3.1.0',  # Better ZPT support than plastex, add-in to Chameleon
+    'z3c.ptcompat >= 2.1.0',  # Make zope.pagetemplate also use the Chameleon-based ZPT
+    'zope.pagetemplate >= 4.3.0', # pulled in by z3c.ptcompat, pin to newer version
 
     # tal/tales for expression language in zpt templates
-    'zope.tal >= 4.0.0a1',
-    'zope.tales >= 4.0.1',
+    'zope.tal >= 4.3.1',
+    'zope.tales >= 4.2.0',
 
     'Pillow',
 
     'six', # py3/py2 compat
 
     'zope.annotation',
-    'zope.cachedescriptors >= 4.0.0',
+    'zope.cachedescriptors >= 4.3.1',
     'zope.component',
     'zope.configuration',
     'zope.dottedname',
     'zope.dublincore',
-    'zope.event >= 4.0.2', # implicit dep of zope.component/interface
+    'zope.event >= 4.3.0', # implicit dep of zope.component/interface
     'zope.exceptions',
-    'zope.i18n >= 4.0.0a4', # implicit dep of Chameleon
-    'zope.i18nmessageid >= 4.0.2',
+    'zope.i18n >= 4.3.1', # implicit dep of Chameleon
+    'zope.i18nmessageid >= 4.1.0',
     'zope.interface',
     'zope.location',
-    'zope.mimetype',
+    'zope.mimetype >= 2.3.0',
     'zope.proxy',  # 4.1.x support py3k, uses newer APIs. Not binary compat with older extensions, must rebuild. (In partic, req zope.security >= 3.9)
-    'zope.traversing >= 4.0.0a3', # tal/tales paths, also our own traversing implementation
+    'zope.traversing >= 4.2.0', # tal/tales paths, also our own traversing implementation
 ]
 
 def read(name):
