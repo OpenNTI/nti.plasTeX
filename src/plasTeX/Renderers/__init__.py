@@ -295,7 +295,7 @@ class RenderableMixin(object):
         """
         The ``id`` of this node, suitable for use in a url fragment.
         """
-        return url_quote(self.id)
+        return url_quote(unicode(self.id).encode('utf-8'))
 
     @property
     def html_id(self):
